@@ -1042,7 +1042,6 @@ function clicarPalavra(palavra, elemento) {
         }
         
         atualizarFrase();
-        switchActiveClock(); // Troca a vez após o acerto
 
         // Lógica de Auto-Completação da Última Palavra e avanço da frase
         if (comprimentoFraseAtual === fraseSplit.length - 2 && fraseSplit.length > 1) {
@@ -1102,7 +1101,6 @@ function clicarPalavra(palavra, elemento) {
         
         currentUtterance.onend = function() {
             audioPlaying = false;
-            switchActiveClock(); // Troca a vez após a pronúncia do erro
         };
     }
 
@@ -1424,7 +1422,6 @@ document.getElementById('desistir').onclick = function() {
             // Se a frase NÃO foi completada, apenas troca a vez após a pronúncia
             utteranceRevelada.onend = function() {
                 audioPlaying = false; // Pronúncia terminou
-                switchActiveClock(); // Troca a vez
             };
         }
 
