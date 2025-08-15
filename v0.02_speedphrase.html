@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpeedPhrase - Jogo de Montar Frases</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.0"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .game-container {
+            width: 90%;
+            max-width: 1000px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #00d4ff;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+            margin-bottom: 10px;
+        }
+
+        .players-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .player-card {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            min-width: 150px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .player-card.active {
+            border-color: #00d4ff;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+        }
+
+        .player-card h3 {
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .player-score {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .game-area {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lesson-name {
+            color: white;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .video-container {
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        video {
+            width: 100%;
+            height: auto;
+        }
+
+        .sentence-area {
+            width: 100%;
+            min-height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .words-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .word-button {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border: none;
+            border-radius: 25px;
+            padding: 10px 20px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1em;
+        }
+
+        .word-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .word-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .sentence-construction {
+            min-height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .constructed-word {
+            background: #4CAF50;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 16px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .constructed-word:hover {
+            background: #45a049;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .control-button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1em;
+            min-width: 120px;
+        }
+
+        .btn-play { background: linear-gradient(45deg, #9b59b6, #8e44ad); color: white; }
+        .btn-slow { background: linear-gradient(45deg, #3498db, #2980b9); color: white; }
+        .btn-translate { background: linear-gradient(45deg, #f39c12, #e67e22); color: white; }
+        .btn-hint { background: linear-gradient(45deg, #2ecc71, #27ae60); color: white; }
+        .btn-skip { background: linear-gradient(45deg, #e74c3c, #c0392b); color: white; }
+
+        .control-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .control-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress {
+            color: #00d4ff;
+            text-align: center;
+            font-size: 1.1em;
+            margin-top: 20px;
+        }
+
+        .status-message {
+            background: rgba(0, 212, 255, 0.2);
+            border: 1px solid #00d4ff;
+            border-radius: 10px;
+            padding: 15px;
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .lesson-selection {
+            display: none;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .lesson-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .lesson-card:hover {
+            border-color: #00d4ff;
+            transform: translateY(-2px);
+        }
+
+        .lesson-card h4 {
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .lesson-card p {
+            color: #ccc;
+            font-size: 0.9em;
+        }
+
+        .waiting-screen {
+            text-align: center;
+            color: white;
+        }
+
+        .waiting-screen h2 {
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #00d4ff;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .game-over {
+            text-align: center;
+            color: white;
+        }
+
+        .winner {
+            font-size: 2em;
+            color: #00d4ff;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+        }
+
+        .final-scores {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+
+        .final-score {
+            text-align: center;
+        }
+
+        .final-score h4 {
+            margin-bottom: 10px;
+        }
+
+        .final-score .score {
+            font-size: 1.5em;
+            color: #00d4ff;
+        }
+
+        .timer {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(231, 76, 60, 0.8);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .players-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .final-scores {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="timer hidden" id="timer">⏱️ <span id="timer-text">60s</span></div>
+        
+        <div class="header">
+            <h1 class="logo">SpeedPhrase</h1>
+        </div>
+
+        <div class="players-container">
+            <div class="player-card" id="player1-card">
+                <h3>Jogador 1</h3>
+                <div class="player-score" id="player1-score">0</div>
+            </div>
+            <div class="player-card" id="player2-card">
+                <h3>Jogador 2</h3>
+                <div class="player-score" id="player2-score">0</div>
+            </div>
+        </div>
+
+        <!-- Tela de Espera -->
+        <div id="waiting-screen" class="waiting-screen">
+            <div class="spinner"></div>
+            <h2 id="waiting-message">Procurando jogador...</h2>
+            <p>Aguarde enquanto encontramos outro jogador para você!</p>
+            <button class="control-button btn-play" onclick="startSearching()">Jogar</button>
+        </div>
+
+        <!-- Seleção de Lição -->
+        <div id="lesson-selection" class="lesson-selection">
+            <div class="lesson-card" onclick="selectLesson('basic-greetings')">
+                <h4>Cumprimentos Básicos</h4>
+                <p>Aprenda a cumprimentar em inglês</p>
+            </div>
+            <div class="lesson-card" onclick="selectLesson('daily-routine')">
+                <h4>Rotina Diária</h4>
+                <p>Vocabulário do dia a dia</p>
+            </div>
+            <div class="lesson-card" onclick="selectLesson('food-drinks')">
+                <h4>Comidas e Bebidas</h4>
+                <p>Vocabulário gastronômico</p>
+            </div>
+            <div class="lesson-card" onclick="selectLesson('travel')">
+                <h4>Viagem</h4>
+                <p>Frases úteis para viagens</p>
+            </div>
+        </div>
+
+        <!-- Área do Jogo -->
+        <div id="game-area" class="game-area hidden">
+            <div class="lesson-name" id="lesson-name">Nome da Lição</div>
+            
+            <div class="video-container">
+                <video id="game-video" controls>
+                    <source src="" type="video/mp4">
+                    Seu navegador não suporta vídeo HTML5.
+                </video>
+            </div>
+
+            <div class="sentence-area">
+                <div class="sentence-construction" id="sentence-construction">
+                    <p style="color: #ccc;">Monte a frase aqui...</p>
+                </div>
+                
+                <div class="words-container" id="words-container">
+                    <!-- Palavras serão geradas dinamicamente -->
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="control-button btn-play" onclick="playVideoSegment()">Tocar Trecho</button>
+                <button class="control-button btn-slow" onclick="playSlowAudio()">Tocar Lento</button>
+                <button class="control-button btn-translate" onclick="showTranslation()">Traduzir</button>
+                <button class="control-button btn-hint" onclick="giveHint()">Passar palavra</button>
+                <button class="control-button btn-skip" onclick="skipSentence()">Desistir frase</button>
+            </div>
+        </div>
+
+        <!-- Mensagem de Status -->
+        <div id="status-message" class="status-message hidden">
+            <p id="status-text">Mensagem de status</p>
+        </div>
+
+        <!-- Progresso -->
+        <div class="progress">
+            <span id="progress-text">Progresso: 0 de 0</span>
+        </div>
+
+        <!-- Tela de Fim de Jogo -->
+        <div id="game-over" class="game-over hidden">
+            <div class="winner" id="winner-text">Jogador 1 Venceu!</div>
+            <div class="final-scores">
+                <div class="final-score">
+                    <h4>Jogador 1</h4>
+                    <div class="score" id="final-score-1">0</div>
+                    <p>frases completadas</p>
+                </div>
+                <div class="final-score">
+                    <h4>Jogador 2</h4>
+                    <div class="score" id="final-score-2">0</div>
+                    <p>frases completadas</p>
+                </div>
+            </div>
+            <button class="control-button btn-play" onclick="restartGame()">Jogar Novamente</button>
+        </div>
+    </div>
+
+    <script>
+        // Configuração do Appwrite
+        const { Client, Databases, Realtime, ID } = Appwrite;
+        
+        const client = new Client()
+            .setEndpoint('YOUR_APPWRITE_ENDPOINT') // Substitua pela sua URL do Appwrite
+            .setProject('YOUR_PROJECT_ID'); // Substitua pelo seu Project ID
+            
+        const databases = new Databases(client);
+        const realtime = new Realtime(client);
+        
+        // Configurações do jogo
+        const DATABASE_ID = 'speedphrase_db';
+        const ROOMS_COLLECTION_ID = 'rooms';
+        const GAMES_COLLECTION_ID = 'games';
+        
+        // Estado do jogo
+        let gameState = {
+            roomId: null,
+            playerId: 1,
+            playerName: 'Jogador 1',
+            currentPlayer: 1,
+            scores: [0, 0],
+            currentSentence: 0,
+            sentences: [],
+            currentWords: [],
+            constructedSentence: [],
+            selectedLesson: null,
+            gamePhase: 'waiting', // waiting, selecting, playing, finished
+            timer: 60,
+            timerInterval: null
+        };
+
+        // Dados das lições (simulado - em produção viria do GitHub Pages)
+        const lessons = {
+            'basic-greetings': {
+                name: 'Cumprimentos Básicos',
+                video: 'https://example.com/greetings.mp4',
+                sentences: [
+                    {
+                        english: 'Hello, how are you?',
+                        portuguese: 'Olá, como você está?',
+                        words: ['Hello,', 'how', 'are', 'you?'],
+                        startTime: 0,
+                        endTime: 3
+                    },
+                    {
+                        english: 'Nice to meet you.',
+                        portuguese: 'Prazer em conhecê-lo.',
+                        words: ['Nice', 'to', 'meet', 'you.'],
+                        startTime: 4,
+                        endTime: 7
+                    }
+                ]
+            },
+            'daily-routine': {
+                name: 'Rotina Diária',
+                video: 'https://example.com/routine.mp4',
+                sentences: [
+                    {
+                        english: 'I wake up at seven.',
+                        portuguese: 'Eu acordo às sete.',
+                        words: ['I', 'wake', 'up', 'at', 'seven.'],
+                        startTime: 0,
+                        endTime: 4
+                    }
+                ]
+            }
+        };
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            generatePlayerId();
+            showWaitingScreen();
+        });
+
+        function generatePlayerId() {
+            gameState.playerId = Math.random().toString(36).substr(2, 9);
+        }
+
+        function showWaitingScreen() {
+            document.getElementById('waiting-screen').classList.remove('hidden');
+            document.getElementById('lesson-selection').style.display = 'none';
+            document.getElementById('game-area').classList.add('hidden');
+            document.getElementById('game-over').classList.add('hidden');
+        }
+
+        async function startSearching() {
+            try {
+                showStatus('Procurando outro jogador...');
+                
+                // Procurar por uma sala disponível
+                const rooms = await databases.listDocuments(DATABASE_ID, ROOMS_COLLECTION_ID);
+                let availableRoom = null;
+                
+                for (const room of rooms.documents) {
+                    if (room.status === 'waiting' && !room.player2_id) {
+                        availableRoom = room;
+                        break;
+                    }
+                }
+                
+                if (availableRoom) {
+                    // Entrar na sala como jogador 2
+                    gameState.roomId = availableRoom.$id;
+                    gameState.playerId = 2;
+                    gameState.playerName = 'Jogador 2';
+                    
+                    await databases.updateDocument(DATABASE_ID, ROOMS_COLLECTION_ID, availableRoom.$id, {
+                        player2_id: gameState.playerId,
+                        player2_name: gameState.playerName,
+                        status: 'selecting_lesson'
+                    });
+                    
+                    showStatus('Jogador encontrado! Aguardando seleção de lição...');
+                } else {
+                    // Criar nova sala como jogador 1
+                    const newRoom = await databases.createDocument(DATABASE_ID, ROOMS_COLLECTION_ID, ID.unique(), {
+                        player1_id: gameState.playerId,
+                        player1_name: gameState.playerName,
+                        player2_id: null,
+                        player2_name: null,
+                        status: 'waiting',
+                        selected_lesson: null,
+                        current_turn: 1,
+                        scores: [0, 0],
+                        current_sentence: 0
+                    });
+                    
+                    gameState.roomId = newRoom.$id;
+                    gameState.playerId = 1;
+                    gameState.playerName = 'Jogador 1';
+                    
+                    showStatus('Aguardando outro jogador...');
+                }
+                
+                // Configurar real-time para a sala
+                setupRealtimeSubscription();
+                
+            } catch (error) {
+                console.error('Erro ao procurar/criar sala:', error);
+                showStatus('Erro ao conectar. Tente novamente.');
+            }
+        }
+
+        function setupRealtimeSubscription() {
+            const subscription = realtime.subscribe(
+                [`databases.${DATABASE_ID}.collections.${ROOMS_COLLECTION_ID}.documents.${gameState.roomId}`],
+                (response) => {
+                    handleRealtimeUpdate(response);
+                }
+            );
+        }
+
+        function handleRealtimeUpdate(response) {
+            const roomData = response.payload;
+            
+            switch (roomData.status) {
+                case 'selecting_lesson':
+                    if (gameState.playerId === 1) {
+                        showLessonSelection();
+                    } else {
+                        showStatus('Jogador 1 está escolhendo a lição...');
+                    }
+                    break;
+                    
+                case 'lesson_selected':
+                    if (gameState.playerId === 2 && !roomData.lesson_confirmed) {
+                        showLessonConfirmation(roomData.selected_lesson);
+                    }
+                    break;
+                    
+                case 'playing':
+                    startGame(roomData);
+                    break;
+                    
+                case 'finished':
+                    showGameOver(roomData);
+                    break;
+            }
+            
+            // Atualizar estado local
+            gameState.currentPlayer = roomData.current_turn;
+            gameState.scores = roomData.scores;
+            gameState.currentSentence = roomData.current_sentence;
+            
+            updateUI();
+        }
+
+        function showLessonSelection() {
+            document.getElementById('waiting-screen').classList.add('hidden');
+            document.getElementById('lesson-selection').style.display = 'grid';
+            showStatus('Escolha uma lição para jogar');
+        }
+
+        async function selectLesson(lessonId) {
+            try {
+                gameState.selectedLesson = lessonId;
+                
+                await databases.updateDocument(DATABASE_ID, ROOMS_COLLECTION_ID, gameState.roomId, {
+                    selected_lesson: lessonId,
+                    status: 'lesson_selected'
+                });
+                
+                showStatus('Lição selecionada! Aguardando confirmação do outro jogador...');
+                
+            } catch (error) {
+                console.error('Erro ao selecionar lição:', error);
+                showStatus('Erro ao selecionar lição. Tente novamente.');
+            }
+        }
+
+        function showLessonConfirmation(lessonId) {
+            const lesson = lessons[lessonId];
+            if (confirm(`Jogar com a lição "${lesson.name}"?`)) {
+                confirmLesson();
+            } else {
+                suggestOtherLesson();
+            }
+        }
+
+        async function confirmLesson() {
+            try {
+                await databases.updateDocument(DATABASE_ID, ROOMS_COLLECTION_ID, gameState.roomId, {
+                    lesson_confirmed: true,
+                    status: 'playing'
+                });
+            } catch (error) {
+                console.error('Erro ao confirmar lição:', error);
+            }
+        }
+
+        function suggestOtherLesson() {
+            // Implementar lógica para sugerir outra lição
+            showLessonSelection();
+        }
+
+        function startGame(roomData) {
+            document.getElementById('waiting-screen').classList.add('hidden');
+            document.getElementById('lesson-selection').style.display = 'none';
+            document.getElementById('game-area').classList.remove('hidden');
+            
+            gameState.selectedLesson = roomData.selected_lesson;
+            const lesson = lessons[gameState.selectedLesson];
+            gameState.sentences = lesson.sentences;
+            
+            document.getElementById('lesson-name').textContent = lesson.name;
+            document.getElementById('game-video').src = lesson.video;
+            
+            loadCurrentSentence();
+            updateUI();
+            startTimer();
+        }
+
+        function loadCurrentSentence() {
+            const sentence = gameState.sentences[gameState.currentSentence];
+            if (!sentence) return;
+            
+            // Embaralhar palavras
+            gameState.currentWords = [...sentence.words].sort(() => Math.random() - 0.5);
+            gameState.constructedSentence = [];
+            
+            renderWords();
+            renderConstructedSentence();
+        }
+
+        function renderWords() {
+            const container = document.getElementById('words-container');
+            container.innerHTML = '';
+            
+            gameState.currentWords.forEach((word, index) => {
+                const button = document.createElement('button');
+                button.className = 'word-button';
+                button.textContent = word;
+                button.onclick = () => selectWord(index);
+                button.disabled = gameState.currentPlayer !== gameState.playerId;
+                container.appendChild(button);
+            });
+        }
+
+        function renderConstructedSentence() {
+            const container = document.getElementById('sentence-construction');
+            container.innerHTML = '';
+            
+            if (gameState.constructedSentence.length === 0) {
+                const placeholder = document.createElement('p');
+                placeholder.style.color = '#ccc';
+                placeholder.textContent = 'Monte a frase aqui...';
+                container.appendChild(placeholder);
+            } else {
+                gameState.constructedSentence.forEach((word, index) => {
+                    const button = document.createElement('button');
+                    button.className = 'constructed-word';
+                    button.textContent = word;
+                    button.onclick = () => removeWord(index);
+                    container.appendChild(button);
+                });
+            }
+        }
+
+        function selectWord(index) {
+            if (gameState.currentPlayer !== gameState.playerId) return;
+            
+            const word = gameState.currentWords[index];
+            gameState.constructedSentence.push(word);
+            gameState.currentWords.splice(index, 1);
+            
+            renderWords();
+            renderConstructedSentence();
+            
+            checkSentenceComplete();
+        }
+
+        function removeWord(index) {
+            if (gameState.currentPlayer !== gameState.playerId) return;
+            
+            const word = gameState.constructedSentence[index];
+            gameState.currentWords.push(word);
+            gameState.constructedSentence.splice(index, 1);
+            
+            renderWords();
+            renderConstructedSentence();
+        }
+
+        async function checkSentenceComplete() {
+            const currentSentence = gameState.sentences[gameState.currentSentence];
+            const constructedText = gameState.constructedSentence.join(' ');
+            const correctText = currentSentence.english;
+            
+            if (constructedText === correctText) {
+                // Frase correta!
+                gameState.scores[gameState.playerId - 1]++;
+                
+                await databases.updateDocument(DATABASE_ID, ROOMS_COLLECTION_ID, gameState.roomId, {
+                    scores: gameState.scores,
+                    current_sentence: gameState.currentSentence + 1,
+                    current_turn: gameState.playerId === 1 ? 2 : 1
+                });
+                
+                showStatus('Parabéns! Frase correta!');
+                
+                setTimeout(() => {
+                    if (gameState.currentSentence + 1 >= gameState.sentences.length) {
+                        endGame();
+                    } else {
+                        nextSentence();
+                    }
+                }, 2000);
+            }
+        }
+
+        function playVideoSegment() {
+            const video = document.getElementById('game-video');
+            const sentence = gameState.sentences[gameState.currentSentence];
+            
+            video.currentTime = sentence.startTime;
+            video.play();
+            
+            setTimeout(() => {
+                video.pause();
+            }, (sentence.endTime - sentence.startTime) * 1000);
+        }
+
+        function playSlowAudio() {
+            const sentence = gameState.sentences[gameState.currentSentence];
+            const utterance = new SpeechSynthesisUtterance(sentence.english);
+            utterance.rate = 0.5; // Velocidade lenta
+            utterance.lang = 'en-US';
+            speechSynthesis.speak(utterance);
+        }
+
+        function showTranslation() {
+            const sentence = gameState.sentences[gameState.currentSentence];
+            showStatus(`Tradução: ${sentence.portuguese}`);
+        }
+
+        function giveHint() {
+            if (gameState.constructedSentence.length >= gameState.sentences[gameState.currentSentence].words.length) {
+                return;
+            }
+            
+            const correctSentence = gameState.sentences[gameState.currentSentence].words;
+            const nextCorrectWord = correctSentence[gameState.constructedSentence.length];
+            
+            const wordIndex = gameState.currentWords.indexOf(nextCorrectWord);
+            if (wordIndex >= 0) {
+                selectWord(wordIndex);
+            }
+        }
+
+        async function skipSentence() {
+            // Passar a vez para o outro jogador
+            const nextPlayer = gameState.playerId === 1 ? 2 : 1;
+            
+            await databases.updateDocument(DATABASE_ID, ROOMS_COLLECTION_ID, gameState.roomId, {
+                current_turn: nextPlayer
+            });
+            
+            showStatus('Você passou a vez para o outro jogador.');
+        }
+
+        function nextSentence() {
+            gameState.currentSentence++;
+            loadCurrentSentence();
+            resetTimer();
+        }
+
+        async function endGame() {
+            await databases.updateDocument(DATABASE_ID, ROOMS_COLLECTION_ID, gameState.roomId, {
+                status: 'finished'
+            });
+        }
+
+        function showGameOver(roomData) {
+            document.getElementById('game-area').classList.add('hidden');
+            document.getElementById('game-over').classList.remove('hidden');
+            
+            const scores = roomData.scores;
+            const winner = scores[0] > scores[1] ? 'Jogador 1' : 
+                          scores[1] > scores[0] ? 'Jogador 2' : 'Empate';
+            
+            document.getElementById('winner-text').textContent = 
+                winner === 'Empate' ? 'Empate!' : `${winner} Venceu!`;
+            
+            document.getElementById('final-score-1').textContent = scores[0];
+            document.getElementById('final-score-2').textContent = scores[1];
+            
+            stopTimer();
+        }
+
+        function startTimer() {
+            gameState.timer = 60;
+            document.getElementById('timer').classList.remove('hidden');
+            updateTimer();
+            
+            gameState.timerInterval = setInterval(() => {
+                gameState.timer--;
+                updateTimer();
+                
+                if (gameState.timer <= 0) {
+                    timeUp();
+                }
+            }, 1000);
+        }
+
+        function updateTimer() {
+            document.getElementById('timer-text').textContent = `${gameState.timer}s`;
+        }
+
+        function resetTimer() {
+            stopTimer();
+            startTimer();
+        }
+
+        function stopTimer() {
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+                gameState.timerInterval = null;
+            }
+            document.getElementById('timer').classList.add('hidden');
+        }
+
+        async function timeUp() {
+            stopTimer();
+            showStatus('Tempo esgotado! Passando a vez...');
+            
+            const nextPlayer = gameState.currentPlayer === 1 ? 2 : 1;
+            await databases.updateDocument(DATABASE_ID, ROOMS_COLLECTION_ID, gameState.roomId, {
+                current_turn: nextPlayer
+            });
+        }
+
+        function updateUI() {
+            // Atualizar placares
+            document.getElementById('player1-score').textContent = gameState.scores[0];
+            document.getElementById('player2-score').textContent = gameState.scores[1];
+            
+            // Destacar jogador atual
+            document.getElementById('player1-card').classList.toggle('active', gameState.currentPlayer === 1);
+            document.getElementById('player2-card').classList.toggle('active', gameState.currentPlayer === 2);
+            
+            // Atualizar progresso
+            const progress = `Progresso: ${gameState.currentSentence} de ${gameState.sentences.length}`;
+            document.getElementById('progress-text').textContent = progress;
+            
+            // Habilitar/desabilitar controles
+            const isMyTurn = gameState.currentPlayer === gameState.playerId;
+            const controls = document.querySelectorAll('.control-button');
+            controls.forEach(button => {
+                button.disabled = !isMyTurn;
+            });
+            
+            // Sempre permitir tocar vídeo e áudio
+            document.querySelector('.btn-play').disabled = false;
+            document.querySelector('.btn-slow').disabled = false;
+            document.querySelector('.btn-translate').disabled = false;
+        }
+
+        function showStatus(message) {
+            document.getElementById('status-text').textContent = message;
+            document.getElementById('status-message').classList.remove('hidden');
+            
+            setTimeout(() => {
+                document.getElementById('status-message').classList.add('hidden');
+            }, 3000);
+        }
+
+        function restartGame() {
+            // Resetar estado do jogo
+            gameState = {
+                roomId: null,
+                playerId: 1,
+                playerName: 'Jogador 1',
+                currentPlayer: 1,
+                scores: [0, 0],
+                currentSentence: 0,
+                sentences: [],
+                currentWords: [],
+                constructedSentence: [],
+                selectedLesson: null,
+                gamePhase: 'waiting',
+                timer: 60,
+                timerInterval: null
+            };
+            
+            generatePlayerId();
+            showWaitingScreen();
+        }
+
+        // Eventos de teclado para melhor experiência
+        document.addEventListener('keydown', function(e) {
+            if (gameState.currentPlayer !== gameState.playerId) return;
+            
+            // Tecla Enter para confirmar frase
+            if (e.key === 'Enter' && gameState.constructedSentence.length > 0) {
+                checkSentenceComplete();
+            }
+            
+            // Tecla Backspace para remover última palavra
+            if (e.key === 'Backspace' && gameState.constructedSentence.length > 0) {
+                removeWord(gameState.constructedSentence.length - 1);
+            }
+            
+            // Teclas numéricas para selecionar palavras
+            const num = parseInt(e.key);
+            if (num >= 1 && num <= gameState.currentWords.length) {
+                selectWord(num - 1);
+            }
+        });
+
+        // Função para calcular tempo baseado na complexidade da frase
+        function calculateTimeLimit(sentence) {
+            const baseTime = 30; // 30 segundos base
+            const wordBonus = sentence.words.length * 5; // 5 segundos por palavra
+            const complexityBonus = sentence.english.length > 50 ? 15 : 0; // 15 segundos para frases longas
+            
+            return Math.min(baseTime + wordBonus + complexityBonus, 120); // Máximo de 2 minutos
+        }
+
+        // Função para processar arquivos SRT (simulação)
+        function parseSRT(srtContent) {
+            const lines = srtContent.split('\n');
+            const sentences = [];
+            let currentSentence = null;
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                
+                // Número da legenda
+                if (/^\d+$/.test(line)) {
+                    if (currentSentence) {
+                        sentences.push(currentSentence);
+                    }
+                    currentSentence = { id: parseInt(line) };
+                }
+                // Tempo
+                else if (line.includes('-->')) {
+                    const times = line.split(' --> ');
+                    currentSentence.startTime = parseTime(times[0]);
+                    currentSentence.endTime = parseTime(times[1]);
+                }
+                // Texto da legenda
+                else if (line && !line.includes('-->') && currentSentence) {
+                    currentSentence.english = line;
+                    currentSentence.words = line.split(' ');
+                    currentSentence.portuguese = ''; // Seria traduzido ou vindo do arquivo
+                }
+            }
+            
+            if (currentSentence) {
+                sentences.push(currentSentence);
+            }
+            
+            return sentences;
+        }
+
+        function parseTime(timeString) {
+            const parts = timeString.split(':');
+            const seconds = parts[2].split(',');
+            return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(seconds[0]) + parseInt(seconds[1]) / 1000;
+        }
+
+        // Função para embaralhar array
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        // Funcionalidades de acessibilidade
+        function setupAccessibility() {
+            // Adicionar ARIA labels
+            document.querySelectorAll('.word-button').forEach((button, index) => {
+                button.setAttribute('aria-label', `Palavra ${index + 1}: ${button.textContent}`);
+            });
+            
+            // Suporte a navegação por teclado
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Tab') {
+                    // Melhorar navegação por teclado
+                    const focusableElements = document.querySelectorAll('button:not(:disabled), [tabindex="0"]');
+                    // Implementar lógica de navegação customizada se necessário
+                }
+            });
+        }
+
+        // Sistema de conquistas (opcional)
+        const achievements = {
+            speedster: { name: 'Velocista', description: 'Complete 3 frases em menos de 30 segundos cada' },
+            perfectionist: { name: 'Perfeccionista', description: 'Complete 5 frases sem erros' },
+            linguist: { name: 'Linguista', description: 'Complete lições de 3 categorias diferentes' }
+        };
+
+        function checkAchievements() {
+            // Implementar lógica de conquistas
+            // Por exemplo, verificar se o jogador atingiu algum marco
+        }
+
+        // Analytics e métricas (simulação)
+        function trackGameMetrics(action, data) {
+            // Em produção, enviaria para um serviço de analytics
+            console.log('Analytics:', action, data);
+        }
+
+        // Sistema de feedback sonoro
+        function playSuccessSound() {
+            // Criar contexto de áudio para feedback sonoro
+            if (window.AudioContext || window.webkitAudioContext) {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                oscillator.frequency.setValueAtTime(1000, audioContext.currentTime + 0.1);
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.3);
+            }
+        }
+
+        function playErrorSound() {
+            if (window.AudioContext || window.webkitAudioContext) {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
+                oscillator.frequency.setValueAtTime(200, audioContext.currentTime + 0.1);
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.2);
+            }
+        }
+
+        // Inicializar funcionalidades quando o DOM estiver carregado
+        document.addEventListener('DOMContentLoaded', function() {
+            setupAccessibility();
+            
+            // Adicionar tooltips nos botões de controle
+            const tooltips = {
+                '.btn-play': 'Reproduz o segmento de vídeo desta frase',
+                '.btn-slow': 'Reproduz o áudio da frase em velocidade reduzida',
+                '.btn-translate': 'Mostra a tradução da frase em português',
+                '.btn-hint': 'Adiciona automaticamente a próxima palavra correta',
+                '.btn-skip': 'Desiste desta frase e passa a vez para o outro jogador'
+            };
+            
+            Object.entries(tooltips).forEach(([selector, text]) => {
+                const element = document.querySelector(selector);
+                if (element) {
+                    element.title = text;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
