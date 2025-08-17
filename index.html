@@ -784,6 +784,43 @@
                 background: linear-gradient(135deg, var(--orange-gradient-start), var(--orange-gradient-end));
             }
         }
+        
+       /* Estilos para a notificação de alerta */
+		#custom-alert {
+		    position: fixed;
+		    bottom: 20px; /* Posição na parte inferior da tela */
+		    left: 50%;
+		    transform: translateX(-50%);
+		    z-index: 3000; /* Um z-index alto para sobrepor tudo */
+		    background-color: #333;
+		    color: white;
+		    padding: 15px 25px;
+		    border-radius: 10px;
+		    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+		    display: flex;
+		    align-items: center;
+		    gap: 15px; /* Espaço entre a mensagem e o botão */
+		    transition: opacity 0.3s ease-in-out;
+		}
+		
+		#custom-alert.hidden {
+		    opacity: 0;
+		    pointer-events: none; /* Desativa a interação quando está escondido */
+		}
+		
+		/* Estilos para o botão 'X' do alerta */
+		#close-alert-btn {
+		    background: transparent;
+		    border: none;
+		    color: #ff6b6b; /* Uma cor diferente para o botão de fechar */
+		    font-size: 1.2em;
+		    cursor: pointer;
+		    transition: transform 0.3s ease;
+		}
+		
+		#close-alert-btn:hover {
+		    transform: rotate(90deg);
+		}
     </style>
 </head>
 <body>
@@ -877,7 +914,11 @@
         </div>
         
         <div id="progresso" style="margin-top: 10px; font-size: 0.9em;">Progresso: 0 de 0</div>
-
+	    
+		<div id="custom-alert" class="hidden">
+		  <span id="alert-message"></span>
+		  <button id="close-alert-btn" class="close-btn">✕</button>
+		</div>
     </div>
 
 <script>
@@ -902,6 +943,19 @@ const lessons = [
 ];
 
 // Entrar e Cadastrar
+// Appwrite Initialization
+const { Client, Account, ID } = Appwrite;
+
+// Substitua 'YOUR_APPWRITE_ENDPOINT' pelo seu endpoint do Appwrite.
+// Exemplo: 'https://cloud.appwrite.io/v1' ou 'http://localhost/v1'
+const client = new Client();
+
+// Substitua 'YOUR_APPWRITE_PROJECT_ID' pelo ID do seu projeto.
+client
+    .setEndpoint('https://nyc.cloud.appwrite.io/v1')
+    .setProject('689f3d3a00095fde3112');
+
+const account = new Account(client);
 const loginScreen = document.getElementById('login-screen');
 const signupScreen = document.getElementById('signup-screen');
 const loginEmailInput = document.getElementById('login-email');
@@ -957,17 +1011,17 @@ async function login() {
     const password = loginPasswordInput.value;
 
     if (!email || !password) {
-        alert('Por favor, preencha todos os campos.');
+        showAlert('Por favor, preencha todos os campos.');
         return;
     }
 
     try {
         await account.createEmailSession(email, password);
-        alert('Login bem-sucedido!');
+        showAlert('Login bem-sucedido!');
         isLoggedIn = true; // Atualiza o estado de login
         closeLoginScreen();
     } catch (error) {
-        alert('Erro ao fazer login: ' + error.message);
+        showAlert('Erro ao fazer login: ' + error.message);
     }
 }
 
@@ -976,18 +1030,33 @@ async function signup() {
     const password = signupPasswordInput.value;
 
     if (!email || !password) {
-        alert('Por favor, preencha todos os campos.');
+        showAlert('Por favor, preencha todos os campos.');
         return;
     }
 
     try {
         await account.create(Appwrite.ID.unique(), email, password);
-        alert('Conta criada com sucesso! Faça login para continuar.');
+        showAlert('Conta criada com sucesso! Faça login para continuar.');
         showLoginScreen();
     } catch (error) {
-        alert('Erro ao cadastrar: ' + error.message);
+        showAlert('Erro ao cadastrar: ' + error.message);
     }
 }
+
+// A função de alerta deve estar aqui, antes das funções que a chamam
+function showAlert(message) {
+    const customAlert = document.getElementById('custom-alert');
+    const alertMessage = document.getElementById('alert-message');
+
+    alertMessage.textContent = message;
+    customAlert.classList.remove('hidden');
+}
+
+// O event listener do botão de fechar
+document.getElementById('close-alert-btn').addEventListener('click', () => {
+    document.getElementById('custom-alert').classList.add('hidden');
+});
+
 // Variáveis globais
 let videoElement = document.getElementById('custom-video');
 let frases = [];
@@ -1068,7 +1137,7 @@ async function loadSrtFromUrl(url) {
         }
     } catch (error) {
         console.error("Erro ao carregar o arquivo SRT:", error);
-        alert("Erro ao carregar o arquivo de legendas. O jogo continuará sem sincronização de vídeo. Por favor, tente novamente mais tarde.");
+       showAlert("Erro ao carregar o arquivo de legendas. O jogo continuará sem sincronização de vídeo. Por favor, tente novamente mais tarde.");
         frases = [{
             tempoInicio: 0,
             tempoFim: 5,
@@ -1544,7 +1613,7 @@ document.getElementById('traduzir-btn').onclick = function() {
 videoElement.addEventListener('error', function(e) {
     console.error("Erro ao carregar o vídeo. O jogo continuará sem sincronização com o vídeo.", e);
     playerReady = false;
-    alert("Ocorreu um erro ao carregar o vídeo. O jogo continuará no modo texto.");
+    showAlert("Ocorreu um erro ao carregar o vídeo. O jogo continuará no modo texto.");
     pararMonitorTempo();
 });
 
@@ -1628,11 +1697,11 @@ function processAndAdvancePhrase() {
         indiceFrase++;
         if (indiceFrase >= frases.length) {
             if (tempoTotalJogador1 < tempoTotalJogador2) {
-                alert(`Parabéns, Jogador 1! Você venceu com um tempo total de ${Math.round(tempoTotalJogador1 / 1000)}s contra ${Math.round(tempoTotalJogador2 / 1000)}s do Jogador 2.`);
+                showAlert(`Parabéns, Jogador 1! Você venceu com um tempo total de ${Math.round(tempoTotalJogador1 / 1000)}s contra ${Math.round(tempoTotalJogador2 / 1000)}s do Jogador 2.`);
             } else if (tempoTotalJogador2 < tempoTotalJogador1) {
-                alert(`Parabéns, Jogador 2! Você venceu com um tempo total de ${Math.round(tempoTotalJogador2 / 1000)}s contra ${Math.round(tempoTotalJogador1 / 1000)}s do Jogador 1.`);
+                showAlert(`Parabéns, Jogador 2! Você venceu com um tempo total de ${Math.round(tempoTotalJogador2 / 1000)}s contra ${Math.round(tempoTotalJogador1 / 1000)}s do Jogador 1.`);
             } else {
-                alert(`Empate! Ambos os jogadores terminaram a lição no mesmo tempo de ${Math.round(tempoTotalJogador1 / 1000)}s.`);
+                showAlert(`Empate! Ambos os jogadores terminaram a lição no mesmo tempo de ${Math.round(tempoTotalJogador1 / 1000)}s.`);
             }
             indiceFrase = 0;
             tempoTotalJogador1 = 0;
