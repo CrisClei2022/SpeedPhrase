@@ -3,95 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro</title>
-    <link rel="stylesheet" href="style.css">
-
+    <title>Login e Cadastro com Appwrite</title>
     <style>
-body {
-    font-family: Arial, sans-serif;
-}
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
 
-.container {
-    width: 300px;
-    margin: 50px auto;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
+        .container {
+            width: 350px;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            transition: opacity 0.5s ease-in-out;
+        }
 
-label {
-    display: block;
-    margin-bottom: 10px;
-}
+        h1 {
+            text-align: center;
+            color: #333;
+        }
 
-input[type="text"], input[type="email"], input[type="password"] {
-    width: 100%;
-    height: 40px;
-    margin-bottom: 20px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+        }
 
-button {
-    width: 100%;
-    height: 40px;
-    background-color: #4CAF50;
-    color: #fff;
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
+        input[type="email"], input[type="password"], input[type="text"] {
+            width: 100%;
+            height: 40px;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
 
-button:hover {
-    background-color: #3e8e41;
-}
+        button {
+            width: 100%;
+            height: 45px;
+            background-color: #4CAF50;
+            color: #fff;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
 
-#mensagem {
-    margin-top: 20px;
-}
+        button:hover {
+            background-color: #3e8e41;
+        }
+
+        .user-section {
+            display: none;
+            text-align: center;
+        }
+        
+        #cadastro-section {
+            display: none;
+        }
+
+        #welcome-message {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+
+        #logout-button {
+            background-color: #f44336;
+        }
+
+        #logout-button:hover {
+            background-color: #da190b;
+        }
+
+        .message {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        #login-message {
+            color: #f44336;
+        }
+
+        #cadastro-message {
+            color: #4CAF50;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Cadastro</h1>
-        <form id="form-cadastro">
-            <label for="nome">Nome:</label>
-            <input type="text" id="nome" name="nome"><br><br>
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email"><br><br>
-            <label for="senha">Senha:</label>
-            <input type="password" id="senha" name="senha"><br><br>
-            <button id="btn-cadastrar">Cadastrar</button>
-        </form>
-        <div id="mensagem"></div>
+    <div class="container" id="main-container">
+
+        <div id="login-section">
+            <h1>Entrar</h1>
+            <form id="login-form">
+                <label for="email-login">Email:</label>
+                <input type="email" id="email-login" name="email" required>
+                <label for="password-login">Senha:</label>
+                <input type="password" id="password-login" name="password" required>
+                <button type="submit">Entrar</button>
+            </form>
+            <p class="message" id="login-message"></p>
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+            <p style="text-align: center;">Não tem uma conta? <a href="#" id="link-to-signup">Cadastre-se</a></p>
+        </div>
+
+        <div id="cadastro-section">
+            <h1>Cadastro</h1>
+            <form id="cadastro-form">
+                <label for="nome-cadastro">Nome:</label>
+                <input type="text" id="nome-cadastro" name="nome" required>
+                <label for="email-cadastro">Email:</label>
+                <input type="email" id="email-cadastro" name="email" required>
+                <label for="senha-cadastro">Senha:</label>
+                <input type="password" id="senha-cadastro" name="senha" required>
+                <button type="submit">Cadastrar</button>
+            </form>
+            <p class="message" id="cadastro-message"></p>
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+            <p style="text-align: center;">Já tem uma conta? <a href="#" id="link-to-login">Entrar</a></p>
+        </div>
+
+        <div id="user-section" class="user-section">
+            <p id="welcome-message"></p>
+            <button id="logout-button">Sair</button>
+        </div>
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/appwrite@18.2.0"></script>
     <script>
-        const client = new Appwrite.Client();
-        client
-            .setEndpoint('https://nyc.cloud.appwrite.io/v1') // Seu endpoint do Appwrite
-            .setProject('689f3d3a00095fde3112'); // Seu ID do projeto
+        // Configuração do Appwrite (uma única vez)
+        const client = new Appwrite.Client()
+            .setEndpoint('https://nyc.cloud.appwrite.io/v1')
+            .setProject('689f3d3a00095fde3112');
 
         const account = new Appwrite.Account(client);
 
-        document.getElementById('btn-cadastrar').addEventListener('click', async (e) => {
-            e.preventDefault();
+        // Seletores de elementos HTML
+        const loginSection = document.getElementById('login-section');
+        const cadastroSection = document.getElementById('cadastro-section');
+        const userSection = document.getElementById('user-section');
+        
+        const loginForm = document.getElementById('login-form');
+        const cadastroForm = document.getElementById('cadastro-form');
+        
+        const logoutButton = document.getElementById('logout-button');
+        const welcomeMessage = document.getElementById('welcome-message');
+        const loginMessage = document.getElementById('login-message');
+        const cadastroMessage = document.getElementById('cadastro-message');
 
-            const nome = document.getElementById('nome').value;
-            const email = document.getElementById('email').value;
-            const senha = document.getElementById('senha').value;
+        const linkToSignup = document.getElementById('link-to-signup');
+        const linkToLogin = document.getElementById('link-to-login');
+
+        // Função para alternar entre as seções
+        function showSection(sectionId) {
+            loginSection.style.display = 'none';
+            cadastroSection.style.display = 'none';
+            userSection.style.display = 'none';
+            document.getElementById(sectionId).style.display = 'block';
+        }
+
+        // Função para verificar o status de login
+        async function checkAuthStatus() {
+            try {
+                const user = await account.get();
+                welcomeMessage.textContent = `Bem-vindo, ${user.name || user.email}!`;
+                showSection('user-section');
+            } catch (error) {
+                showSection('login-section');
+            }
+        }
+
+        // Evento de submissão do formulário de login
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email-login').value;
+            const password = document.getElementById('password-login').value;
 
             try {
-                const response = await account.create(Appwrite.ID.unique(), email, senha, nome);
-                document.getElementById('mensagem').innerHTML = 'Usuário cadastrado com sucesso!';
+                loginMessage.textContent = '';
+                await account.createEmailPasswordSession(email, password);
+                checkAuthStatus(); // Verifica o status após o login
             } catch (error) {
-                document.getElementById('mensagem').innerHTML = 'Erro ao cadastrar usuário: ' + error.message;
+                loginMessage.textContent = 'Erro no login: ' + error.message;
             }
         });
+
+        // Evento de submissão do formulário de cadastro
+        cadastroForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nome = document.getElementById('nome-cadastro').value;
+            const email = document.getElementById('email-cadastro').value;
+            const senha = document.getElementById('senha-cadastro').value;
+
+            try {
+                cadastroMessage.textContent = '';
+                await account.create(Appwrite.ID.unique(), email, senha, nome);
+                cadastroMessage.textContent = 'Usuário cadastrado com sucesso! Você pode fazer login agora.';
+                // Alterna para a seção de login após o cadastro bem-sucedido
+                setTimeout(() => {
+                    showSection('login-section');
+                    document.getElementById('email-login').value = email;
+                }, 2000); // 2 segundos antes de mudar
+            } catch (error) {
+                cadastroMessage.textContent = 'Erro ao cadastrar usuário: ' + error.message;
+            }
+        });
+
+        // Evento de clique do botão de logout
+        logoutButton.addEventListener('click', async () => {
+            try {
+                await account.deleteSession('current');
+                showSection('login-section');
+            } catch (error) {
+                alert('Falha ao sair: ' + error.message);
+            }
+        });
+
+        // Eventos para alternar entre as seções
+        linkToSignup.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection('cadastro-section');
+        });
+
+        linkToLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection('login-section');
+        });
+
+        // Chama a função para verificar o status de login ao carregar a página
+        window.addEventListener('load', checkAuthStatus);
     </script>
 </body>
 </html>
