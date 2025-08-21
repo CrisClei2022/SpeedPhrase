@@ -161,8 +161,45 @@
         .user-buttons .btnSignup:hover {
             transform: translateY(-2px);
             filter: brightness(1.2);
-        }
-
+        }        
+        
+		/* Estilos para a notificação de alerta */
+		#custom-alert {
+		    position: fixed;
+		    bottom: 20px; /* Posição na parte inferior da tela */
+		    left: 50%;
+		    transform: translateX(-50%);
+		    z-index: 3000; /* Um z-index alto para sobrepor tudo */
+		    background-color: #333;
+		    color: white;
+		    padding: 15px 25px;
+		    border-radius: 10px;
+		    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+		    display: flex;
+		    align-items: center;
+		    gap: 15px; /* Espaço entre a mensagem e o botão */
+		    transition: opacity 0.3s ease-in-out;
+		}
+		
+		#custom-alert.hidden {
+		    opacity: 0;
+		    pointer-events: none; /* Desativa a interação quando está escondido */
+		}
+		
+		/* Estilos para o botão 'X' do alerta */
+		#close-alert-btn {
+		    background: transparent;
+		    border: none;
+		    color: #ff6b6b; /* Uma cor diferente para o botão de fechar */
+		    font-size: 1.2em;
+		    cursor: pointer;
+		    transition: transform 0.3s ease;
+		}
+		
+		#close-alert-btn:hover {
+		    transform: rotate(90deg);
+		}
+		
         main {
             max-width: 1200px;
             margin: 0 auto;
