@@ -61,6 +61,14 @@
         button:hover {
             background-color: #3e8e41;
         }
+        
+        #recover-button {
+            background-color: #f4a261;
+        }
+
+        #recover-button:hover {
+            background-color: #e76f51;
+        }
 
         .user-section {
             display: none;
@@ -68,6 +76,10 @@
         }
         
         #cadastro-section {
+            display: none;
+        }
+        
+        #recover-section {
             display: none;
         }
 
@@ -96,7 +108,7 @@
             color: #f44336;
         }
 
-        #cadastro-message {
+        #cadastro-message, #recover-message {
             color: #4CAF50;
         }
     </style>
@@ -115,7 +127,12 @@
             </form>
             <p class="message" id="login-message"></p>
             <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-            <p style="text-align: center;">Não tem uma conta? <a href="#" id="link-to-signup">Cadastre-se</a></p>
+            <p style="text-align: center;">
+              Não tem uma conta? <a href="#" id="link-to-signup">Cadastre-se</a>
+              <br>
+              <br>
+              Esqueceu sua senha? <a href="#" id="link-to-recover">Recuperar Senha</a>
+            </p>
         </div>
 
         <div id="cadastro-section">
@@ -134,13 +151,27 @@
             <p style="text-align: center;">Já tem uma conta? <a href="#" id="link-to-login">Entrar</a></p>
         </div>
 
+        <div id="recover-section">
+            <h1>Recuperar Senha</h1>
+            <form id="recover-form">
+                <label for="email-recover">Email:</label>
+                <input type="email" id="email-recover" name="email" required>
+                <button type="submit" id="recover-button">Enviar Link de Recuperação</button>
+            </form>
+            <p class="message" id="recover-message"></p>
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+            <p style="text-align: center;">Lembrou da sua senha? <a href="#" id="link-to-login-from-recover">Entrar</a></p>
+            <p style="text-align: center;">
+              Não tem uma conta? <a href="#" id="link-to-signup">Cadastre-se</a></p>
+        </div>
+
         <div id="user-section" class="user-section">
             <p id="welcome-message"></p>
             <button id="logout-button">Sair</button>
         </div>
 
     </div>
-
+    
     <script src="https://cdn.jsdelivr.net/npm/appwrite@18.2.0"></script>
     <script>
         // Configuração do Appwrite (uma única vez)
@@ -153,23 +184,29 @@
         // Seletores de elementos HTML
         const loginSection = document.getElementById('login-section');
         const cadastroSection = document.getElementById('cadastro-section');
+        const recoverSection = document.getElementById('recover-section'); // Nova seção
         const userSection = document.getElementById('user-section');
         
         const loginForm = document.getElementById('login-form');
         const cadastroForm = document.getElementById('cadastro-form');
+        const recoverForm = document.getElementById('recover-form'); // Novo formulário
         
         const logoutButton = document.getElementById('logout-button');
         const welcomeMessage = document.getElementById('welcome-message');
         const loginMessage = document.getElementById('login-message');
         const cadastroMessage = document.getElementById('cadastro-message');
+        const recoverMessage = document.getElementById('recover-message'); // Nova mensagem
 
         const linkToSignup = document.getElementById('link-to-signup');
         const linkToLogin = document.getElementById('link-to-login');
+        const linkToRecover = document.getElementById('link-to-recover'); // Novo link
+        const linkToLoginFromRecover = document.getElementById('link-to-login-from-recover'); // Novo link
 
         // Função para alternar entre as seções
         function showSection(sectionId) {
             loginSection.style.display = 'none';
             cadastroSection.style.display = 'none';
+            recoverSection.style.display = 'none'; // Esconde a nova seção
             userSection.style.display = 'none';
             document.getElementById(sectionId).style.display = 'block';
         }
@@ -220,6 +257,21 @@
                 cadastroMessage.textContent = 'Erro ao cadastrar usuário: ' + error.message;
             }
         });
+        
+        // Evento de submissão do formulário de recuperação de senha
+        recoverForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email-recover').value;
+            
+            try {
+                recoverMessage.textContent = '';
+                const resetUrl = window.location.href.replace('#', '') + '#reset-password';
+                await account.createRecovery(email, resetUrl);
+                recoverMessage.textContent = 'Se um e-mail com este endereço existir, um link de recuperação de senha foi enviado.';
+            } catch (error) {
+                recoverMessage.textContent = 'Erro ao enviar o link de recuperação: ' + error.message;
+            }
+        });
 
         // Evento de clique do botão de logout
         logoutButton.addEventListener('click', async () => {
@@ -238,6 +290,16 @@
         });
 
         linkToLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection('login-section');
+        });
+
+        linkToRecover.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection('recover-section');
+        });
+        
+        linkToLoginFromRecover.addEventListener('click', (e) => {
             e.preventDefault();
             showSection('login-section');
         });
