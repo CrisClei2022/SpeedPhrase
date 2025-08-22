@@ -467,16 +467,17 @@
 		    background-clip: text;
 		    -webkit-background-clip: text;
 		    -webkit-text-fill-color: transparent;
-		    padding: 10px 20px;
+		    padding: 20px 20px;
 		    background-color: rgba(255, 255, 255, 0.1);
-		    border-radius: 10px;
-		    min-width: 80px;
 		    text-align: center;
+		    border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.3);            
+		    backdrop-filter: blur(10px);
 		}
 		
 		.clock-face {
-		    width: 60px;
-		    height: 60px;
+		    min-width: 60px;
+		    min-height: 60px;
 		    border: 3px solid rgba(255, 255, 255, 0.3);
 		    border-radius: 50%;
 		    position: relative;
@@ -514,9 +515,6 @@
 		    color: rgba(255, 255, 255, 0.8);
 		    margin-bottom: 25px;
 		    padding: 10px;
-		    background: rgba(255, 255, 255, 0.05);
-		    border-radius: 10px;
-		    border: 1px solid rgba(255, 255, 255, 0.1);
 		}
 		
 		.video-container {
@@ -719,7 +717,6 @@
 		
 		@media (max-width: 768px) {
 		    .game-info-container {
-		        flex-direction: column;
 		        gap: 20px;
 		    }
 		    
@@ -1063,23 +1060,22 @@
             <button class="mode-button" onclick="startGame()">🚀 Começar Agora</button>
         </section>
         
-        <section id="game-section" class="hidden">        
+        <section id="game-section" class="">        
             <div class="game-info-container">
                 <div class="player-info">
                     <span class="player-label">Jogador 1:</span>
                     <span id="placar1" class="placar">0s</span>
-                    <div id="clock-face1" class="clock-face"></div>
                 </div>
-
+                
+                <div id="clock-face" class="clock-face"></div>
+                
                 <div class="player-info">
                     <span class="player-label">Jogador 2:</span>
                     <span id="placar2" class="placar">0s</span>
-                    <div id="clock-face2" class="clock-face"></div>
                 </div>
             </div>
 
             <h2 id="current-lesson" class="lesson-title">Nome da Lição</h2>
-            <div id="progresso" class="progress">Progresso: 0 de 0</div>
 
             <div class="video-container">
                 <video id="custom-video" controls autoplay></video>
@@ -1098,6 +1094,8 @@
                 <button id="lerFrase" class="btn">Ler Frase</button>
                 <button id="traduzir-btn" class="btn">Traduzir</button>
             </div>
+            
+            <div id="progresso" class="progress">Progresso: 0 de 0</div>
         </section>
     </main>
     
