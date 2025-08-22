@@ -1000,13 +1000,22 @@
             <button class="back-button" onclick="goBack()">← Voltar</button>
             <h2>Escolha o modo de jogo</h2>
             <p>Videoaula selecionada: <span id="selected-video-title"></span></p>
-            <div class="mode-buttons">
-                <button class="mode-button" onclick="selectMode('solo')">🎯 Solo</button>
-                <button class="mode-button" onclick="selectMode('multi')">👥 Multiplayer</button>
-                <button class="mode-button" onclick="selectMode('computer')">🤖 vs Computador</button>
+            <div id="player-mode-buttons" class="mode-buttons">
+                <button class="mode-button" onclick="selectPlayerMode('solo')">🎯 Solo</button>
+                <button class="mode-button" onclick="selectPlayerMode('multi')">👥 Multiplayer</button>
+                <button class="mode-button" onclick="selectPlayerMode('computer')">🤖 vs Computador</button>
+            </div>
+            <br>
+            <br>
+            <div id="time-mode-container" class="hidden">
+                <h2>Tempo ligado ou desligado?</h2>
+                <div id="time-mode-buttons" class="mode-buttons">
+                    <button class="mode-button" onclick="selectTimeMode('study')">📖 Modo de Estudo</button>
+                    <button class="mode-button" onclick="selectTimeMode('challenge')">⏱️ Modo de Desafio</button>
+                </div>
             </div>
         </section>
-        
+                
         <section id="multiplayer-game-mode-selection" class="mode-selection hidden">
             <button class="back-button" onclick="goBackToModeSelection()">← Voltar</button>
             <h2>Escolha o Tipo de Desafio Multiplayer</h2>
@@ -1117,8 +1126,9 @@
     </section>
     
 	<script>
-        let selectedVideo = null;
-let selectedMode = null; // 'solo', 'multi', 'computer'
+let selectedVideo = null;
+let selectedPlayerMode = null; // 'solo', 'multi', 'computer'
+let selectedTimeMode = null; // 'study', 'challenge'
 let selectedMultiplayerGameMode = null; // 'corrida', 'ataque'
 let isLoggedIn = false; // Simula status de login
 let currentSection = 'avulsas';
@@ -1130,13 +1140,15 @@ const btnBuscar = document.getElementById('btnBuscar');
 const avulsasSection = document.getElementById('avulsas-section');
 const trilhaSection = document.getElementById('trilha-section');
 const modeSelection = document.getElementById('mode-selection');
-const multiplayerGameModeSelection = document.getElementById('multiplayer-game-mode-selection'); // Novo ID
-const multiplayerChallengeOptions = document.getElementById('multiplayer-challenge-options'); // Novo ID
+const playerModeButtons = document.getElementById('player-mode-buttons');
+const timeModeContainer = document.getElementById('time-mode-container');
+const multiplayerGameModeSelection = document.getElementById('multiplayer-game-mode-selection');
+const multiplayerChallengeOptions = document.getElementById('multiplayer-challenge-options');
 const friendChallenge = document.getElementById('friend-challenge');
 const gameStatus = document.getElementById('game-status');
 const gameReady = document.getElementById('game-ready');
 const navButtons = document.querySelectorAll('.nav-buttons button');
-const gameSection = document.getElementById('game-section'); // Adiciona a variável para a seção do jogo
+const gameSection = document.getElementById('game-section');
 
 // Dados dos amigos (simulado)
 const friends = [
@@ -1150,7 +1162,6 @@ const friends = [
 document.addEventListener('DOMContentLoaded', () => {
     btnAvulsas.click();
     setupVideoSelection();
-    // Oculta a seção do jogo ao carregar a página
     gameSection.classList.add('hidden');
 });
 
@@ -1195,7 +1206,6 @@ linkToLogin.addEventListener('click', (e) => {
 function showLoginScreen() {
     loginScreen.classList.remove('hidden');
     signupScreen.classList.add('hidden');
-    // Oculta a seção do jogo ao mostrar a tela de login
     gameSection.classList.add('hidden');
 }
 
@@ -1206,7 +1216,6 @@ function closeLoginScreen() {
 function showSignupScreen() {
     loginScreen.classList.add('hidden');
     signupScreen.classList.remove('hidden');
-    // Oculta a seção do jogo ao mostrar a tela de cadastro
     gameSection.classList.add('hidden');
 }
 
@@ -1268,7 +1277,7 @@ function hideAllSections() {
     friendChallenge.classList.add('hidden');
     gameStatus.classList.add('hidden');
     gameReady.classList.add('hidden');
-    gameSection.classList.add('hidden'); // Oculta a seção do jogo
+    gameSection.classList.add('hidden');
 }
 
 function setupVideoSelection() {
@@ -1289,27 +1298,64 @@ function showModeSelection() {
     hideAllSections();
     const videoTitle = document.querySelector('.video-item.selected .video-title').textContent;
     document.getElementById('selected-video-title').textContent = videoTitle;
+    
+    // Reseta as seleções de modo
+    selectedPlayerMode = null;
+    selectedTimeMode = null;
     selectedMultiplayerGameMode = null;
-    document.querySelectorAll('#mode-selection .mode-button').forEach(btn => btn.classList.remove('selected'));
+    document.querySelectorAll('#player-mode-buttons .mode-button').forEach(btn => btn.classList.remove('selected'));
+    document.querySelectorAll('#time-mode-buttons .mode-button').forEach(btn => btn.classList.remove('selected'));
+    timeModeContainer.classList.add('hidden');
+    
     modeSelection.classList.remove('hidden');
 }
 
-function selectMode(mode) {
-    selectedMode = mode;
-    document.querySelectorAll('#mode-selection .mode-button').forEach(btn => {
-        btn.classList.remove('selected');
-    });
-    if (event && event.target) {
-        event.target.classList.add('selected');
-    }
+// Função para selecionar o modo de jogador (Solo, Multi, vs. Computador)
+function selectPlayerMode(mode) {
+    selectedPlayerMode = mode;
+    document.querySelectorAll('#player-mode-buttons .mode-button').forEach(btn => btn.classList.remove('selected'));
+    
+    // Adiciona a classe 'selected' ao botão clicado
+    const clickedButton = event.target;
+    clickedButton.classList.add('selected');
+    
     setTimeout(() => {
-        if (mode === 'solo') {
-            startSoloGame();
+        if (mode === 'solo' || mode === 'computer') {
+            timeModeContainer.classList.remove('hidden');
         } else if (mode === 'multi') {
             showMultiplayerGameModeSelection();
-        } else if (mode === 'computer') {
-            startComputerGame();
         }
+    }, 500);
+}
+
+// Função para selecionar o modo de tempo (Estudo ou Desafio)
+function selectTimeMode(mode) {
+    selectedTimeMode = mode;
+    document.querySelectorAll('#time-mode-buttons .mode-button').forEach(btn => btn.classList.remove('selected'));
+    
+    const clickedButton = event.target;
+    clickedButton.classList.add('selected');
+    
+    setTimeout(() => {
+        let alertMessage = '';
+        if (selectedPlayerMode === 'solo') {
+            alertMessage += '🎯 Modo Solo selecionado.\n\n';
+        } else if (selectedPlayerMode === 'computer') {
+            alertMessage += '🤖 Modo vs. Computador selecionado.\n\n';
+        } else if (selectedPlayerMode === 'multi') {
+            // Se o modo for multiplayer, chame a próxima tela de seleção
+            showMultiplayerGameModeSelection();
+            return; // Interrompe a execução para não iniciar o jogo ainda
+        }
+        
+        if (mode === 'study') {
+            alertMessage += '📖 Modo de Estudo ativado. Jogue sem pressão!';
+        } else {
+            alertMessage += '⏱️ Modo de Desafio ativado. O cronômetro já está correndo!';
+        }
+        alert(alertMessage);
+        
+        showGameSection();
     }, 500);
 }
 
@@ -1423,35 +1469,30 @@ function showGameReady(opponentName) {
     }, 1000);
 }
 
-// Função para exibir a seção do jogo, substituindo o resetToSelection
 function showGameSection() {
     hideAllSections();
     gameSection.classList.remove('hidden');
-    // Adicionar aqui a lógica para iniciar o jogo (carregar o vídeo, a legenda, etc.)
-    // Opcionalmente, pode-se chamar uma função `loadLesson(lessonIndex)` com o índice correto.
     console.log("Iniciando jogo na seção game-section...");
-}
-
-function startSoloGame() {
-    alert('🎯 Iniciando modo Solo!\n\nVocê jogará sozinho contra o tempo!');
-    showGameSection();
-}
-
-function startComputerGame() {
-    alert('🤖 Iniciando partida contra o Computador!\n\nPrepare-se para o desafio!');
-    showGameSection();
 }
 
 function startGame() {
     let gameModeText = '';
-    if (selectedMode === 'solo') gameModeText = 'Solo';
-    else if (selectedMode === 'computer') gameModeText = 'vs Computador';
-    else if (selectedMode === 'multi' && selectedMultiplayerGameMode === 'corrida') gameModeText = 'Multiplayer - Corrida de Frases';
-    else if (selectedMode === 'multi' && selectedMultiplayerGameMode === 'ataque') gameModeText = 'Multiplayer - Ataque de Palavras';
+    if (selectedPlayerMode === 'solo' && selectedTimeMode === 'study') {
+        gameModeText = 'Solo - Modo de Estudo';
+    } else if (selectedPlayerMode === 'solo' && selectedTimeMode === 'challenge') {
+        gameModeText = 'Solo - Modo de Desafio';
+    } else if (selectedPlayerMode === 'computer' && selectedTimeMode === 'study') {
+        gameModeText = 'vs Computador - Modo de Estudo';
+    } else if (selectedPlayerMode === 'computer' && selectedTimeMode === 'challenge') {
+        gameModeText = 'vs Computador - Modo de Desafio';
+    } else if (selectedPlayerMode === 'multi' && selectedMultiplayerGameMode === 'corrida') {
+        gameModeText = 'Multiplayer - Corrida de Frases';
+    } else if (selectedPlayerMode === 'multi' && selectedMultiplayerGameMode === 'ataque') {
+        gameModeText = 'Multiplayer - Ataque de Palavras';
+    }
 
     alert(`🚀 Iniciando partida de "${document.querySelector('.video-item.selected .video-title').textContent}" no modo ${gameModeText}!\n\nBoa sorte!`);
 
-    // Chama a nova função para exibir a seção do jogo
     showGameSection();
 }
 
@@ -1461,7 +1502,8 @@ function cancelGame() {
 
 function resetToSelection() {
     selectedVideo = null;
-    selectedMode = null;
+    selectedPlayerMode = null;
+    selectedTimeMode = null;
     selectedMultiplayerGameMode = null;
     document.querySelectorAll('.video-item').forEach(item => {
         item.classList.remove('selected');
