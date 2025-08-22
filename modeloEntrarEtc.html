@@ -3,178 +3,237 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login e Cadastro com Appwrite</title>
+    <title>Login e Cadastro</title>
     <style>
+        /* CSS remains the same as your original code */
+        /* --- General Body Styles --- */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0a0a0a;
+            color: #fff;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            margin: 0;
+            overflow: hidden;
         }
 
-        .container {
-            width: 350px;
+        /* --- Login Screen Container Styles --- */
+        .login-screen-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            opacity: 1;
+            transition: opacity 0.5s ease;
+            z-index: 2000;
+        }
+
+        .login-screen-container.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* --- Login Card Styles --- */
+        .login-card {
+            background: #1a1a2e;
+            border-radius: 15px;
             padding: 30px;
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            transition: opacity 0.5s ease-in-out;
-        }
-
-        h1 {
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             text-align: center;
-            color: #333;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: scale(1);
+            animation: loginCardAppear 0.3s ease-out;
         }
 
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #555;
+        @keyframes loginCardAppear {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
 
-        input[type="email"], input[type="password"], input[type="text"] {
-            width: 100%;
-            height: 40px;
-            margin-bottom: 20px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            box-sizing: border-box;
-        }
-
-        button {
-            width: 100%;
-            height: 45px;
-            background-color: #4CAF50;
-            color: #fff;
-            font-size: 16px;
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
             border: none;
-            border-radius: 5px;
+            color: #fff;
+            font-size: 1.5em;
             cursor: pointer;
-            transition: background-color 0.3s;
-            margin-top: 10px;
+            transition: transform 0.3s ease;
         }
 
-        button:hover {
-            background-color: #3e8e41;
+        .close-button:hover {
+            transform: rotate(90deg);
+        }
+
+        .login-card h2 {
+            font-size: 2em;
+            margin-bottom: 25px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .login-card input {
+            width: 90%;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .login-card input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .login-card input:focus {
+            outline: none;
+            border-color: #4ecdc4;
+            box-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
+        }
+
+        .login-button {
+            width: 50%;
+            padding: 15px;
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            border: none;
+            border-radius: 8px;
+            color: #0a0a0a;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(69, 183, 209, 0.4);
+        }
+
+        .login-card p {
+            font-size: 0.9em;
+            margin-top: 15px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .login-card a {
+            color: #4ecdc4;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .login-card a:hover {
+            color: #ff6b6b;
+            text-decoration: underline;
         }
         
-        #recover-button {
-            background-color: #f4a261;
-        }
-
-        #recover-button:hover {
-            background-color: #e76f51;
-        }
-
+        /* New CSS for user section */
         .user-section {
             display: none;
             text-align: center;
         }
-        
-        #cadastro-section {
-            display: none;
-        }
-        
-        #recover-section {
-            display: none;
-        }
-
-        #welcome-message {
-            font-size: 18px;
-            font-weight: bold;
-            color: #4CAF50;
-            margin-bottom: 20px;
-        }
-
-        #logout-button {
-            background-color: #f44336;
-        }
-
-        #logout-button:hover {
-            background-color: #da190b;
-        }
-
-        .message {
+        .user-card {
+            background: #1a1a2e;
+            border-radius: 15px;
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             text-align: center;
-            margin-top: 15px;
-            font-weight: bold;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-
-        #login-message {
-            color: #f44336;
-        }
-
-        #cadastro-message, #recover-message {
-            color: #4CAF50;
+        #welcome-message {
+            font-size: 1.5em;
+            margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
-    <div class="container" id="main-container">
 
-        <div id="login-section">
-            <h1>Entrar</h1>
+    <main>
+        <h1>Bem-vindo!</h1>
+        <p>Esta é a sua página principal. Clique para abrir a tela de login.</p>
+        <button id="open-login-button" style="padding: 10px 20px; font-size: 16px;">Abrir Login</button>
+    </main>
+
+    <section id="login-screen" class="login-screen-container hidden">
+        <div class="login-card">
+            <button class="close-button" id="btnCloseLogin">✕</button>
+            <h2>Entrar</h2>
             <form id="login-form">
-                <label for="email-login">Email:</label>
-                <input type="email" id="email-login" name="email" required>
-                <label for="password-login">Senha:</label>
-                <input type="password" id="password-login" name="password" required>
-                <button type="submit">Entrar</button>
+                <input type="email" id="email-login" placeholder="E-mail" required>
+                <input type="password" id="password-login" placeholder="Senha" required>
+                <p id="login-message"></p>
+                <button type="submit" class="login-button">Entrar</button>
             </form>
-            <p class="message" id="login-message"></p>
-            <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-            <p style="text-align: center;">
-              Não tem uma conta? <a href="#" id="link-to-signup">Cadastre-se</a>
-              <br>
-              <br>
-              Esqueceu sua senha? <a href="#" id="link-to-recover">Recuperar Senha</a>
-            </p>
+            <p>Esqueceu a senha? <a href="#" id="link-to-recover">Recuperar</a></p>
+            <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.1); margin: 20px 0;">
+            <p>Não tem uma conta? <a href="#" id="link-to-signup">Cadastre-se</a></p>
         </div>
+    </section>
 
-        <div id="cadastro-section">
-            <h1>Cadastro</h1>
-            <form id="cadastro-form">
-                <label for="nome-cadastro">Nome:</label>
-                <input type="text" id="nome-cadastro" name="nome" required>
-                <label for="email-cadastro">Email:</label>
-                <input type="email" id="email-cadastro" name="email" required>
-                <label for="senha-cadastro">Senha:</label>
-                <input type="password" id="senha-cadastro" name="senha" required>
-                <button type="submit">Cadastrar</button>
+    <section id="signup-screen" class="login-screen-container hidden">
+        <div class="login-card">
+            <button class="close-button" id="btnCloseSignup">✕</button>
+            <h2>Cadastre-se</h2>
+            <form id="signup-form">
+                <input type="text" id="nome-signup" placeholder="Nome" required>
+                <input type="email" id="email-signup" placeholder="E-mail" required>
+                <input type="password" id="senha-signup" placeholder="Senha" required>
+                <p id="signup-message"></p>
+                <button type="submit" class="login-button">Cadastrar</button>
             </form>
-            <p class="message" id="cadastro-message"></p>
-            <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-            <p style="text-align: center;">Já tem uma conta? <a href="#" id="link-to-login">Entrar</a></p>
+            <p>Já tem uma conta? <a href="#" id="link-to-login">Entrar</a></p>
         </div>
+    </section>
 
-        <div id="recover-section">
-            <h1>Recuperar Senha</h1>
+    <section id="recover-screen" class="login-screen-container hidden">
+        <div class="login-card">
+            <button class="close-button" id="btnCloseRecover">✕</button>
+            <h2>Recuperar Senha</h2>
             <form id="recover-form">
-                <label for="email-recover">Email:</label>
-                <input type="email" id="email-recover" name="email" required>
-                <button type="submit" id="recover-button">Enviar Link de Recuperação</button>
+                <input type="email" id="email-recover" placeholder="E-mail" required>
+                <p id="recover-message"></p>
+                <button type="submit" class="login-button">Enviar</button>
             </form>
-            <p class="message" id="recover-message"></p>
-            <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-            <p style="text-align: center;">Lembrou da sua senha? <a href="#" id="link-to-login-from-recover">Entrar</a></p>
-            <p style="text-align: center;">
-              Não tem uma conta? <a href="#" id="link-to-signup">Cadastre-se</a></p>
+            <p>Lembrou da sua senha? <a href="#" id="link-to-login-from-recover">Entrar</a></p>
+            <p>Não tem uma conta? <a href="#" id="link-to-signup-from-recover">Cadastre-se</a></p>
         </div>
-
-        <div id="user-section" class="user-section">
-            <p id="welcome-message"></p>
-            <button id="logout-button">Sair</button>
-        </div>
-
-    </div>
+    </section>
     
+    <section id="user-screen" class="login-screen-container hidden">
+        <div class="login-card user-card">
+            <h2 id="welcome-message"></h2>
+            <button id="logout-button" class="login-button">Sair</button>
+        </div>
+    </section>
+
     <script src="https://cdn.jsdelivr.net/npm/appwrite@18.2.0"></script>
     <script>
-        // Configuração do Appwrite (uma única vez)
+        // Configuração do Appwrite
         const client = new Appwrite.Client()
             .setEndpoint('https://nyc.cloud.appwrite.io/v1')
             .setProject('689f3d3a00095fde3112');
@@ -182,33 +241,52 @@
         const account = new Appwrite.Account(client);
 
         // Seletores de elementos HTML
-        const loginSection = document.getElementById('login-section');
-        const cadastroSection = document.getElementById('cadastro-section');
-        const recoverSection = document.getElementById('recover-section'); // Nova seção
-        const userSection = document.getElementById('user-section');
-        
+        const mainSection = document.querySelector('main');
+        const loginScreen = document.getElementById('login-screen');
+        const signupScreen = document.getElementById('signup-screen');
+        const recoverScreen = document.getElementById('recover-screen');
+        const userScreen = document.getElementById('user-screen');
+
+        const openLoginButton = document.getElementById('open-login-button');
+        const btnCloseLogin = document.getElementById('btnCloseLogin');
+        const btnCloseSignup = document.getElementById('btnCloseSignup');
+        const btnCloseRecover = document.getElementById('btnCloseRecover');
+
         const loginForm = document.getElementById('login-form');
-        const cadastroForm = document.getElementById('cadastro-form');
-        const recoverForm = document.getElementById('recover-form'); // Novo formulário
-        
+        const signupForm = document.getElementById('signup-form');
+        const recoverForm = document.getElementById('recover-form');
         const logoutButton = document.getElementById('logout-button');
+
         const welcomeMessage = document.getElementById('welcome-message');
         const loginMessage = document.getElementById('login-message');
-        const cadastroMessage = document.getElementById('cadastro-message');
-        const recoverMessage = document.getElementById('recover-message'); // Nova mensagem
+        const signupMessage = document.getElementById('signup-message');
+        const recoverMessage = document.getElementById('recover-message');
 
         const linkToSignup = document.getElementById('link-to-signup');
         const linkToLogin = document.getElementById('link-to-login');
-        const linkToRecover = document.getElementById('link-to-recover'); // Novo link
-        const linkToLoginFromRecover = document.getElementById('link-to-login-from-recover'); // Novo link
+        const linkToRecover = document.getElementById('link-to-recover');
+        const linkToLoginFromRecover = document.getElementById('link-to-login-from-recover');
+        const linkToSignupFromRecover = document.getElementById('link-to-signup-from-recover');
 
-        // Função para alternar entre as seções
-        function showSection(sectionId) {
-            loginSection.style.display = 'none';
-            cadastroSection.style.display = 'none';
-            recoverSection.style.display = 'none'; // Esconde a nova seção
-            userSection.style.display = 'none';
-            document.getElementById(sectionId).style.display = 'block';
+        // Função para mostrar uma seção específica
+        function showSection(section) {
+            loginScreen.classList.add('hidden');
+            signupScreen.classList.add('hidden');
+            recoverScreen.classList.add('hidden');
+            userScreen.classList.add('hidden');
+            mainSection.classList.add('hidden');
+
+            if (section === 'main') {
+                mainSection.classList.remove('hidden');
+            } else if (section === 'login') {
+                loginScreen.classList.remove('hidden');
+            } else if (section === 'signup') {
+                signupScreen.classList.remove('hidden');
+            } else if (section === 'recover') {
+                recoverScreen.classList.remove('hidden');
+            } else if (section === 'user') {
+                userScreen.classList.remove('hidden');
+            }
         }
 
         // Função para verificar o status de login
@@ -216,60 +294,89 @@
             try {
                 const user = await account.get();
                 welcomeMessage.textContent = `Bem-vindo, ${user.name || user.email}!`;
-                showSection('user-section');
+                showSection('user');
             } catch (error) {
-                showSection('login-section');
+                showSection('main');
             }
         }
+
+        // Eventos para abrir e fechar as modais
+        openLoginButton.addEventListener('click', () => {
+            showSection('login');
+        });
+        btnCloseLogin.addEventListener('click', () => {
+            showSection('main');
+        });
+        btnCloseSignup.addEventListener('click', () => {
+            showSection('main');
+        });
+        btnCloseRecover.addEventListener('click', () => {
+            showSection('main');
+        });
+
+        // Eventos para alternar entre as telas de login, cadastro e recuperação
+        linkToSignup.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection('signup');
+        });
+        linkToLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection('login');
+        });
+        linkToRecover.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection('recover');
+        });
+        linkToLoginFromRecover.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection('login');
+        });
+        linkToSignupFromRecover.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection('signup');
+        });
 
         // Evento de submissão do formulário de login
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email-login').value;
             const password = document.getElementById('password-login').value;
-
+            loginMessage.textContent = '';
             try {
-                loginMessage.textContent = '';
                 await account.createEmailPasswordSession(email, password);
-                checkAuthStatus(); // Verifica o status após o login
+                checkAuthStatus();
             } catch (error) {
                 loginMessage.textContent = 'Erro no login: ' + error.message;
             }
         });
 
         // Evento de submissão do formulário de cadastro
-        cadastroForm.addEventListener('submit', async (e) => {
+        signupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const nome = document.getElementById('nome-cadastro').value;
-            const email = document.getElementById('email-cadastro').value;
-            const senha = document.getElementById('senha-cadastro').value;
-
+            const nome = document.getElementById('nome-signup').value;
+            const email = document.getElementById('email-signup').value;
+            const senha = document.getElementById('senha-signup').value;
+            signupMessage.textContent = '';
             try {
-                cadastroMessage.textContent = '';
                 await account.create(Appwrite.ID.unique(), email, senha, nome);
-                cadastroMessage.textContent = 'Usuário cadastrado com sucesso! Você pode fazer login agora.';
-                // Alterna para a seção de login após o cadastro bem-sucedido
-                setTimeout(() => {
-                    showSection('login-section');
-                    document.getElementById('email-login').value = email;
-                }, 2000); // 2 segundos antes de mudar
+                signupMessage.textContent = 'Usuário cadastrado com sucesso! Você pode fazer login agora.';
+                setTimeout(() => showSection('login'), 2000);
             } catch (error) {
-                cadastroMessage.textContent = 'Erro ao cadastrar usuário: ' + error.message;
+                signupMessage.textContent = 'Erro ao cadastrar: ' + error.message;
             }
         });
-        
-        // Evento de submissão do formulário de recuperação de senha
+
+        // Evento de submissão do formulário de recuperação
         recoverForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email-recover').value;
-            
+            recoverMessage.textContent = '';
             try {
-                recoverMessage.textContent = '';
-                const resetUrl = window.location.href.replace('#', '') + '#reset-password';
+                const resetUrl = window.location.href.split('#')[0] + '#reset-password';
                 await account.createRecovery(email, resetUrl);
-                recoverMessage.textContent = 'Se um e-mail com este endereço existir, um link de recuperação de senha foi enviado.';
+                recoverMessage.textContent = 'Se o e-mail existir, um link de recuperação foi enviado.';
             } catch (error) {
-                recoverMessage.textContent = 'Erro ao enviar o link de recuperação: ' + error.message;
+                recoverMessage.textContent = 'Erro ao enviar o link: ' + error.message;
             }
         });
 
@@ -277,31 +384,10 @@
         logoutButton.addEventListener('click', async () => {
             try {
                 await account.deleteSession('current');
-                showSection('login-section');
+                checkAuthStatus(); // Redireciona para a tela inicial
             } catch (error) {
                 alert('Falha ao sair: ' + error.message);
             }
-        });
-
-        // Eventos para alternar entre as seções
-        linkToSignup.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSection('cadastro-section');
-        });
-
-        linkToLogin.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSection('login-section');
-        });
-
-        linkToRecover.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSection('recover-section');
-        });
-        
-        linkToLoginFromRecover.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSection('login-section');
         });
 
         // Chama a função para verificar o status de login ao carregar a página
