@@ -1319,6 +1319,8 @@ function selectPlayerMode(mode) {
     const clickedButton = event.target;
     clickedButton.classList.add('selected');
     
+    timeModeContainer.classList.add('hidden');
+    
     setTimeout(() => {
         if (mode === 'solo' || mode === 'computer') {
             timeModeContainer.classList.remove('hidden');
@@ -1342,10 +1344,6 @@ function selectTimeMode(mode) {
             alertMessage += '🎯 Modo Solo selecionado.\n\n';
         } else if (selectedPlayerMode === 'computer') {
             alertMessage += '🤖 Modo vs. Computador selecionado.\n\n';
-        } else if (selectedPlayerMode === 'multi') {
-            // Se o modo for multiplayer, chame a próxima tela de seleção
-            showMultiplayerGameModeSelection();
-            return; // Interrompe a execução para não iniciar o jogo ainda
         }
         
         if (mode === 'study') {
