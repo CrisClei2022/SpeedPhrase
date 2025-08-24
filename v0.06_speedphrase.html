@@ -1,0 +1,1736 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpeedPhrase</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@17.0.0"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        header {
+            backdrop-filter: blur(20px);
+            background: rgba(10, 10, 10, 0.8);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 20px;
+		    align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header-title {
+            font-weight: 700;
+            font-size: 1.4em;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: titleGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            from { filter: drop-shadow(0 0 5px rgba(255, 107, 107, 0.3)); }
+            to { filter: drop-shadow(0 0 20px rgba(69, 183, 209, 0.5)); }
+        }
+
+        .nav-buttons {
+            display: flex;
+		    align-items: center;  
+            gap: 10px;
+        }
+
+        .nav-buttons button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-buttons button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .nav-buttons button:hover::before {
+            left: 100%;
+        }
+
+        .nav-buttons button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(69, 183, 209, 0.3);
+        }
+
+        .nav-buttons button.active {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border-color: transparent;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+        
+        /* Estilos para div de Entrar e Cadastrar */
+        .user-buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+        }
+
+        .user-buttons div {
+            font-size: 0.9em;
+            font-weight: 500;
+            color: #ffffff;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .user-buttons div:hover {
+            color: #4ecdc4;
+        }
+
+        .user-buttons .btnSignup {
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 600;
+        }
+
+        .user-buttons .btnSignup:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.2);
+        }        
+        
+		/* Estilos para a notificação de alerta */
+		#custom-alert {
+		    position: fixed;
+		    bottom: 20px; /* Posição na parte inferior da tela */
+		    left: 50%;
+		    transform: translateX(-50%);
+		    z-index: 3000; /* Um z-index alto para sobrepor tudo */
+		    background-color: #333;
+		    color: white;
+		    padding: 15px 25px;
+		    border-radius: 10px;
+		    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+		    display: flex;
+		    align-items: center;
+		    gap: 15px; /* Espaço entre a mensagem e o botão */
+		    transition: opacity 0.3s ease-in-out;
+		}
+		
+		#custom-alert.hidden {
+		    opacity: 0;
+		    pointer-events: none; /* Desativa a interação quando está escondido */
+		}
+		
+		/* Estilos para o botão 'X' do alerta */
+		#close-alert-btn {
+		    background: transparent;
+		    border: none;
+		    color: #ff6b6b; /* Uma cor diferente para o botão de fechar */
+		    font-size: 1.2em;
+		    cursor: pointer;
+		    transition: transform 0.3s ease;
+		}
+		
+		#close-alert-btn:hover {
+		    transform: rotate(90deg);
+		}
+		
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /*Video Grid*/
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            width: 100%;
+        }
+
+        .video-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            text-align: center;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .video-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(69, 183, 209, 0.4);
+            border-color: rgba(69, 183, 209, 0.5);
+        }
+
+        .video-item h2 {
+            font-size: 1.4em;
+            color: #ffffff;
+            margin-bottom: 15px;
+            font-weight: 600;
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        video {
+            width: 100%;
+            border-radius: 8px;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+        .video-item:hover video {
+            transform: scale(1.02);
+        }
+
+        @media (max-width: 768px) {
+            .video-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .play-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        .play-icon::before {
+            content: '▶';
+            color: #000;
+            font-size: 20px;
+            margin-left: 3px;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .mode-selection {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .mode-selection h2 {
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .mode-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .mode-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            padding: 15px 30px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            min-width: 120px;
+        }
+
+        .mode-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(69, 183, 209, 0.3);
+            border-color: rgba(69, 183, 209, 0.5);
+        }
+
+        .mode-button.selected {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border-color: transparent;
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.4);
+        }
+
+        .game-status {
+            text-align: center;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .game-status h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid #4ecdc4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .friend-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .friend-item {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .friend-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(69, 183, 209, 0.3);
+            border-color: rgba(69, 183, 209, 0.5);
+        }
+
+        .back-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+		
+        /* --- Estilos da Game Section --- */
+		#game-section {
+		    background: rgba(255, 255, 255, 0.05);
+		    border-radius: 20px;
+		    padding: 30px;
+		    margin: 20px 0;
+		    backdrop-filter: blur(15px);
+		    border: 1px solid rgba(255, 255, 255, 0.1);
+		}
+		
+		.game-info-container {
+		    display: flex;
+		    justify-content: space-between;
+		    align-items: center;           
+		    text-align: center;
+		    margin-bottom: 25px;
+		    padding: 20px;
+		    background: rgba(255, 255, 255, 0.03);
+		    border-radius: 15px;
+		    border: 1px solid rgba(255, 255, 255, 0.1);
+		}
+		
+		.player-info {
+		    display: flex;
+		    flex-direction: column;
+		    align-items: center;
+		    gap: 10px;
+		}
+		
+		.player-label {
+		    font-size: 1.1em;
+		    font-weight: 600;
+		    color: #ffffff;
+		    margin-bottom: 5px;
+		}
+		
+		.placar {
+		    font-size: 1.8em;
+		    font-weight: 700;
+		    background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+		    background-clip: text;
+		    -webkit-background-clip: text;
+		    -webkit-text-fill-color: transparent;
+		    padding: 20px 20px;
+		    background-color: rgba(255, 255, 255, 0.1);
+		}
+		
+		.clock-face {
+		    min-width: 60px;
+		    min-height: 60px;
+		    border: 3px solid rgba(255, 255, 255, 0.3);
+		    border-radius: 50%;
+		    position: relative;
+		    background: rgba(255, 255, 255, 0.1);
+		    backdrop-filter: blur(10px);
+		}
+		
+		.clock-face::before {
+		    content: '';
+		    position: absolute;
+		    top: 50%;
+		    left: 50%;
+		    width: 2px;
+		    height: 20px;
+		    background: #4ecdc4;
+		    transform-origin: bottom;
+		    transform: translate(-50%, -100%) rotate(0deg);
+		    transition: transform 0.3s ease;
+		}
+		
+		.lesson-title {
+		    font-size: 2em;
+		    text-align: center;
+		    margin-bottom: 15px;
+		    background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+		    background-clip: text;
+		    -webkit-background-clip: text;
+		    -webkit-text-fill-color: transparent;
+		    font-weight: 700;
+		}
+		
+		.progress {
+		    text-align: center;
+		    font-size: 1.1em;
+		    color: rgba(255, 255, 255, 0.8);
+		    margin-bottom: 25px;
+		    padding: 10px;
+		}
+		
+		.video-container {
+		    margin-bottom: 30px;
+		    border-radius: 15px;
+		    overflow: hidden;
+		    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+		}
+		
+		#custom-video {
+		    width: 100%;
+		    height: auto;
+		    min-height: 300px;
+		    background: #000;
+		    border-radius: 15px;
+		}
+		
+		#game-container {
+		    background: rgba(255, 255, 255, 0.05);
+		    border-radius: 15px;
+		    padding: 25px;
+		    margin: 20px 0;
+		    border: 1px solid rgba(255, 255, 255, 0.1);
+		}
+		
+		.frase-display {
+		    font-size: 1.4em;
+		    line-height: 1.6;
+		    margin-bottom: 25px;
+		    padding: 20px;
+		    background: rgba(255, 255, 255, 0.1);
+		    border-radius: 10px;
+		    border: 2px solid rgba(255, 255, 255, 0.2);
+		    text-align: center;
+		    min-height: 80px;
+		    display: flex;
+		    align-items: center;
+		    justify-content: center;
+		    backdrop-filter: blur(10px);
+		}
+		
+		.subtitle-content {
+		    font-size: 1.1em;
+		    color: rgba(255, 255, 255, 0.8);
+		    text-align: center;
+		    margin-bottom: 20px;
+		    padding: 15px;
+		    background: rgba(255, 255, 255, 0.03);
+		    border-radius: 8px;
+		    border-left: 3px solid #4ecdc4;
+		}
+		
+		.word-selection {
+		    display: flex;
+		    flex-wrap: wrap;
+		    gap: 12px;
+		    justify-content: center;
+		    margin-bottom: 25px;
+		}
+		
+		.word-option {
+		    background: rgba(255, 255, 255, 0.1);
+		    border: 2px solid rgba(255, 255, 255, 0.2);
+		    color: #ffffff;
+		    padding: 12px 20px;
+		    border-radius: 25px;
+		    cursor: pointer;
+		    font-size: 1em;
+		    font-weight: 500;
+		    transition: all 0.3s ease;
+		    backdrop-filter: blur(10px);
+		    position: relative;
+		    overflow: hidden;
+		}
+		
+		.word-option::before {
+		    content: '';
+		    position: absolute;
+		    top: 0;
+		    left: -100%;
+		    width: 100%;
+		    height: 100%;
+		    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+		    transition: left 0.5s;
+		}
+		
+		.word-option:hover::before {
+		    left: 100%;
+		}
+		
+		.word-option:hover {
+		    transform: translateY(-3px) scale(1.05);
+		    box-shadow: 0 8px 20px rgba(69, 183, 209, 0.3);
+		    border-color: rgba(69, 183, 209, 0.5);
+		}
+		
+		.word-option.correct {
+		    background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+		    border-color: #4ecdc4;
+		    color: #0a0a0a;
+		    font-weight: 600;
+		    animation: correctPulse 0.6s ease-out;
+		}
+		
+		.word-option.incorrect {
+		    background: linear-gradient(45deg, #ff6b6b, #ff4757);
+		    border-color: #ff6b6b;
+		    animation: incorrectShake 0.6s ease-out;
+		}
+		
+		.word-option.used {
+		    opacity: 0.3;
+		    cursor: not-allowed;
+		    transform: scale(0.9);
+		}
+		
+		@keyframes correctPulse {
+		    0% { transform: scale(1); }
+		    50% { transform: scale(1.1); }
+		    100% { transform: scale(1); }
+		}
+		
+		@keyframes incorrectShake {
+		    0%, 100% { transform: translateX(0); }
+		    25% { transform: translateX(-5px); }
+		    75% { transform: translateX(5px); }
+		}
+		
+		.action-buttons {
+		    display: flex;
+		    justify-content: center;
+		    gap: 15px;
+		    flex-wrap: wrap;
+		    margin-top: 25px;
+		}
+		
+		.btn {
+		    background: rgba(255, 255, 255, 0.1);
+		    border: 1px solid rgba(255, 255, 255, 0.2);
+		    color: #ffffff;
+		    padding: 12px 25px;
+		    border-radius: 25px;
+		    cursor: pointer;
+		    font-weight: 600;
+		    font-size: 0.95em;
+		    transition: all 0.3s ease;
+		    backdrop-filter: blur(10px);
+		    position: relative;
+		    overflow: hidden;
+		}
+		
+		.btn::before {
+		    content: '';
+		    position: absolute;
+		    top: 0;
+		    left: -100%;
+		    width: 100%;
+		    height: 100%;
+		    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+		    transition: left 0.5s;
+		}
+		
+		.btn:hover::before {
+		    left: 100%;
+		}
+		
+		.btn:hover {
+		    transform: translateY(-2px);
+		    box-shadow: 0 8px 20px rgba(69, 183, 209, 0.3);
+		    border-color: rgba(69, 183, 209, 0.5);
+		}
+		
+		.btn:active {
+		    transform: translateY(0);
+		}
+		
+		#desistir:hover {
+		    background: linear-gradient(45deg, #ff6b6b, #ff4757);
+		    border-color: #ff6b6b;
+		    box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
+		}
+		
+		#repetir:hover {
+		    background: linear-gradient(45deg, #ffa726, #ff9800);
+		    border-color: #ffa726;
+		    box-shadow: 0 8px 20px rgba(255, 167, 38, 0.3);
+		}
+		
+		#lerFrase:hover {
+		    background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+		    border-color: #4ecdc4;
+		    box-shadow: 0 8px 20px rgba(78, 205, 196, 0.3);
+		}
+		
+		#traduzir-btn:hover {
+		    background: linear-gradient(45deg, #9c88ff, #8c7ae6);
+		    border-color: #9c88ff;
+		    box-shadow: 0 8px 20px rgba(156, 136, 255, 0.3);
+		}
+		
+		@media (max-width: 768px) {
+		    .game-info-container {
+		        gap: 20px;
+		    }
+		    
+		    .frase-display {
+		        font-size: 1.2em;
+		        padding: 15px;
+		    }
+		    
+		    .word-selection {
+		        gap: 8px;
+		    }
+		    
+		    .word-option {
+		        padding: 10px 16px;
+		        font-size: 0.9em;
+		    }
+		    
+		    .action-buttons {
+		        gap: 10px;
+		    }
+		    
+		    .btn {
+		        padding: 10px 20px;
+		        font-size: 0.9em;
+		    }
+		    
+		    #custom-video {
+		        min-height: 200px;
+		    }
+		}
+
+        /* --- Login Screen Container Styles --- */
+        .login-screen-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            opacity: 1;
+            transition: opacity 0.5s ease;
+            z-index: 2000;
+        }
+
+        .login-screen-container.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* --- Login Card Styles --- */
+        .login-card {
+            background: #1a1a2e;
+            border-radius: 15px;
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: scale(1);
+            animation: loginCardAppear 0.3s ease-out;
+        }
+
+        @keyframes loginCardAppear {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .close-button:hover {
+            transform: rotate(90deg);
+        }
+
+        .login-card h2 {
+            font-size: 2em;
+            margin-bottom: 25px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .login-card input {
+            width: 90%;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .login-card input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .login-card input:focus {
+            outline: none;
+            border-color: #4ecdc4;
+            box-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
+        }
+
+        .login-button {
+            width: 50%;
+            padding: 15px;
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            border: none;
+            border-radius: 8px;
+            color: #0a0a0a;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(69, 183, 209, 0.4);
+        }
+
+        .login-card p {
+            font-size: 0.9em;
+            margin-top: 15px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .login-card a {
+            color: #4ecdc4;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .login-card a:hover {
+            color: #ff6b6b;
+            text-decoration: underline;
+        }
+        
+        /* New CSS for user section */
+        .user-section {
+            display: none;
+            text-align: center;
+        }
+        .user-card {
+            background: #1a1a2e;
+            border-radius: 15px;
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        #welcome-message {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {              
+            .video-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 15px;
+            }
+            
+            .mode-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .nav-buttons {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 5px;
+                justify-content: center;
+            }
+            
+            .nav-buttons button {
+                padding: 8px 16px;
+                font-size: 0.8em;
+            }
+        }
+        
+       /* Estilos para a notificação de alerta */
+		#custom-alert {
+		    position: fixed;
+		    bottom: 20px; /* Posição na parte inferior da tela */
+		    left: 50%;
+		    transform: translateX(-50%);
+		    z-index: 3000; /* Um z-index alto para sobrepor tudo */
+		    background-color: #333;
+		    color: white;
+		    padding: 15px 25px;
+		    border-radius: 10px;
+		    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+		    display: flex;
+		    align-items: center;
+		    gap: 15px; /* Espaço entre a mensagem e o botão */
+		    transition: opacity 0.3s ease-in-out;
+		}
+		
+		#custom-alert.hidden {
+		    opacity: 0;
+		    pointer-events: none; /* Desativa a interação quando está escondido */
+		}
+		
+		/* Estilos para o botão 'X' do alerta */
+		#close-alert-btn {
+		    background: transparent;
+		    border: none;
+		    color: #ff6b6b; /* Uma cor diferente para o botão de fechar */
+		    font-size: 1.2em;
+		    cursor: pointer;
+		    transition: transform 0.3s ease;
+		}
+		
+		#close-alert-btn:hover {
+		    transform: rotate(90deg);
+		}
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="header-title">🎮 SpeedPhrase</div>
+            <div class="nav-buttons">
+                <button id="btnBuscar">🔍 Buscar</button>
+                <button id="btnAvulsas" class="active">📹 Avulsas</button>
+                <button id="btnTrilha">🛤️ Trilha</button>
+            </div>
+            <div class="user-buttons">
+                <div id="btnLogin" class="btnLogin">Entrar</div>
+                <div id="btnSignup" class="btnSignup">Cadastrar</div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+		<div id="custom-alert" class="hidden">
+		  <span id="alert-message"></span>
+		  <button id="close-alert-btn" class="close-btn">✕</button>
+		</div>
+		
+        <section id="avulsas-section" class="video-grid">
+            <div id="videoGrid" class="video-grid"></div>
+        </section>
+        
+        <section id="trilha-section" class="video-grid hidden">
+            <div class="video-item" data-video="trilha-1">
+                <img src="https://images.unsplash.com/photo-1509228468518-180dd4864904?w=300&h=300&fit=crop" alt="Trilha ENEM - Matemática">
+                <div class="video-overlay">
+                    <div class="play-icon"></div>
+                    <div class="video-title">Trilha ENEM - Matemática</div>
+                </div>
+            </div>
+            <div class="video-item" data-video="trilha-2">
+                <img src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=300&h=300&fit=crop" alt="Trilha Vestibular - Ciências">
+                <div class="video-overlay">
+                    <div class="play-icon"></div>
+                    <div class="video-title">Trilha Vestibular - Ciências</div>
+                </div>
+            </div>
+            <div class="video-item" data-video="trilha-3">
+                <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=300&h=300&fit=crop" alt="Trilha Fundamental - Português">
+                <div class="video-overlay">
+                    <div class="play-icon"></div>
+                    <div class="video-title">Trilha Fundamental - Português</div>
+                </div>
+            </div>
+            <div class="video-item" data-video="trilha-4">
+                <img src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=300&h=300&fit=crop" alt="Trilha Avançada - Cálculo">
+                <div class="video-overlay">
+                    <div class="play-icon"></div>
+                    <div class="video-title">Trilha Avançada - Cálculo</div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="mode-selection" class="mode-selection hidden">
+            <button class="back-button" onclick="goBack()">← Voltar</button>
+            <h2>Escolha o modo de jogo</h2>
+            <p>Videoaula selecionada: <span id="selected-video-title"></span></p>
+            <div id="player-mode-buttons" class="mode-buttons">
+                <button class="mode-button" onclick="selectPlayerMode('solo')">🎯 Solo</button>
+                <button class="mode-button" onclick="selectPlayerMode('multi')">👥 Multiplayer</button>
+                <button class="mode-button" onclick="selectPlayerMode('computer')">🤖 vs Computador</button>
+            </div>
+            <br>
+            <br>
+            <div id="time-mode-container" class="hidden">
+                <h2>Tempo ligado ou desligado?</h2>
+                <div id="time-mode-buttons" class="mode-buttons">
+                    <button class="mode-button" onclick="selectTimeMode('study')">📖 Modo de Estudo</button>
+                    <button class="mode-button" onclick="selectTimeMode('challenge')">⏱️ Modo de Desafio</button>
+                </div>
+            </div>
+        </section>
+                
+        <section id="multiplayer-game-mode-selection" class="mode-selection hidden">
+            <button class="back-button" onclick="goBackToModeSelection()">← Voltar</button>
+            <h2>Escolha o Tipo de Desafio Multiplayer</h2>
+            <p>Videoaula selecionada: <span id="selected-video-title-multiplayer"></span></p>
+            <div class="mode-buttons">
+                <button class="mode-button" onclick="selectMultiplayerGameMode('corrida')">🏎️ Corrida de Frases</button>
+                <button class="mode-button" onclick="selectMultiplayerGameMode('ataque')">💥 Ataque de Palavras</button>
+            </div>
+        </section>
+        
+        <section id="multiplayer-challenge-options" class="mode-selection hidden">
+            <button class="back-button" onclick="goBackToMultiplayerGameModeSelection()">← Voltar</button>
+            <h2>Como você quer jogar?</h2>
+            <p>Modo de Jogo: <span id="selected-multiplayer-game-mode-title"></span></p>
+            <div class="mode-buttons">
+                <button class="mode-button" onclick="challengeFriend()">⚔️ Desafiar Amigo</button>
+                <button class="mode-button" onclick="waitForOpponent()">⏳ Aguardar Oponente</button>
+            </div>
+        </section>
+        
+        <section id="friend-challenge" class="mode-selection hidden">
+            <button class="back-button" onclick="goBackToMultiplayerChallengeOptions()">← Voltar</button>
+            <h2>Desafiar Amigo</h2>
+            <div id="login-prompt" class="hidden">
+                <p>Você precisa estar logado para desafiar amigos!</p>
+                <button class="mode-button" onclick="login()">🔐 Fazer Login</button>
+            </div>
+            <div id="friend-list-container" class="hidden">
+                <p>Selecione um amigo para desafiar:</p>
+                <div class="friend-list" id="friend-list"></div>
+            </div>
+        </section>
+        
+        <section id="game-status" class="game-status hidden">
+            <h2 id="status-title">Aguardando...</h2>
+            <div class="loading-spinner"></div>
+            <p id="status-message">Procurando oponente...</p>
+            <button class="mode-button" onclick="cancelGame()" style="margin-top: 20px;">❌ Cancelar</button>
+        </section>
+        
+        <section id="game-ready" class="game-status hidden">
+            <h2>🎮 Partida Encontrada!</h2>
+            <p>Oponente: <span id="opponent-name"></span></p>
+            <p>A partida começará em <span id="countdown">3</span> segundos...</p>
+            <button class="mode-button" onclick="startGame()">🚀 Começar Agora</button>
+        </section>
+        
+        <section id="game-section" class="">        
+            <div class="game-info-container">
+                <div class="player-info">
+                    <span class="player-label">Jogador 1:</span>
+                    <span id="placar1" class="placar">0s</span>
+                </div>
+                
+                <div id="clock-face" class="clock-face"></div>
+                
+                <div class="player-info">
+                    <span class="player-label">Jogador 2:</span>
+                    <span id="placar2" class="placar">0s</span>
+                </div>
+            </div>
+
+            <h2 id="current-lesson" class="lesson-title">Nome da Lição</h2>
+
+            <div class="video-item">
+                <video id="custom-video" controls autoplay></video>
+            </div>
+
+            <div id="game-container">
+                <div id="frase" class="frase-display"></div>
+                <div id="subtitle-content" class="subtitle-content hidden"></div>
+
+                <div id="palavras" class="word-selection"></div>
+            </div>
+
+            <div class="action-buttons">
+                <button id="desistir" class="btn">Desistir</button>
+                <button id="repetir" class="btn">Repetir</button>
+                <button id="lerFrase" class="btn">Ler Frase</button>
+                <button id="traduzir-btn" class="btn">Traduzir</button>
+            </div>
+            
+            <div id="progresso" class="progress">Progresso: 0 de 0</div>
+        </section>
+    </main>
+    
+    <section id="login-screen" class="login-screen-container hidden">
+        <div class="login-card">
+            <button class="close-button" id="btnCloseLogin">✕</button>
+            <h2>Entrar</h2>
+            <form id="login-form">
+                <input type="email" id="email-login" placeholder="E-mail" required>
+                <input type="password" id="password-login" placeholder="Senha" required>
+                <p id="login-message"></p>
+                <button type="submit" class="login-button">Entrar</button>
+            </form>
+            <p>Esqueceu a senha? <a href="#" id="link-to-recover">Recuperar</a></p>
+            <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.1); margin: 20px 0;">
+            <p>Não tem uma conta? <a href="#" id="link-to-signup">Cadastre-se</a></p>
+        </div>
+    </section>
+
+    <section id="signup-screen" class="login-screen-container hidden">
+        <div class="login-card">
+            <button class="close-button" id="btnCloseSignup">✕</button>
+            <h2>Cadastre-se</h2>
+            <form id="signup-form">
+                <input type="text" id="nome-signup" placeholder="Nome" required>
+                <input type="email" id="email-signup" placeholder="E-mail" required>
+                <input type="password" id="senha-signup" placeholder="Senha" required>
+                <p id="signup-message"></p>
+                <button type="submit" class="login-button">Cadastrar</button>
+            </form>
+            <p>Já tem uma conta? <a href="#" id="link-to-login">Entrar</a></p>
+        </div>
+    </section>
+
+    <section id="recover-screen" class="login-screen-container hidden">
+        <div class="login-card">
+            <button class="close-button" id="btnCloseRecover">✕</button>
+            <h2>Recuperar Senha</h2>
+            <form id="recover-form">
+                <input type="email" id="email-recover" placeholder="E-mail" required>
+                <p id="recover-message"></p>
+                <button type="submit" class="login-button">Enviar</button>
+            </form>
+            <p>Lembrou da sua senha? <a href="#" id="link-to-login-from-recover">Entrar</a></p>
+            <p>Não tem uma conta? <a href="#" id="link-to-signup-from-recover">Cadastre-se</a></p>
+        </div>
+    </section>
+    
+    <section id="user-screen" class="login-screen-container hidden">
+        <div class="login-card user-card">
+            <h2 id="welcome-message"></h2>
+            <button id="logout-button" class="login-button">Sair</button>
+        </div>
+    </section>
+    
+	<script>
+// Inicialização
+document.addEventListener('DOMContentLoaded', () => {
+    btnAvulsas.click();
+    setupVideoSelection();
+    gameSection.classList.add('hidden');
+});
+
+//=============================
+// Bloco Avulsas
+//=============================
+
+        const lessons = [
+            {
+                name: "Chapter 1. Welcome & Nationalities",
+                srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
+                videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
+            },
+            {
+                name: "Chapter 2. Welcome & Nationalities",
+                srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
+                videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
+            },
+            {
+                name: "Chapter 3. Welcome & Nationalities",
+                srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
+                videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
+            },
+            {
+                name: "Chapter 4. Welcome & Nationalities",
+                srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
+                videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
+            }
+        ];
+
+        const avulsasSection = document.getElementById('avulsas-section');
+
+        lessons.forEach(lesson => {
+            const container = document.createElement('div');
+            container.className = 'video-item';
+
+            const title = document.createElement('h2');
+            title.textContent = lesson.name;
+            
+            const video = document.createElement('video');
+            video.src = lesson.videoUrl;
+            video.preload = 'metadata'; // Carrega metadados sem o vídeo completo
+            video.controls = false; // Oculta todos os controles padrão do vídeo
+
+            container.appendChild(title);
+            container.appendChild(video);
+            avulsasSection.appendChild(container);
+        });
+
+//=============================
+// Bloco Sem Nome
+//=============================
+let selectedVideo = null;
+let selectedPlayerMode = null; // 'solo', 'multi', 'computer'
+let selectedTimeMode = null; // 'study', 'challenge'
+let selectedMultiplayerGameMode = null; // 'corrida', 'ataque'
+let isLoggedIn = false; // Simula status de login
+let currentSection = 'avulsas';
+
+// Elementos
+const btnTrilha = document.getElementById('btnTrilha');
+const btnBuscar = document.getElementById('btnBuscar');
+const trilhaSection = document.getElementById('trilha-section');
+const modeSelection = document.getElementById('mode-selection');
+const playerModeButtons = document.getElementById('player-mode-buttons');
+const timeModeContainer = document.getElementById('time-mode-container');
+const multiplayerGameModeSelection = document.getElementById('multiplayer-game-mode-selection');
+const multiplayerChallengeOptions = document.getElementById('multiplayer-challenge-options');
+const friendChallenge = document.getElementById('friend-challenge');
+const gameStatus = document.getElementById('game-status');
+const gameReady = document.getElementById('game-ready');
+const navButtons = document.querySelectorAll('.nav-buttons button');
+const gameSection = document.getElementById('game-section');
+
+// Dados dos amigos (simulado)
+const friends = [
+    { id: 1, name: 'João Silva', avatar: '👨‍🎓' },
+    { id: 2, name: 'Maria Santos', avatar: '👩‍🎓' },
+    { id: 3, name: 'Pedro Costa', avatar: '👨‍💻' },
+    { id: 4, name: 'Ana Oliveira', avatar: '👩‍🔬' }
+];
+
+// A função de alerta deve estar aqui, antes das funções que a chamam
+function showAlert(message) {
+    const customAlert = document.getElementById('custom-alert');
+    const alertMessage = document.getElementById('alert-message');
+
+    alertMessage.textContent = message;
+    customAlert.classList.remove('hidden');
+}
+
+// O event listener do botão de fechar
+document.getElementById('close-alert-btn').addEventListener('click', () => {
+    document.getElementById('custom-alert').classList.add('hidden');
+});
+
+// Configuração do Appwrite
+    const client = new Appwrite.Client()
+        .setEndpoint('https://nyc.cloud.appwrite.io/v1')
+        .setProject('689f3d3a00095fde3112');
+
+    const account = new Appwrite.Account(client);
+
+    // Seletores de elementos HTML (TODOS JUNTOS AQUI)
+    const loginScreen = document.getElementById('login-screen');
+    const signupScreen = document.getElementById('signup-screen');
+    const recoverScreen = document.getElementById('recover-screen');
+    const userScreen = document.getElementById('user-screen');
+
+    const btnLoginHeader = document.getElementById('btnLogin');
+    const btnSignupHeader = document.getElementById('btnSignup');
+    
+    const btnCloseLogin = document.getElementById('btnCloseLogin');
+    const btnCloseSignup = document.getElementById('btnCloseSignup');
+    const btnCloseRecover = document.getElementById('btnCloseRecover');
+
+    const loginForm = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-form');
+    const recoverForm = document.getElementById('recover-form');
+    const logoutButton = document.getElementById('logout-button');
+
+    const welcomeMessage = document.getElementById('welcome-message');
+    const loginMessage = document.getElementById('login-message');
+    const signupMessage = document.getElementById('signup-message');
+    const recoverMessage = document.getElementById('recover-message');
+
+    const linkToSignup = document.getElementById('link-to-signup');
+    const linkToLogin = document.getElementById('link-to-login');
+    const linkToRecover = document.getElementById('link-to-recover');
+    const linkToLoginFromRecover = document.getElementById('link-to-login-from-recover');
+    const linkToSignupFromRecover = document.getElementById('link-to-signup-from-recover');
+
+    // Função para mostrar uma seção específica
+    function showSection(section) {
+        // Esconde todas as seções primeiro
+        loginScreen.classList.add('hidden');
+        signupScreen.classList.add('hidden');
+        recoverScreen.classList.add('hidden');
+        userScreen.classList.add('hidden');
+    
+        // Apenas mostra a seção correta
+        if (section === 'login') {
+            loginScreen.classList.remove('hidden');
+        } else if (section === 'signup') {
+            signupScreen.classList.remove('hidden');
+        } else if (section === 'recover') {
+            recoverScreen.classList.remove('hidden');
+        } else if (section === 'user') {
+            userScreen.classList.remove('hidden');
+        }
+    }
+
+    // Função para verificar o status de login
+    async function checkAuthStatus() {
+        try {
+            const user = await account.get();
+            welcomeMessage.textContent = `Bem-vindo, ${user.name || user.email}!`;
+            showSection('user');
+        } catch (error) {
+            showSection('main');
+        }
+    }
+    
+    // Eventos para abrir as modais a partir do cabeçalho
+    btnLoginHeader.addEventListener('click', () => {
+        showSection('login');
+    });
+    btnSignupHeader.addEventListener('click', () => {
+        showSection('signup');
+    });
+
+    btnCloseLogin.addEventListener('click', () => {
+        loginScreen.classList.add('hidden');
+    });
+    btnCloseSignup.addEventListener('click', () => {
+        signupScreen.classList.add('hidden');
+    });
+    btnCloseRecover.addEventListener('click', () => {
+        recoverScreen.classList.add('hidden');
+    });
+
+    // Eventos para alternar entre as telas de login, cadastro e recuperação
+    linkToSignup.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('signup');
+    });
+    linkToLogin.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('login');
+    });
+    linkToRecover.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('recover');
+    });
+    linkToLoginFromRecover.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('login');
+    });
+    linkToSignupFromRecover.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('signup');
+    });
+
+    // Evento de submissão do formulário de login
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email-login').value;
+        const password = document.getElementById('password-login').value;
+        loginMessage.textContent = '';
+        try {
+            await account.createEmailPasswordSession(email, password);
+            checkAuthStatus();
+        } catch (error) {
+            loginMessage.textContent = 'Erro no login: ' + error.message;
+        }
+    });
+
+    // Evento de submissão do formulário de cadastro
+    signupForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const nome = document.getElementById('nome-signup').value;
+        const email = document.getElementById('email-signup').value;
+        const senha = document.getElementById('senha-signup').value;
+        signupMessage.textContent = '';
+        try {
+            await account.create(Appwrite.ID.unique(), email, senha, nome);
+            signupMessage.textContent = 'Usuário cadastrado com sucesso! Você pode fazer login agora.';
+            setTimeout(() => showSection('login'), 2000);
+        } catch (error) {
+            signupMessage.textContent = 'Erro ao cadastrar: ' + error.message;
+        }
+    });
+
+    // Evento de submissão do formulário de recuperação
+    recoverForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email-recover').value;
+        recoverMessage.textContent = '';
+        try {
+            const resetUrl = window.location.href.split('#')[0] + '#reset-password';
+            await account.createRecovery(email, resetUrl);
+            recoverMessage.textContent = 'Se o e-mail existir, um link de recuperação foi enviado.';
+        } catch (error) {
+            recoverMessage.textContent = 'Erro ao enviar o link: ' + error.message;
+        }
+    });
+
+    // Evento de clique do botão de logout
+    logoutButton.addEventListener('click', async () => {
+        try {
+            await account.deleteSession('current');
+            checkAuthStatus(); // Redireciona para a tela inicial
+        } catch (error) {
+            alert('Falha ao sair: ' + error.message);
+        }
+    });
+
+    // Chama a função para verificar o status de login ao carregar a página
+    window.addEventListener('load', checkAuthStatus);
+// Funções Primárias de Navegação
+function deactivateAllButtons() {
+    navButtons.forEach(button => {
+        button.classList.remove('active');
+    });
+}
+
+function hideAllSections() {
+    avulsasSection.classList.add('hidden');
+    trilhaSection.classList.add('hidden');
+    modeSelection.classList.add('hidden');
+    multiplayerGameModeSelection.classList.add('hidden');
+    multiplayerChallengeOptions.classList.add('hidden');
+    friendChallenge.classList.add('hidden');
+    gameStatus.classList.add('hidden');
+    gameReady.classList.add('hidden');
+    gameSection.classList.add('hidden');
+}
+
+function setupVideoSelection() {
+    const videoItems = document.querySelectorAll('.video-item');
+    videoItems.forEach(item => {
+        item.addEventListener('click', () => {
+            videoItems.forEach(v => v.classList.remove('selected'));
+            item.classList.add('selected');
+            selectedVideo = item.dataset.video;
+            setTimeout(() => {
+                showModeSelection();
+            }, 500);
+        });
+    });
+}
+
+function showModeSelection() {
+    hideAllSections();
+    const videoTitle = document.querySelector('.video-item.selected .video-title').textContent;
+    document.getElementById('selected-video-title').textContent = videoTitle;
+    
+    // Reseta as seleções de modo
+    selectedPlayerMode = null;
+    selectedTimeMode = null;
+    selectedMultiplayerGameMode = null;
+    document.querySelectorAll('#player-mode-buttons .mode-button').forEach(btn => btn.classList.remove('selected'));
+    document.querySelectorAll('#time-mode-buttons .mode-button').forEach(btn => btn.classList.remove('selected'));
+    timeModeContainer.classList.add('hidden');
+    
+    modeSelection.classList.remove('hidden');
+}
+
+// Função para selecionar o modo de jogador (Solo, Multi, vs. Computador)
+function selectPlayerMode(mode) {
+    selectedPlayerMode = mode;
+    document.querySelectorAll('#player-mode-buttons .mode-button').forEach(btn => btn.classList.remove('selected'));
+    
+    // Adiciona a classe 'selected' ao botão clicado
+    const clickedButton = event.target;
+    clickedButton.classList.add('selected');
+    
+    timeModeContainer.classList.add('hidden');
+    
+    setTimeout(() => {
+        if (mode === 'solo' || mode === 'computer') {
+            timeModeContainer.classList.remove('hidden');
+        } else if (mode === 'multi') {
+            showMultiplayerGameModeSelection();
+        }
+    }, 500);
+}
+
+// Função para selecionar o modo de tempo (Estudo ou Desafio)
+function selectTimeMode(mode) {
+    selectedTimeMode = mode;
+    document.querySelectorAll('#time-mode-buttons .mode-button').forEach(btn => btn.classList.remove('selected'));
+    
+    const clickedButton = event.target;
+    clickedButton.classList.add('selected');
+    
+    setTimeout(() => {
+        let alertMessage = '';
+        if (selectedPlayerMode === 'solo') {
+            alertMessage += '🎯 Modo Solo selecionado.\n\n';
+        } else if (selectedPlayerMode === 'computer') {
+            alertMessage += '🤖 Modo vs. Computador selecionado.\n\n';
+        }
+        
+        if (mode === 'study') {
+            alertMessage += '📖 Modo de Estudo ativado. Jogue sem pressão!';
+        } else {
+            alertMessage += '⏱️ Modo de Desafio ativado. O cronômetro já está correndo!';
+        }
+        showAlert(alertMessage);
+        
+        showGameSection();
+    }, 500);
+}
+
+function showMultiplayerGameModeSelection() {
+    hideAllSections();
+    const videoTitle = document.querySelector('.video-item.selected .video-title').textContent;
+    document.getElementById('selected-video-title-multiplayer').textContent = videoTitle;
+    document.querySelectorAll('#multiplayer-game-mode-selection .mode-button').forEach(btn => btn.classList.remove('selected'));
+    multiplayerGameModeSelection.classList.remove('hidden');
+}
+
+function selectMultiplayerGameMode(gameMode) {
+    selectedMultiplayerGameMode = gameMode;
+    document.querySelectorAll('#multiplayer-game-mode-selection .mode-button').forEach(btn => {
+        btn.classList.remove('selected');
+    });
+    if (event && event.target) {
+        event.target.classList.add('selected');
+    }
+    setTimeout(() => {
+        showMultiplayerChallengeOptions();
+    }, 500);
+}
+
+function showMultiplayerChallengeOptions() {
+    hideAllSections();
+    const gameModeTitleElement = document.getElementById('selected-multiplayer-game-mode-title');
+    if (selectedMultiplayerGameMode === 'corrida') {
+        gameModeTitleElement.textContent = 'Corrida de Frases';
+    } else if (selectedMultiplayerGameMode === 'ataque') {
+        gameModeTitleElement.textContent = 'Ataque de Palavras';
+    }
+    multiplayerChallengeOptions.classList.remove('hidden');
+}
+
+function challengeFriend() {
+    hideAllSections();
+    friendChallenge.classList.remove('hidden');
+    if (!isLoggedIn) {
+        document.getElementById('login-prompt').classList.remove('hidden');
+        document.getElementById('friend-list-container').classList.add('hidden');
+    } else {
+        document.getElementById('login-prompt').classList.add('hidden');
+        document.getElementById('friend-list-container').classList.remove('hidden');
+        loadFriendList();
+    }
+}
+
+function loginPrompt() {
+    isLoggedIn = true;
+    document.getElementById('login-prompt').classList.add('hidden');
+    document.getElementById('friend-list-container').classList.remove('hidden');
+    loadFriendList();
+}
+
+function loadFriendList() {
+    const friendList = document.getElementById('friend-list');
+    friendList.innerHTML = '';
+    friends.forEach(friend => {
+        const friendItem = document.createElement('div');
+        friendItem.className = 'friend-item';
+        friendItem.innerHTML = `
+            <div style="font-size: 2em; margin-bottom: 10px;">${friend.avatar}</div>
+            <div>${friend.name}</div>
+        `;
+        friendItem.addEventListener('click', () => challengeSpecificFriend(friend));
+        friendList.appendChild(friendItem);
+    });
+}
+
+function challengeSpecificFriend(friend) {
+    showGameStatus('Desafio enviado!', `Aguardando ${friend.name} aceitar o desafio...`);
+    setTimeout(() => {
+        if (Math.random() > 0.3) {
+            showGameReady(friend.name);
+        } else {
+            showGameStatus('Desafio recusado', `${friend.name} recusou o desafio. Tente novamente!`);
+        }
+    }, 3000);
+}
+
+function waitForOpponent() {
+    showGameStatus('Buscando oponente...', 'Aguarde enquanto procuramos um oponente para você!');
+    setTimeout(() => {
+        const randomOpponent = `Jogador${Math.floor(Math.random() * 1000)}`;
+        showGameReady(randomOpponent);
+    }, 2000 + Math.random() * 3000);
+}
+
+function showGameStatus(title, message) {
+    hideAllSections();
+    document.getElementById('status-title').textContent = title;
+    document.getElementById('status-message').textContent = message;
+    gameStatus.classList.remove('hidden');
+}
+
+function showGameReady(opponentName) {
+    hideAllSections();
+    document.getElementById('opponent-name').textContent = opponentName;
+    gameReady.classList.remove('hidden');
+    let countdown = 3;
+    const countdownElement = document.getElementById('countdown');
+    countdownElement.textContent = countdown;
+    const countdownInterval = setInterval(() => {
+        countdown--;
+        countdownElement.textContent = countdown;
+        if (countdown <= 0) {
+            clearInterval(countdownInterval);
+            startGame();
+        }
+    }, 1000);
+}
+
+function showGameSection() {
+    hideAllSections();
+    gameSection.classList.remove('hidden');
+    console.log("Iniciando jogo na seção game-section...");
+}
+
+function startGame() {
+    let gameModeText = '';
+    if (selectedPlayerMode === 'solo' && selectedTimeMode === 'study') {
+        gameModeText = 'Solo - Modo de Estudo';
+    } else if (selectedPlayerMode === 'solo' && selectedTimeMode === 'challenge') {
+        gameModeText = 'Solo - Modo de Desafio';
+    } else if (selectedPlayerMode === 'computer' && selectedTimeMode === 'study') {
+        gameModeText = 'vs Computador - Modo de Estudo';
+    } else if (selectedPlayerMode === 'computer' && selectedTimeMode === 'challenge') {
+        gameModeText = 'vs Computador - Modo de Desafio';
+    } else if (selectedPlayerMode === 'multi' && selectedMultiplayerGameMode === 'corrida') {
+        gameModeText = 'Multiplayer - Corrida de Frases';
+    } else if (selectedPlayerMode === 'multi' && selectedMultiplayerGameMode === 'ataque') {
+        gameModeText = 'Multiplayer - Ataque de Palavras';
+    }
+
+    showAlert(`🚀 Iniciando partida de "${document.querySelector('.video-item.selected .video-title').textContent}" no modo ${gameModeText}!\n\nBoa sorte!`);
+
+    showGameSection();
+}
+
+function cancelGame() {
+    resetToSelection();
+}
+
+function resetToSelection() {
+    selectedVideo = null;
+    selectedPlayerMode = null;
+    selectedTimeMode = null;
+    selectedMultiplayerGameMode = null;
+    document.querySelectorAll('.video-item').forEach(item => {
+        item.classList.remove('selected');
+    });
+    document.querySelectorAll('.mode-button').forEach(btn => {
+        btn.classList.remove('selected');
+    });
+    if (currentSection === 'avulsas') {
+        btnAvulsas.click();
+    } else {
+        btnTrilha.click();
+    }
+}
+
+// Funções de "Voltar"
+function goBack() {
+    if (currentSection === 'avulsas') {
+        btnAvulsas.click();
+    } else {
+        btnTrilha.click();
+    }
+}
+
+function goBackToModeSelection() {
+    showModeSelection();
+}
+
+function goBackToMultiplayerGameModeSelection() {
+    showMultiplayerGameModeSelection();
+}
+
+function goBackToMultiplayerChallengeOptions() {
+    showMultiplayerChallengeOptions();
+}
+
+// Navegação principal
+btnAvulsas.addEventListener('click', () => {
+    currentSection = 'avulsas';
+    deactivateAllButtons();
+    btnAvulsas.classList.add('active');
+    hideAllSections();
+    avulsasSection.classList.remove('hidden');
+    loginScreen.classList.add('hidden');
+    signupScreen.classList.add('hidden');
+});
+
+btnTrilha.addEventListener('click', () => {
+    currentSection = 'trilha';
+    deactivateAllButtons();
+    btnTrilha.classList.add('active');
+    hideAllSections();
+    trilhaSection.classList.remove('hidden');
+    loginScreen.classList.add('hidden');
+    signupScreen.classList.add('hidden');
+});
+
+btnBuscar.addEventListener('click', () => {
+    deactivateAllButtons();
+    btnBuscar.classList.add('active');
+    hideAllSections();
+    const searchTerm = prompt('🔍 Digite o termo de busca:');
+    if (searchTerm) {
+        alert(`Buscando por: "${searchTerm}"\n\nFuncionalidade em desenvolvimento!`);
+    }
+    if (currentSection === 'avulsas') {
+        btnAvulsas.click();
+    } else {
+        btnTrilha.click();
+    }
+});
+	</script>
+  </body>
+</html>
