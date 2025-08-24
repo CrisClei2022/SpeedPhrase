@@ -20,6 +20,122 @@
             overflow: hidden;
         }
 
+        header {
+            backdrop-filter: blur(20px);
+            background: rgba(10, 10, 10, 0.8);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 20px;
+		    align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header-title {
+            font-weight: 700;
+            font-size: 1.4em;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: titleGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            from { filter: drop-shadow(0 0 5px rgba(255, 107, 107, 0.3)); }
+            to { filter: drop-shadow(0 0 20px rgba(69, 183, 209, 0.5)); }
+        }
+
+        .nav-buttons {
+            display: flex;
+		    align-items: center;  
+            gap: 10px;
+        }
+
+        .nav-buttons button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-buttons button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .nav-buttons button:hover::before {
+            left: 100%;
+        }
+
+        .nav-buttons button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(69, 183, 209, 0.3);
+        }
+
+        .nav-buttons button.active {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border-color: transparent;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+        
+        /* Estilos para div de Entrar e Cadastrar */
+        .user-buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+        }
+
+        .user-buttons div {
+            font-size: 0.9em;
+            font-weight: 500;
+            color: #ffffff;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .user-buttons div:hover {
+            color: #4ecdc4;
+        }
+
+        .user-buttons .btnSignup {
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 600;
+        }
+
+        .user-buttons .btnSignup:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.2);
+        }        
+
         /* --- Login Screen Container Styles --- */
         .login-screen-container {
             position: fixed;
@@ -172,12 +288,20 @@
     </style>
 </head>
 <body>
-
-    <main>
-        <h1>Bem-vindo!</h1>
-        <p>Esta é a sua página principal. Clique para abrir a tela de login.</p>
-        <button id="open-login-button" style="padding: 10px 20px; font-size: 16px;">Abrir Login</button>
-    </main>
+    <header>
+        <div class="header-content">
+            <div class="header-title">🎮 Explorar Videoaulas</div>
+            <div class="nav-buttons">
+                <button id="btnBuscar">🔍 Buscar</button>
+                <button id="btnAvulsas" class="active">📹 Avulsas</button>
+                <button id="btnTrilha">🛤️ Trilha</button>
+            </div>
+            <div class="user-buttons">
+                <div id="btnLogin" class="btnLogin">Entrar</div>
+                <div id="btnSignup" class="btnSignup">Cadastrar</div>
+            </div>
+        </div>
+    </header>
 
     <section id="login-screen" class="login-screen-container hidden">
         <div class="login-card">
@@ -232,166 +356,171 @@
     </section>
 
     <script src="https://cdn.jsdelivr.net/npm/appwrite@18.2.0"></script>
-    <script>
-        // Configuração do Appwrite
-        const client = new Appwrite.Client()
-            .setEndpoint('https://nyc.cloud.appwrite.io/v1')
-            .setProject('689f3d3a00095fde3112');
+<script>
+    // Configuração do Appwrite
+    const client = new Appwrite.Client()
+        .setEndpoint('https://nyc.cloud.appwrite.io/v1')
+        .setProject('689f3d3a00095fde3112');
 
-        const account = new Appwrite.Account(client);
+    const account = new Appwrite.Account(client);
 
-        // Seletores de elementos HTML
-        const mainSection = document.querySelector('main');
-        const loginScreen = document.getElementById('login-screen');
-        const signupScreen = document.getElementById('signup-screen');
-        const recoverScreen = document.getElementById('recover-screen');
-        const userScreen = document.getElementById('user-screen');
+    // Seletores de elementos HTML (TODOS JUNTOS AQUI)
+    const loginScreen = document.getElementById('login-screen');
+    const signupScreen = document.getElementById('signup-screen');
+    const recoverScreen = document.getElementById('recover-screen');
+    const userScreen = document.getElementById('user-screen');
 
-        const openLoginButton = document.getElementById('open-login-button');
-        const btnCloseLogin = document.getElementById('btnCloseLogin');
-        const btnCloseSignup = document.getElementById('btnCloseSignup');
-        const btnCloseRecover = document.getElementById('btnCloseRecover');
+    const btnLoginHeader = document.getElementById('btnLogin');
+    const btnSignupHeader = document.getElementById('btnSignup');
+    
+    const btnCloseLogin = document.getElementById('btnCloseLogin');
+    const btnCloseSignup = document.getElementById('btnCloseSignup');
+    const btnCloseRecover = document.getElementById('btnCloseRecover');
 
-        const loginForm = document.getElementById('login-form');
-        const signupForm = document.getElementById('signup-form');
-        const recoverForm = document.getElementById('recover-form');
-        const logoutButton = document.getElementById('logout-button');
+    const loginForm = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-form');
+    const recoverForm = document.getElementById('recover-form');
+    const logoutButton = document.getElementById('logout-button');
 
-        const welcomeMessage = document.getElementById('welcome-message');
-        const loginMessage = document.getElementById('login-message');
-        const signupMessage = document.getElementById('signup-message');
-        const recoverMessage = document.getElementById('recover-message');
+    const welcomeMessage = document.getElementById('welcome-message');
+    const loginMessage = document.getElementById('login-message');
+    const signupMessage = document.getElementById('signup-message');
+    const recoverMessage = document.getElementById('recover-message');
 
-        const linkToSignup = document.getElementById('link-to-signup');
-        const linkToLogin = document.getElementById('link-to-login');
-        const linkToRecover = document.getElementById('link-to-recover');
-        const linkToLoginFromRecover = document.getElementById('link-to-login-from-recover');
-        const linkToSignupFromRecover = document.getElementById('link-to-signup-from-recover');
+    const linkToSignup = document.getElementById('link-to-signup');
+    const linkToLogin = document.getElementById('link-to-login');
+    const linkToRecover = document.getElementById('link-to-recover');
+    const linkToLoginFromRecover = document.getElementById('link-to-login-from-recover');
+    const linkToSignupFromRecover = document.getElementById('link-to-signup-from-recover');
 
-        // Função para mostrar uma seção específica
-        function showSection(section) {
-            loginScreen.classList.add('hidden');
-            signupScreen.classList.add('hidden');
-            recoverScreen.classList.add('hidden');
-            userScreen.classList.add('hidden');
-            mainSection.classList.add('hidden');
-
-            if (section === 'main') {
-                mainSection.classList.remove('hidden');
-            } else if (section === 'login') {
-                loginScreen.classList.remove('hidden');
-            } else if (section === 'signup') {
-                signupScreen.classList.remove('hidden');
-            } else if (section === 'recover') {
-                recoverScreen.classList.remove('hidden');
-            } else if (section === 'user') {
-                userScreen.classList.remove('hidden');
-            }
+    // Função para mostrar uma seção específica
+    function showSection(section) {
+        // Esconde todas as seções primeiro
+        loginScreen.classList.add('hidden');
+        signupScreen.classList.add('hidden');
+        recoverScreen.classList.add('hidden');
+        userScreen.classList.add('hidden');
+    
+        // Apenas mostra a seção correta
+        if (section === 'login') {
+            loginScreen.classList.remove('hidden');
+        } else if (section === 'signup') {
+            signupScreen.classList.remove('hidden');
+        } else if (section === 'recover') {
+            recoverScreen.classList.remove('hidden');
+        } else if (section === 'user') {
+            userScreen.classList.remove('hidden');
         }
+    }
 
-        // Função para verificar o status de login
-        async function checkAuthStatus() {
-            try {
-                const user = await account.get();
-                welcomeMessage.textContent = `Bem-vindo, ${user.name || user.email}!`;
-                showSection('user');
-            } catch (error) {
-                showSection('main');
-            }
+    // Função para verificar o status de login
+    async function checkAuthStatus() {
+        try {
+            const user = await account.get();
+            welcomeMessage.textContent = `Bem-vindo, ${user.name || user.email}!`;
+            showSection('user');
+        } catch (error) {
+            showSection('main');
         }
+    }
+    
+    // Eventos para abrir as modais a partir do cabeçalho
+    btnLoginHeader.addEventListener('click', () => {
+        showSection('login');
+    });
+    btnSignupHeader.addEventListener('click', () => {
+        showSection('signup');
+    });
 
-        // Eventos para abrir e fechar as modais
-        openLoginButton.addEventListener('click', () => {
-            showSection('login');
-        });
-        btnCloseLogin.addEventListener('click', () => {
-            showSection('main');
-        });
-        btnCloseSignup.addEventListener('click', () => {
-            showSection('main');
-        });
-        btnCloseRecover.addEventListener('click', () => {
-            showSection('main');
-        });
+    btnCloseLogin.addEventListener('click', () => {
+        loginScreen.classList.add('hidden');
+    });
+    btnCloseSignup.addEventListener('click', () => {
+        signupScreen.classList.add('hidden');
+    });
+    btnCloseRecover.addEventListener('click', () => {
+        recoverScreen.classList.add('hidden');
+    });
 
-        // Eventos para alternar entre as telas de login, cadastro e recuperação
-        linkToSignup.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSection('signup');
-        });
-        linkToLogin.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSection('login');
-        });
-        linkToRecover.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSection('recover');
-        });
-        linkToLoginFromRecover.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSection('login');
-        });
-        linkToSignupFromRecover.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSection('signup');
-        });
+    // Eventos para alternar entre as telas de login, cadastro e recuperação
+    linkToSignup.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('signup');
+    });
+    linkToLogin.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('login');
+    });
+    linkToRecover.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('recover');
+    });
+    linkToLoginFromRecover.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('login');
+    });
+    linkToSignupFromRecover.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('signup');
+    });
 
-        // Evento de submissão do formulário de login
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email-login').value;
-            const password = document.getElementById('password-login').value;
-            loginMessage.textContent = '';
-            try {
-                await account.createEmailPasswordSession(email, password);
-                checkAuthStatus();
-            } catch (error) {
-                loginMessage.textContent = 'Erro no login: ' + error.message;
-            }
-        });
+    // Evento de submissão do formulário de login
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email-login').value;
+        const password = document.getElementById('password-login').value;
+        loginMessage.textContent = '';
+        try {
+            await account.createEmailPasswordSession(email, password);
+            checkAuthStatus();
+        } catch (error) {
+            loginMessage.textContent = 'Erro no login: ' + error.message;
+        }
+    });
 
-        // Evento de submissão do formulário de cadastro
-        signupForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const nome = document.getElementById('nome-signup').value;
-            const email = document.getElementById('email-signup').value;
-            const senha = document.getElementById('senha-signup').value;
-            signupMessage.textContent = '';
-            try {
-                await account.create(Appwrite.ID.unique(), email, senha, nome);
-                signupMessage.textContent = 'Usuário cadastrado com sucesso! Você pode fazer login agora.';
-                setTimeout(() => showSection('login'), 2000);
-            } catch (error) {
-                signupMessage.textContent = 'Erro ao cadastrar: ' + error.message;
-            }
-        });
+    // Evento de submissão do formulário de cadastro
+    signupForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const nome = document.getElementById('nome-signup').value;
+        const email = document.getElementById('email-signup').value;
+        const senha = document.getElementById('senha-signup').value;
+        signupMessage.textContent = '';
+        try {
+            await account.create(Appwrite.ID.unique(), email, senha, nome);
+            signupMessage.textContent = 'Usuário cadastrado com sucesso! Você pode fazer login agora.';
+            setTimeout(() => showSection('login'), 2000);
+        } catch (error) {
+            signupMessage.textContent = 'Erro ao cadastrar: ' + error.message;
+        }
+    });
 
-        // Evento de submissão do formulário de recuperação
-        recoverForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email-recover').value;
-            recoverMessage.textContent = '';
-            try {
-                const resetUrl = window.location.href.split('#')[0] + '#reset-password';
-                await account.createRecovery(email, resetUrl);
-                recoverMessage.textContent = 'Se o e-mail existir, um link de recuperação foi enviado.';
-            } catch (error) {
-                recoverMessage.textContent = 'Erro ao enviar o link: ' + error.message;
-            }
-        });
+    // Evento de submissão do formulário de recuperação
+    recoverForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email-recover').value;
+        recoverMessage.textContent = '';
+        try {
+            const resetUrl = window.location.href.split('#')[0] + '#reset-password';
+            await account.createRecovery(email, resetUrl);
+            recoverMessage.textContent = 'Se o e-mail existir, um link de recuperação foi enviado.';
+        } catch (error) {
+            recoverMessage.textContent = 'Erro ao enviar o link: ' + error.message;
+        }
+    });
 
-        // Evento de clique do botão de logout
-        logoutButton.addEventListener('click', async () => {
-            try {
-                await account.deleteSession('current');
-                checkAuthStatus(); // Redireciona para a tela inicial
-            } catch (error) {
-                alert('Falha ao sair: ' + error.message);
-            }
-        });
+    // Evento de clique do botão de logout
+    logoutButton.addEventListener('click', async () => {
+        try {
+            await account.deleteSession('current');
+            checkAuthStatus(); // Redireciona para a tela inicial
+        } catch (error) {
+            alert('Falha ao sair: ' + error.message);
+        }
+    });
 
-        // Chama a função para verificar o status de login ao carregar a página
-        window.addEventListener('load', checkAuthStatus);
+    // Chama a função para verificar o status de login ao carregar a página
+    window.addEventListener('load', checkAuthStatus);
+</script>
     </script>
 </body>
 </html>
