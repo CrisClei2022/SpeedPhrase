@@ -253,6 +253,11 @@
             -webkit-text-fill-color: transparent;
         }
 
+        .video-container h2:hover {
+          cursor: pointer;
+          text-decoration: underline;
+        }
+
         video {
             width: 100%;
             border-radius: 8px;
@@ -1166,411 +1171,454 @@ let currentSection = 'avulsas';
 
 // Dados dos amigos (simulado)
 const friends = [
-    { id: 1, name: 'João Silva', avatar: '👨‍🎓' },
-    { id: 2, name: 'Maria Santos', avatar: '👩‍🎓' },
-    { id: 3, name: 'Pedro Costa', avatar: '👨‍💻' },
-    { id: 4, name: 'Ana Oliveira', avatar: '👩‍🔬' }
+    { id: 1, name: 'João Silva', avatar: '👨‍🎓' },
+    { id: 2, name: 'Maria Santos', avatar: '👩‍🎓' },
+    { id: 3, name: 'Pedro Costa', avatar: '👨‍💻' },
+    { id: 4, name: 'Ana Oliveira', avatar: '👩‍🔬' }
 ];
 
-// Inicialização
-document.addEventListener('DOMContentLoaded', () => {
-
-    // Render videos for both sections
-    generateVideoCards(avulsasLessons, avulsasGrid);
-    generateVideoCards(trilhaLessons, trilhaGrid);
-    
-    gameSection.classList.add('hidden');
-    
-    // Check user authentication status
-    checkAuthStatus();
-});
-
 //=============================
-// Bloco Avulsas / Trilha
+// Declaração de Elementos e Dados
 //=============================
-        const avulsasLessons = [
-            {
-                name: "Chapter 1. Welcome & Nationalities",
-                srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
-                videoUrl: "https://f005.backblazeb2.com/file/Trilha/Chapter-1.-Welcome-%26-Nationalities.mp4"
-            },
-            {
-                name: "Chapter 2. Common Phrases",
-                srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
-                videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
-            },
-            {
-                name: "Chapter 3. Greetings",
-                srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
-                videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
-            },
-            {
-                name: "Chapter 4. Numbers",
-                srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
-                videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
-            }
-        ];
+const avulsasLessons = [
+    {
+        name: "Chapter 1. Welcome & Nationalities",
+        srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
+        videoUrl: "https://f005.backblazeb2.com/file/Trilha/Chapter-1.-Welcome-%26-Nationalities.mp4"
+    },
+    {
+        name: "Chapter 2. Common Phrases",
+        srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
+        videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
+    },
+    {
+        name: "Chapter 3. Greetings",
+        srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
+        videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
+    },
+    {
+        name: "Chapter 4. Numbers",
+        srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
+        videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
+    }
+];
 
-        const trilhaLessons = [
-            {
-                name: "Lesson 1: The Alphabet",
-                srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
-                videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
-            },
-            {
-                name: "Lesson 2: Vowels",
-                srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
-                videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
-            }
-        ];
+const trilhaLessons = [
+    {
+        name: "Lesson 1: The Alphabet",
+        srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
+        videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
+    },
+    {
+        name: "Lesson 2: Vowels",
+        srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
+        videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
+    }
+];
 
-        const avulsasGrid = document.getElementById('avulsas-grid');
-        const trilhaGrid = document.getElementById('trilha-grid');
-        const avulsasSection = document.getElementById('avulsas-section');
-        const trilhaSection = document.getElementById('trilha-section');
-        const btnAvulsas = document.getElementById('btnAvulsas');
-        const btnTrilha = document.getElementById('btnTrilha');
-        const navButtons = document.querySelectorAll('.nav-buttons button');
-
-        function generateVideoCards(lessons, container) {
-            container.innerHTML = ''; // Clear existing content
-            lessons.forEach(lesson => {
-                const videoContainer = document.createElement('div');
-                videoContainer.classList.add('video-container');
-
-                const title = document.createElement('h2');
-                title.textContent = lesson.name;
-
-                const video = document.createElement('video');
-                video.controls = true;
-                video.src = lesson.videoUrl;
-
-                const track = document.createElement('track');
-                track.kind = "subtitles";
-                track.src = lesson.srtUrl;
-                track.srclang = "en";
-                track.label = "English";
-                video.appendChild(track);
-
-                videoContainer.appendChild(title);
-                videoContainer.appendChild(video);
-                container.appendChild(videoContainer);
-            });
-        }
-
-        function switchSection(targetSection) {
-            navButtons.forEach(btn => btn.classList.remove('active'));
-
-            if (targetSection === 'avulsas') {
-                avulsasSection.classList.remove('hidden');
-                trilhaSection.classList.add('hidden');
-                btnAvulsas.classList.add('active');
-            } else if (targetSection === 'trilha') {
-                trilhaSection.classList.remove('hidden');
-                avulsasSection.classList.add('hidden');
-                btnTrilha.classList.add('active');
-            }
-        }
-
-        // Event listeners for navigation buttons
-        btnAvulsas.addEventListener('click', () => {
-            switchSection('avulsas');
-        });
-
-        btnTrilha.addEventListener('click', () => {
-            switchSection('trilha');
-        });
-// Navegação principal
-btnAvulsas.addEventListener('click', () => {
-    currentSection = 'avulsas';
-    deactivateAllButtons();
-    btnAvulsas.classList.add('active');
-    hideAllSections();
-    avulsasSection.classList.remove('hidden');
-    loginScreen.classList.add('hidden');
-    signupScreen.classList.add('hidden');
-});
-
-btnTrilha.addEventListener('click', () => {
-    currentSection = 'trilha';
-    deactivateAllButtons();
-    btnTrilha.classList.add('active');
-    hideAllSections();
-    trilhaSection.classList.remove('hidden');
-    loginScreen.classList.add('hidden');
-    signupScreen.classList.add('hidden');
-});
-
-btnBuscar.addEventListener('click', () => {
-    deactivateAllButtons();
-    btnBuscar.classList.add('active');
-    hideAllSections();
-    const searchTerm = prompt('🔍 Digite o termo de busca:');
-    if (searchTerm) {
-        alert(`Buscando por: "${searchTerm}"\n\nFuncionalidade em desenvolvimento!`);
-    }
-    if (currentSection === 'avulsas') {
-        btnAvulsas.click();
-    } else {
-        btnTrilha.click();
-    }
-});
+const avulsasGrid = document.getElementById('avulsas-grid');
+const trilhaGrid = document.getElementById('trilha-grid');
+const avulsasSection = document.getElementById('avulsas-section');
+const trilhaSection = document.getElementById('trilha-section');
+const btnAvulsas = document.getElementById('btnAvulsas');
+const btnTrilha = document.getElementById('btnTrilha');
+const btnBuscar = document.getElementById('btnBuscar');
+const navButtons = document.querySelectorAll('.nav-buttons button');
+const gameSection = document.getElementById('game-section');
 
 // Funções de Seleção de Modo
 const modeSelection = document.getElementById('mode-selection');
 const timeModeContainer = document.getElementById('time-mode-container');
 const playerModeButtons = document.getElementById('player-mode-buttons');
-function showModeSelection() {
-    hideAllSections();
-    const videoTitle = document.querySelector('.video-item.selected .video-title').textContent;
-    document.getElementById('selected-video-title').textContent = videoTitle;
-    
-    // Reseta as seleções de modo
-    selectedPlayerMode = null;
-    selectedTimeMode = null;
-    selectedMultiplayerGameMode = null;
-    document.querySelectorAll('#player-mode-buttons .mode-button').forEach(btn => btn.classList.remove('selected'));
-    document.querySelectorAll('#time-mode-buttons .mode-button').forEach(btn => btn.classList.remove('selected'));
-    timeModeContainer.classList.add('hidden');
-    
-    modeSelection.classList.remove('hidden');
-}
-
-// Função para selecionar o modo de jogador (Solo, Multi, vs. Computador)
-function selectPlayerMode(mode) {
-    selectedPlayerMode = mode;
-    document.querySelectorAll('#player-mode-buttons .mode-button').forEach(btn => btn.classList.remove('selected'));
-    
-    // Adiciona a classe 'selected' ao botão clicado
-    const clickedButton = event.target;
-    clickedButton.classList.add('selected');
-    
-    timeModeContainer.classList.add('hidden');
-    
-    setTimeout(() => {
-        if (mode === 'solo' || mode === 'computer') {
-            timeModeContainer.classList.remove('hidden');
-        } else if (mode === 'multi') {
-            showMultiplayerGameModeSelection();
-        }
-    }, 500);
-}
-
-// Função para selecionar o modo de tempo (Estudo ou Desafio)
-function selectTimeMode(mode) {
-    selectedTimeMode = mode;
-    document.querySelectorAll('#time-mode-buttons .mode-button').forEach(btn => btn.classList.remove('selected'));
-    
-    const clickedButton = event.target;
-    clickedButton.classList.add('selected');
-    
-    setTimeout(() => {
-        let alertMessage = '';
-        if (selectedPlayerMode === 'solo') {
-            alertMessage += '🎯 Modo Solo selecionado.\n\n';
-        } else if (selectedPlayerMode === 'computer') {
-            alertMessage += '🤖 Modo vs. Computador selecionado.\n\n';
-        }
-        
-        if (mode === 'study') {
-            alertMessage += '📖 Modo de Estudo ativado. Jogue sem pressão!';
-        } else {
-            alertMessage += '⏱️ Modo de Desafio ativado. O cronômetro já está correndo!';
-        }
-        showAlert(alertMessage);
-        
-        showGameSection();
-    }, 500);
-}
-
-// Funções de Multiplayer
 const multiplayerGameModeSelection = document.getElementById('multiplayer-game-mode-selection');
 const multiplayerChallengeOptions = document.getElementById('multiplayer-challenge-options');
 const friendChallenge = document.getElementById('friend-challenge');
 const gameStatus = document.getElementById('game-status');
 const gameReady = document.getElementById('game-ready');
+
+//=============================
+// Funções
+//=============================
+function generateVideoCards(lessons, container) {
+    container.innerHTML = ''; 
+    lessons.forEach(lesson => {
+        const videoContainer = document.createElement('div');
+        videoContainer.classList.add('video-container', 'video-item');
+
+        videoContainer.addEventListener('click', () => {
+            document.querySelectorAll('.video-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            videoContainer.classList.add('selected');
+            selectedVideo = lesson;
+            showModeSelection();
+        });
+
+        const title = document.createElement('h2');
+        title.textContent = lesson.name;
+        title.classList.add('video-title');
+
+        const video = document.createElement('video');
+        video.controls = true;
+        video.src = lesson.videoUrl;
+
+        const track = document.createElement('track');
+        track.kind = "subtitles";
+        track.src = lesson.srtUrl;
+        track.srclang = "en";
+        track.label = "English";
+        video.appendChild(track);
+
+        videoContainer.appendChild(title);
+        videoContainer.appendChild(video);
+        container.appendChild(videoContainer);
+    });
+}
+
+function deactivateAllButtons() {
+    navButtons.forEach(btn => btn.classList.remove('active'));
+}
+
+function hideAllSections() {
+    document.querySelectorAll('main > section').forEach(section => {
+        section.classList.add('hidden');
+    });
+    modeSelection.classList.add('hidden');
+    multiplayerGameModeSelection.classList.add('hidden');
+    multiplayerChallengeOptions.classList.add('hidden');
+    friendChallenge.classList.add('hidden');
+    gameStatus.classList.add('hidden');
+    gameReady.classList.add('hidden');
+    gameSection.classList.add('hidden');
+}
+
+function switchSection(targetSection) {
+    deactivateAllButtons();
+    hideAllSections();
+
+    if (targetSection === 'avulsas') {
+        avulsasSection.classList.remove('hidden');
+        btnAvulsas.classList.add('active');
+        currentSection = 'avulsas';
+    } else if (targetSection === 'trilha') {
+        trilhaSection.classList.remove('hidden');
+        btnTrilha.classList.add('active');
+        currentSection = 'trilha';
+    }
+}
+
+function showModeSelection() {
+    hideAllSections();
+    const videoTitle = selectedVideo ? selectedVideo.name : 'N/A';
+    document.getElementById('selected-video-title').textContent = videoTitle;
+    
+    selectedPlayerMode = null;
+    selectedTimeMode = null;
+    selectedMultiplayerGameMode = null;
+    document.querySelectorAll('#player-mode-buttons .mode-button').forEach(btn => btn.classList.remove('selected'));
+    document.querySelectorAll('#time-mode-buttons .mode-button').forEach(btn => btn.classList.remove('selected'));
+    timeModeContainer.classList.add('hidden');
+    
+    modeSelection.classList.remove('hidden');
+}
+
+function selectPlayerMode(mode) {
+    selectedPlayerMode = mode;
+    document.querySelectorAll('#player-mode-buttons .mode-button').forEach(btn => btn.classList.remove('selected'));
+    if (event && event.target) {
+        event.target.classList.add('selected');
+    }
+    
+    timeModeContainer.classList.add('hidden');
+    
+    setTimeout(() => {
+        if (mode === 'solo' || mode === 'computer') {
+            timeModeContainer.classList.remove('hidden');
+        } else if (mode === 'multi') {
+            showMultiplayerGameModeSelection();
+        }
+    }, 500);
+}
+
+function selectTimeMode(mode) {
+    selectedTimeMode = mode;
+    document.querySelectorAll('#time-mode-buttons .mode-button').forEach(btn => btn.classList.remove('selected'));
+    if (event && event.target) {
+        event.target.classList.add('selected');
+    }
+    
+    setTimeout(() => {
+        let alertMessage = '';
+        
+        if (selectedPlayerMode === 'solo') {
+            alertMessage += '🎯 Modo Solo selecionado.\n\n';
+        } else if (selectedPlayerMode === 'computer') {
+            alertMessage += '🤖 Modo vs. Computador selecionado.\n\n';
+        }
+        
+        if (selectedTimeMode === 'study') {
+            alertMessage += '📖 Modo de Estudo ativado. Jogue sem pressão!';
+        } else if (selectedTimeMode === 'challenge') {
+            alertMessage += '⏱️ Modo de Desafio ativado. O cronômetro já está correndo!';
+        }
+        
+        showAlert(alertMessage);
+        
+        showGameSection();
+    }, 500);
+}
+
 function showMultiplayerGameModeSelection() {
-    hideAllSections();
-    const videoTitle = document.querySelector('.video-item.selected .video-title').textContent;
-    document.getElementById('selected-video-title-multiplayer').textContent = videoTitle;
-    document.querySelectorAll('#multiplayer-game-mode-selection .mode-button').forEach(btn => btn.classList.remove('selected'));
-    multiplayerGameModeSelection.classList.remove('hidden');
+    hideAllSections();
+    const videoTitle = selectedVideo ? selectedVideo.name : 'N/A';
+    document.getElementById('selected-video-title-multiplayer').textContent = videoTitle;
+    document.querySelectorAll('#multiplayer-game-mode-selection .mode-button').forEach(btn => btn.classList.remove('selected'));
+    multiplayerGameModeSelection.classList.remove('hidden');
 }
 
 function selectMultiplayerGameMode(gameMode) {
-    selectedMultiplayerGameMode = gameMode;
-    document.querySelectorAll('#multiplayer-game-mode-selection .mode-button').forEach(btn => {
-        btn.classList.remove('selected');
-    });
-    if (event && event.target) {
-        event.target.classList.add('selected');
-    }
-    setTimeout(() => {
-        showMultiplayerChallengeOptions();
-    }, 500);
+    selectedMultiplayerGameMode = gameMode;
+    document.querySelectorAll('#multiplayer-game-mode-selection .mode-button').forEach(btn => {
+        btn.classList.remove('selected');
+    });
+    if (event && event.target) {
+        event.target.classList.add('selected');
+    }
+    setTimeout(() => {
+        showMultiplayerChallengeOptions();
+    }, 500);
 }
 
 function showMultiplayerChallengeOptions() {
-    hideAllSections();
-    const gameModeTitleElement = document.getElementById('selected-multiplayer-game-mode-title');
-    if (selectedMultiplayerGameMode === 'corrida') {
-        gameModeTitleElement.textContent = 'Corrida de Frases';
-    } else if (selectedMultiplayerGameMode === 'ataque') {
-        gameModeTitleElement.textContent = 'Ataque de Palavras';
-    }
-    multiplayerChallengeOptions.classList.remove('hidden');
+    hideAllSections();
+    const gameModeTitleElement = document.getElementById('selected-multiplayer-game-mode-title');
+    if (selectedMultiplayerGameMode === 'corrida') {
+        gameModeTitleElement.textContent = 'Corrida de Frases';
+    } else if (selectedMultiplayerGameMode === 'ataque') {
+        gameModeTitleElement.textContent = 'Ataque de Palavras';
+    }
+    multiplayerChallengeOptions.classList.remove('hidden');
 }
 
 function challengeFriend() {
-    hideAllSections();
-    friendChallenge.classList.remove('hidden');
-    if (!isLoggedIn) {
-        document.getElementById('login-prompt').classList.remove('hidden');
-        document.getElementById('friend-list-container').classList.add('hidden');
-    } else {
-        document.getElementById('login-prompt').classList.add('hidden');
-        document.getElementById('friend-list-container').classList.remove('hidden');
-        loadFriendList();
-    }
+    hideAllSections();
+    friendChallenge.classList.remove('hidden');
+    if (!isLoggedIn) {
+        document.getElementById('login-prompt').classList.remove('hidden');
+        document.getElementById('friend-list-container').classList.add('hidden');
+    } else {
+        document.getElementById('login-prompt').classList.add('hidden');
+        document.getElementById('friend-list-container').classList.remove('hidden');
+        loadFriendList();
+    }
 }
 
 function loginPrompt() {
-    isLoggedIn = true;
-    document.getElementById('login-prompt').classList.add('hidden');
-    document.getElementById('friend-list-container').classList.remove('hidden');
-    loadFriendList();
+    isLoggedIn = true;
+    document.getElementById('login-prompt').classList.add('hidden');
+    document.getElementById('friend-list-container').classList.remove('hidden');
+    loadFriendList();
 }
 
 function loadFriendList() {
-    const friendList = document.getElementById('friend-list');
-    friendList.innerHTML = '';
-    friends.forEach(friend => {
-        const friendItem = document.createElement('div');
-        friendItem.className = 'friend-item';
-        friendItem.innerHTML = `
-            <div style="font-size: 2em; margin-bottom: 10px;">${friend.avatar}</div>
-            <div>${friend.name}</div>
-        `;
-        friendItem.addEventListener('click', () => challengeSpecificFriend(friend));
-        friendList.appendChild(friendItem);
-    });
+    const friendList = document.getElementById('friend-list');
+    friendList.innerHTML = '';
+    friends.forEach(friend => {
+        const friendItem = document.createElement('div');
+        friendItem.className = 'friend-item';
+        friendItem.innerHTML = `
+            <div style="font-size: 2em; margin-bottom: 10px;">${friend.avatar}</div>
+            <div>${friend.name}</div>
+        `;
+        friendItem.addEventListener('click', () => challengeSpecificFriend(friend));
+        friendList.appendChild(friendItem);
+    });
 }
 
 function challengeSpecificFriend(friend) {
-    showGameStatus('Desafio enviado!', `Aguardando ${friend.name} aceitar o desafio...`);
-    setTimeout(() => {
-        if (Math.random() > 0.3) {
-            showGameReady(friend.name);
-        } else {
-            showGameStatus('Desafio recusado', `${friend.name} recusou o desafio. Tente novamente!`);
-        }
-    }, 3000);
+    showGameStatus('Desafio enviado!', `Aguardando ${friend.name} aceitar o desafio...`);
+    setTimeout(() => {
+        if (Math.random() > 0.3) {
+            showGameReady(friend.name);
+        } else {
+            showGameStatus('Desafio recusado', `${friend.name} recusou o desafio. Tente novamente!`);
+        }
+    }, 3000);
 }
 
 function waitForOpponent() {
-    showGameStatus('Buscando oponente...', 'Aguarde enquanto procuramos um oponente para você!');
-    setTimeout(() => {
-        const randomOpponent = `Jogador${Math.floor(Math.random() * 1000)}`;
-        showGameReady(randomOpponent);
-    }, 2000 + Math.random() * 3000);
+    showGameStatus('Buscando oponente...', 'Aguarde enquanto procuramos um oponente para você!');
+    setTimeout(() => {
+        const randomOpponent = `Jogador${Math.floor(Math.random() * 1000)}`;
+        showGameReady(randomOpponent);
+    }, 2000 + Math.random() * 3000);
 }
 
 function showGameStatus(title, message) {
-    hideAllSections();
-    document.getElementById('status-title').textContent = title;
-    document.getElementById('status-message').textContent = message;
-    gameStatus.classList.remove('hidden');
+    hideAllSections();
+    document.getElementById('status-title').textContent = title;
+    document.getElementById('status-message').textContent = message;
+    gameStatus.classList.remove('hidden');
 }
 
 function showGameReady(opponentName) {
-    hideAllSections();
-    document.getElementById('opponent-name').textContent = opponentName;
-    gameReady.classList.remove('hidden');
-    let countdown = 3;
-    const countdownElement = document.getElementById('countdown');
-    countdownElement.textContent = countdown;
-    const countdownInterval = setInterval(() => {
-        countdown--;
-        countdownElement.textContent = countdown;
-        if (countdown <= 0) {
-            clearInterval(countdownInterval);
-            startGame();
-        }
-    }, 1000);
+    hideAllSections();
+    document.getElementById('opponent-name').textContent = opponentName;
+    gameReady.classList.remove('hidden');
+    let countdown = 3;
+    const countdownElement = document.getElementById('countdown');
+    countdownElement.textContent = countdown;
+    const countdownInterval = setInterval(() => {
+        countdown--;
+        countdownElement.textContent = countdown;
+        if (countdown <= 0) {
+            clearInterval(countdownInterval);
+            startGame();
+        }
+    }, 1000);
 }
 
-// Funções de Jogo
-const gameSection = document.getElementById('game-section');
 function showGameSection() {
-    hideAllSections();
-    gameSection.classList.remove('hidden');
-    console.log("Iniciando jogo na seção game-section...");
+    hideAllSections();
+    gameSection.classList.remove('hidden');
+    console.log("Iniciando jogo na seção game-section...");
 }
 
 function startGame() {
-    let gameModeText = '';
-    if (selectedPlayerMode === 'solo' && selectedTimeMode === 'study') {
-        gameModeText = 'Solo - Modo de Estudo';
-    } else if (selectedPlayerMode === 'solo' && selectedTimeMode === 'challenge') {
-        gameModeText = 'Solo - Modo de Desafio';
-    } else if (selectedPlayerMode === 'computer' && selectedTimeMode === 'study') {
-        gameModeText = 'vs Computador - Modo de Estudo';
-    } else if (selectedPlayerMode === 'computer' && selectedTimeMode === 'challenge') {
-        gameModeText = 'vs Computador - Modo de Desafio';
-    } else if (selectedPlayerMode === 'multi' && selectedMultiplayerGameMode === 'corrida') {
-        gameModeText = 'Multiplayer - Corrida de Frases';
-    } else if (selectedPlayerMode === 'multi' && selectedMultiplayerGameMode === 'ataque') {
-        gameModeText = 'Multiplayer - Ataque de Palavras';
-    }
+    let gameModeText = '';
+    const videoTitle = selectedVideo ? selectedVideo.name : 'N/A';
 
-    showAlert(`🚀 Iniciando partida de "${document.querySelector('.video-item.selected .video-title').textContent}" no modo ${gameModeText}!\n\nBoa sorte!`);
+    if (selectedPlayerMode === 'solo' && selectedTimeMode === 'study') {
+        gameModeText = 'Solo - Modo de Estudo';
+    } else if (selectedPlayerMode === 'solo' && selectedTimeMode === 'challenge') {
+        gameModeText = 'Solo - Modo de Desafio';
+    } else if (selectedPlayerMode === 'computer' && selectedTimeMode === 'study') {
+        gameModeText = 'vs Computador - Modo de Estudo';
+    } else if (selectedPlayerMode === 'computer' && selectedTimeMode === 'challenge') {
+        gameModeText = 'vs Computador - Modo de Desafio';
+    } else if (selectedPlayerMode === 'multi' && selectedMultiplayerGameMode === 'corrida') {
+        gameModeText = 'Multiplayer - Corrida de Frases';
+    } else if (selectedPlayerMode === 'multi' && selectedMultiplayerGameMode === 'ataque') {
+        gameModeText = 'Multiplayer - Ataque de Palavras';
+    }
 
-    showGameSection();
+    showAlert(`🚀 Iniciando partida de "${videoTitle}" no modo ${gameModeText}!\n\nBoa sorte!`);
+
+    showGameSection();
 }
 
-// Funções de Gerenciamento de Jogo
 function cancelGame() {
-    resetToSelection();
+    resetToSelection();
 }
 
 function resetToSelection() {
-    selectedVideo = null;
-    selectedPlayerMode = null;
-    selectedTimeMode = null;
-    selectedMultiplayerGameMode = null;
-    document.querySelectorAll('.video-item').forEach(item => {
-        item.classList.remove('selected');
-    });
-    document.querySelectorAll('.mode-button').forEach(btn => {
-        btn.classList.remove('selected');
-    });
-    if (currentSection === 'avulsas') {
-        btnAvulsas.click();
-    } else {
-        btnTrilha.click();
-    }
+    selectedVideo = null;
+    selectedPlayerMode = null;
+    selectedTimeMode = null;
+    selectedMultiplayerGameMode = null;
+    document.querySelectorAll('.video-item').forEach(item => {
+        item.classList.remove('selected');
+    });
+    document.querySelectorAll('.mode-button').forEach(btn => {
+        btn.classList.remove('selected');
+    });
+    if (currentSection === 'avulsas') {
+        switchSection('avulsas');
+    } else {
+        switchSection('trilha');
+    }
 }
 
-// Funções de "Voltar"
 function goBack() {
-    if (currentSection === 'avulsas') {
-        btnAvulsas.click();
-    } else {
-        btnTrilha.click();
-    }
+    if (currentSection === 'avulsas') {
+        switchSection('avulsas');
+    } else {
+        switchSection('trilha');
+    }
 }
 
 function goBackToModeSelection() {
-    showModeSelection();
+    showModeSelection();
 }
 
 function goBackToMultiplayerGameModeSelection() {
-    showMultiplayerGameModeSelection();
+    showMultiplayerGameModeSelection();
 }
 
 function goBackToMultiplayerChallengeOptions() {
-    showMultiplayerChallengeOptions();
+    showMultiplayerChallengeOptions();
 }
+
+function showAlert(message) {
+    alert(message);
+}
+
+function checkAuthStatus() {
+    // Implementação da verificação de autenticação
+}
+
+//=============================
+// Inicialização do App
+//=============================
+document.addEventListener('DOMContentLoaded', () => {
+    // Renderiza os vídeos para ambas as seções
+    generateVideoCards(avulsasLessons, avulsasGrid);
+    generateVideoCards(trilhaLessons, trilhaGrid);
+    
+    // Esconde a seção de jogo por padrão
+    gameSection.classList.add('hidden');
+    
+    // Oculta todas as seções, exceto a inicial
+    hideAllSections();
+    avulsasSection.classList.remove('hidden');
+    btnAvulsas.classList.add('active');
+
+    // Event listeners para navegação principal
+    btnAvulsas.addEventListener('click', () => {
+        switchSection('avulsas');
+    });
+    
+    btnTrilha.addEventListener('click', () => {
+        switchSection('trilha');
+    });
+    
+    btnBuscar.addEventListener('click', () => {
+        deactivateAllButtons();
+        btnBuscar.classList.add('active');
+        const searchTerm = prompt('🔍 Digite o termo de busca:');
+        if (searchTerm) {
+            alert(`Buscando por: "${searchTerm}"\n\nFuncionalidade em desenvolvimento!`);
+        }
+        goBack();
+    });
+    
+    // Event listeners para os botões de modo de jogo
+    // Adiciona event listeners para os botões do player-mode
+    document.getElementById('solo-mode').addEventListener('click', () => selectPlayerMode('solo'));
+    document.getElementById('multi-mode').addEventListener('click', () => selectPlayerMode('multi'));
+    document.getElementById('computer-mode').addEventListener('click', () => selectPlayerMode('computer'));
+
+    // Adiciona event listeners para os botões de tempo
+    document.getElementById('study-mode').addEventListener('click', () => selectTimeMode('study'));
+    document.getElementById('challenge-mode').addEventListener('click', () => selectTimeMode('challenge'));
+
+    // Adiciona event listeners para os botões de multiplayer
+    document.getElementById('corrida-mode').addEventListener('click', () => selectMultiplayerGameMode('corrida'));
+    document.getElementById('ataque-mode').addEventListener('click', () => selectMultiplayerGameMode('ataque'));
+
+    // Adiciona event listeners para os botões de desafio
+    document.getElementById('challenge-friend-btn').addEventListener('click', challengeFriend);
+    document.getElementById('find-opponent-btn').addEventListener('click', waitForOpponent);
+    document.getElementById('login-btn').addEventListener('click', loginPrompt);
+    document.getElementById('ready-btn').addEventListener('click', startGame);
+
+    // Event listeners para botões de voltar
+    document.getElementById('go-back-mode-selection-btn').addEventListener('click', goBackToModeSelection);
+    document.getElementById('go-back-multi-mode-btn').addEventListener('click', goBackToMultiplayerGameModeSelection);
+    document.getElementById('go-back-challenge-options-btn').addEventListener('click', goBackToMultiplayerChallengeOptions);
+    
+    checkAuthStatus();
+});
 	</script>
   </body>
 </html>
