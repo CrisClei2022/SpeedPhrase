@@ -5,38 +5,160 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grade de Vídeos</title>
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-    body {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
-        color: #ffffff;
-        min-height: 100vh;
-        padding: 20px;
-        position: relative;
-        overflow-x: hidden;
-    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    body::before {
-        content: '';
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
-                    radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.1) 0%, transparent 50%),
-                    radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.1) 0%, transparent 50%);
-        pointer-events: none;
-        z-index: -1;
-    }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        header {
+            backdrop-filter: blur(20px);
+            background: rgba(10, 10, 10, 0.8);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 20px;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header-title {
+            font-weight: 700;
+            font-size: 1.4em;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: titleGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            from { filter: drop-shadow(0 0 5px rgba(255, 107, 107, 0.3));       }
+            to { filter: drop-shadow(0 0 20px rgba(69, 183, 209, 0.5));          }
+        }
+
+        .nav-buttons {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-buttons button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-buttons button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .nav-buttons button:hover::before {
+            left: 100%;
+        }
+
+        .nav-buttons button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(69, 183, 209, 0.3);
+        }
+
+        .nav-buttons button.active {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border-color: transparent;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        /* Estilos para div de Entrar e Cadastrar */
+        .user-buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+        }
+
+        .user-buttons a {
+            font-size: 0.9em;
+            font-weight: 500;
+            color: #ffffff;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .user-buttons a:hover {
+            color: #4ecdc4;
+        }
+
+        .user-buttons .btnSignup {
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 600;
+        }
+
+        .user-buttons .btnSignup:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.2);
+        }
 
     .video-grid-container {
         max-width: 1200px;
         margin: 40px auto;
         padding: 20px;
     }
-    
+
     .page-title {
         font-size: 2.5em;
         text-align: center;
@@ -90,11 +212,15 @@
         display: block;
         transition: transform 0.3s ease;
     }
-    
+
     .video-container:hover video {
         transform: scale(1.02);
     }
-    
+
+    .hidden {
+        display: none;
+    }
+
     @media (max-width: 768px) {
         .video-grid {
             grid-template-columns: 1fr;
@@ -103,54 +229,132 @@
 </style>
 </head>
 <body>
+    <header>
+        <div class="header-content">
+            <div class="header-title">🎮 SpeedPhrase</div>
+            <div class="nav-buttons">
+                <button id="btnBuscar">🔍 Buscar</button>
+                <button id="btnAvulsas" class="active">📹 Avulsas</button>
+                <button id="btnTrilha">🛤️ Trilha</button>
+            </div>
+            <div class="user-buttons">
+                <a href="#" id="btnLogin">Entrar</a>
+                <a href="#" id="btnSignup" class="btnSignup">Cadastrar</a>
+            </div>
+        </div>
+    </header>
 
-    <h1>Aulas Disponíveis</h1>
+    <main>
+        <section id="avulsas-section" class="video-grid-container">
+            <h1 class="page-title">Vídeos Avulsos</h1>
+            <div class="video-grid" id="avulsas-grid"></div>
+        </section>
 
-    <div id="videoGrid" class="video-grid"></div>
+        <section id="trilha-section" class="video-grid-container hidden">
+            <h1 class="page-title">Trilha de Aprendizagem</h1>
+            <div class="video-grid" id="trilha-grid"></div>
+        </section>
+    </main>
 
     <script>
-        const lessons = [
+        const avulsasLessons = [
             {
                 name: "Chapter 1. Welcome & Nationalities",
                 srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
                 videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
             },
             {
-                name: "Chapter 1. Welcome & Nationalities",
+                name: "Chapter 2. Common Phrases",
                 srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
                 videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
             },
             {
-                name: "Chapter 1. Welcome & Nationalities",
+                name: "Chapter 3. Greetings",
                 srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
                 videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
             },
             {
-                name: "Chapter 1. Welcome & Nationalities",
+                name: "Chapter 4. Numbers",
                 srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
                 videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
             }
         ];
 
-        const videoGrid = document.getElementById('videoGrid');
+        const trilhaLessons = [
+            {
+                name: "Lesson 1: The Alphabet",
+                srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
+                videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
+            },
+            {
+                name: "Lesson 2: Vowels",
+                srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
+                videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
+            }
+        ];
 
-        lessons.forEach(lesson => {
-            const container = document.createElement('div');
-            container.className = 'video-container';
+        const avulsasGrid = document.getElementById('avulsas-grid');
+        const trilhaGrid = document.getElementById('trilha-grid');
+        const avulsasSection = document.getElementById('avulsas-section');
+        const trilhaSection = document.getElementById('trilha-section');
+        const btnAvulsas = document.getElementById('btnAvulsas');
+        const btnTrilha = document.getElementById('btnTrilha');
+        const navButtons = document.querySelectorAll('.nav-buttons button');
 
-            const title = document.createElement('h2');
-            title.textContent = lesson.name;
-            
-            const video = document.createElement('video');
-            video.src = lesson.videoUrl;
-            video.preload = 'metadata'; // Carrega metadados sem o vídeo completo
-            video.controls = false; // Oculta todos os controles padrão do vídeo
+        function generateVideoCards(lessons, container) {
+            container.innerHTML = ''; // Clear existing content
+            lessons.forEach(lesson => {
+                const videoContainer = document.createElement('div');
+                videoContainer.classList.add('video-container');
 
-            container.appendChild(title);
-            container.appendChild(video);
-            videoGrid.appendChild(container);
+                const title = document.createElement('h2');
+                title.textContent = lesson.name;
+
+                const video = document.createElement('video');
+                video.controls = true;
+                video.src = lesson.videoUrl;
+
+                const track = document.createElement('track');
+                track.kind = "subtitles";
+                track.src = lesson.srtUrl;
+                track.srclang = "en";
+                track.label = "English";
+                video.appendChild(track);
+
+                videoContainer.appendChild(title);
+                videoContainer.appendChild(video);
+                container.appendChild(videoContainer);
+            });
+        }
+
+        function switchSection(targetSection) {
+            navButtons.forEach(btn => btn.classList.remove('active'));
+
+            if (targetSection === 'avulsas') {
+                avulsasSection.classList.remove('hidden');
+                trilhaSection.classList.add('hidden');
+                btnAvulsas.classList.add('active');
+            } else if (targetSection === 'trilha') {
+                trilhaSection.classList.remove('hidden');
+                avulsasSection.classList.add('hidden');
+                btnTrilha.classList.add('active');
+            }
+        }
+
+        // Event listeners for navigation buttons
+        btnAvulsas.addEventListener('click', () => {
+            switchSection('avulsas');
+        });
+
+        btnTrilha.addEventListener('click', () => {
+            switchSection('trilha');
+        });
+
+        // Initial generation of content on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            generateVideoCards(avulsasLessons, avulsasGrid);
+            generateVideoCards(trilhaLessons, trilhaGrid);
         });
     </script>
-
 </body>
 </html>
