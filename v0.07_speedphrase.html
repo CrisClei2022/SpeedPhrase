@@ -1169,6 +1169,13 @@ let selectedMultiplayerGameMode = null; // 'corrida', 'ataque'
 let isLoggedIn = false; // Simula status de login
 let currentSection = 'avulsas';
 
+// Modo Jogo
+let currentSubtitleIndex = 0;
+let subtitlesData = [];
+let videoPlayer = null;
+let gameInterval = null;
+let videoPlaying = false;
+
 // Dados dos amigos (simulado)
 const friends = [
     { id: 1, name: 'João Silva', avatar: '👨‍🎓' },
@@ -1560,6 +1567,153 @@ function showAlert(message) {
 
 function checkAuthStatus() {
     // Implementação da verificação de autenticação
+}
+
+// =======================
+// Analisa o conteúdo de um arquivo SRT e o transforma em um array de objetos
+// =======================
+async function parseSrt(url) {
+    try {
+        const response = await fetch(url);
+        const text = await response.text();
+        const subtitles = [];
+        const lines = text.split('\n');
+        let currentSubtitle = {};
+
+        lines.forEach(line => {
+            if (line.trim() === '') {
+                if (currentSubtitle.text) {
+                    subtitles.push(currentSubtitle);
+                }
+                currentSubtitle = {};
+            } else if (line.includes('-->')) {
+                const [start, end] = line.split('-->').map(time => {
+                    const [h, m, s] = time.trim().split(':');
+                    const [sec, ms] = s.split(',');
+                    return (parseInt(h) * 3600 + parseInt(m) * 60 + parseInt(sec)) + (parseInt(ms) / 1000);
+                });
+                currentSubtitle.startTime = start;
+                currentSubtitle.endTime = end;
+            } else if (!isNaN(parseInt(line.trim()))) {
+                // Ignore a linha do número do trecho
+            } else {
+                currentSubtitle.text = (currentSubtitle.text || '') + ' ' + line.trim();
+            }
+        });
+        if (currentSubtitle.text) {
+            subtitles.push(currentSubtitle);
+        }
+        return subtitles;
+    } catch (error) {
+        console.error('Erro ao carregar ou analisar o arquivo SRT:', error);
+        return [];
+    }
+}
+
+// Embaralha as palavras de uma frase e retorna como um array
+function scrambleWords(phrase) {
+    const words = phrase.split(' ');
+    for (let i = words.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [words[i], words[j]] = [words[j], words[i]]; // Troca de lugar
+    }
+    return words;
+}
+
+async function startGame() {
+    let gameModeText = '';
+    const videoTitle = selectedVideo ? selectedVideo.name : 'N/A';
+    
+    // Mostra a seção do jogo
+    showGameSection();
+    
+    // Configura o título da lição
+    document.getElementById('current-lesson').textContent = videoTitle;
+
+    // Obtém o player de vídeo e a URL
+    videoPlayer = document.getElementById('custom-video');
+    videoPlayer.src = selectedVideo.videoUrl;
+    
+    // Adiciona o event listener para parar o vídeo no tempo certo
+    videoPlayer.ontimeupdate = function() {
+        if (videoPlaying && subtitlesData.length > 0) {
+            const currentSubtitle = subtitlesData[currentSubtitleIndex];
+            if (videoPlayer.currentTime >= currentSubtitle.endTime) {
+                videoPlayer.pause();
+                videoPlaying = false;
+                showWordsForPhrase(currentSubtitle.text);
+            }
+        }
+    };
+    
+    // Carrega e analisa o arquivo SRT
+    subtitlesData = await parseSrt(selectedVideo.srtUrl);
+
+    if (subtitlesData.length > 0) {
+        // Inicia o jogo com a primeira frase
+        playNextSubtitle();
+    } else {
+        showAlert('Erro: Não foi possível carregar as legendas para o jogo.');
+        resetToSelection();
+    }
+}
+
+function playNextSubtitle() {
+    if (currentSubtitleIndex >= subtitlesData.length) {
+        // Fim do jogo
+        showAlert('Parabéns! Você completou o jogo!');
+        resetToSelection();
+        return;
+    }
+
+    const currentSubtitle = subtitlesData[currentSubtitleIndex];
+    const videoPlayer = document.getElementById('custom-video');
+    
+    // Prepara e reproduz o trecho do vídeo
+    videoPlayer.currentTime = currentSubtitle.startTime;
+    videoPlayer.play();
+    videoPlaying = true;
+    
+    // Esconde as palavras e a frase anterior
+    document.getElementById('frase').innerHTML = '';
+    document.getElementById('palavras').innerHTML = '';
+}
+
+function showWordsForPhrase(phrase) {
+    const scrambledWords = scrambleWords(phrase);
+    const wordsContainer = document.getElementById('palavras');
+
+    scrambledWords.forEach(word => {
+        const wordButton = document.createElement('button');
+        wordButton.textContent = word;
+        wordButton.classList.add('word-button');
+        
+        wordButton.onclick = () => {
+            document.getElementById('frase').textContent += ' ' + word;
+            wordButton.style.display = 'none';
+            checkAnswer(phrase);
+        };
+        
+        wordsContainer.appendChild(wordButton);
+    });
+}
+
+function checkAnswer(originalPhrase) {
+    const currentPhrase = document.getElementById('frase').textContent.trim();
+    const originalWordsCount = originalPhrase.split(' ').length;
+    const currentWordsCount = currentPhrase.split(' ').length;
+
+    if (currentWordsCount === originalWordsCount) {
+        if (currentPhrase.toLowerCase() === originalPhrase.toLowerCase()) {
+            showAlert('🎉 Resposta correta! Próxima frase em breve...');
+            currentSubtitleIndex++;
+            setTimeout(playNextSubtitle, 2000); // 2 segundos para a próxima frase
+        } else {
+            showAlert('😔 Resposta incorreta. Tente novamente!');
+            document.getElementById('frase').textContent = '';
+            document.querySelectorAll('.word-button').forEach(btn => btn.style.display = 'inline-block');
+        }
+    }
 }
 
 //=============================
