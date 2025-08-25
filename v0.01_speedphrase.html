@@ -640,7 +640,7 @@
 
         <div class="content-row">
             <div class="video-container">
-                <video id="custom-video" class="hide-controls" preload="auto" crossorigin="anonymous">
+                <video id="custom-video" class="hide-controls" preload="auto">
                 </video>
         
                 <div id="subtitle-content" class="hidden"> 
@@ -678,19 +678,9 @@
 // Lições disponíveis (nome do arquivo SRT e URL do vídeo)
 const lessons = [
     {
-        name: "Lady Gaga - Scheiße",
-        srtFile: "Lady_Gaga-Scheiße.srt",
-        videoUrl: "https://files.catbox.moe/noor8m.mp4"
-    },
-    {
-        name: "Melanie Martinez - The Contortionist",
-        srtFile: "Melanie_Martinez-The_Contortionist.srt",
-        videoUrl: "https://files.catbox.moe/vxoldg.mp4"
-    },
-    {
-        name: "New West - Those Eyes",
-        srtFile: "New_West-Those_Eyes.srt",
-        videoUrl: "https://files.catbox.moe/k7xhth.mp4"
+        name: "Chapter 1 - Welcome & Nationalities",
+        srtUrl: "https://f005.backblazeb2.com/file/Trilha/Chapter-1.-Welcome-%26-Nationalities.srt",
+        videoUrl: "https://f005.backblazeb2.com/file/Trilha/Chapter-1.-Welcome-%26-Nationalities.mp4"
     }
     // Adicione mais lições conforme necessário
 ];
@@ -716,48 +706,13 @@ let player2Clock; // Global variable for player 2's clock
 let mostrarTraducao = false;
 let palavrasDisponiveisElementos = [];
 
-// Função para gerar o URL do CDN do jsDelivr para os arquivos SRT
-function getSrtCdnUrl(filename) {
-    // URL base do jsDelivr para o seu repositório
-    const baseUrl = "https://raw.githubusercontent.com/CrisClei2022/srt/main/";
-    // Retorna a URL completa
-    return baseUrl + encodeURIComponent(filename);
-}
-
-// Função para processar o conteúdo SRT
-function processSrtContent(srt) {
-    frases = srt.split('\n\n').map(bloco => {
-        let linhas = bloco.split('\n');
-        if (linhas.length < 3) return null;
-
-        return {
-            tempoInicio: converterTempo(linhas[1].split(' --> ')[0].trim()),
-            tempoFim: converterTempo(linhas[1].split(' --> ')[1].trim()),
-            texto: linhas.slice(2).join(' ').trim()
-        };
-    }).filter(frase => frase !== null && frase.texto !== '' && !frase.texto.includes('www.RentAnAdviser.com'));
-
-    indiceFrase = 0;
-    fraseAtual = frases[indiceFrase];
-    palavrasEmbaralhadas = embaralharPalavras(fraseAtual.texto);
-    palavrasClicadas = [];
-    progresso = 0;
-    acertos1 = 0;
-    acertos2 = 0;
-    fraseAcertada = false;
-
-    criarPalavras();
-    atualizarFrase(); // This call will now also update the 'subtitle-content' div
-    atualizarProgresso();
-    atualizarPlacares();
-}
-
 // Função para carregar o arquivo SRT de uma URL
-async function loadSrtFromUrl(url) {
+async function loadSrtFromUrl(url) { // A função recebe a URL aqui
     let srtLoadedSuccessfully = false;
     try {
         showLoading(true);
-        const response = await fetch(url);
+        // AQUI ESTÁ A CORREÇÃO: Usamos o parâmetro 'url' em vez de 'srtFile'
+        const response = await fetch(url); 
         if (!response.ok) {
             throw new Error(`Failed to load SRT: ${response.status}`);
         }
@@ -776,7 +731,7 @@ async function loadSrtFromUrl(url) {
             criarPalavras();
             atualizarFrase();
             atualizarProgresso();
-    	    atualizarPlacares();
+            atualizarPlacares();
             // Garante que o monitor de tempo do vídeo não seja iniciado.
             pararMonitorTempo();
         }
@@ -828,7 +783,35 @@ async function loadSrtFromUrl(url) {
 
     return srtLoadedSuccessfully; // Retorna true se o SRT foi carregado, false caso contrário.
 }
-	
+
+// Função para processar o conteúdo SRT
+function processSrtContent(srt) {
+    frases = srt.split('\n\n').map(bloco => {
+        let linhas = bloco.split('\n');
+        if (linhas.length < 3) return null;
+
+        return {
+            tempoInicio: converterTempo(linhas[1].split(' --> ')[0].trim()),
+            tempoFim: converterTempo(linhas[1].split(' --> ')[1].trim()),
+            texto: linhas.slice(2).join(' ').trim()
+        };
+    }).filter(frase => frase !== null && frase.texto !== '' && !frase.texto.includes('www.RentAnAdviser.com'));
+
+    indiceFrase = 0;
+    fraseAtual = frases[indiceFrase];
+    palavrasEmbaralhadas = embaralharPalavras(fraseAtual.texto);
+    palavrasClicadas = [];
+    progresso = 0;
+    acertos1 = 0;
+    acertos2 = 0;
+    fraseAcertada = false;
+
+    criarPalavras();
+    atualizarFrase(); // This call will now also update the 'subtitle-content' div
+    atualizarProgresso();
+    atualizarPlacares();
+}
+
 // Function to start a random player's clock
 function startRandomPlayerClock() {
     // Stop both clocks first to ensure only one is running or both are reset
@@ -859,8 +842,8 @@ function loadLesson(lessonIndex) {
     videoElement.load();
 
     // Carregar o arquivo SRT
-    const srtUrl = getSrtCdnUrl(lesson.srtFile);
-    loadSrtFromUrl(srtUrl).then(success => {
+    const srtFile = lesson.srtUrl; // <--- CORREÇÃO AQUI
+    loadSrtFromUrl(srtFile).then(success => {
         if (success) {
             // Verificar se há progresso salvo para esta lição
             const progressoSalvo = carregarProgresso();
@@ -955,7 +938,6 @@ function embaralharPalavras(frase) {
     return palavras;
 }
 
-// Função para criar elementos de palavras
 // Função para criar elementos de palavras
 function criarPalavras() {
     let palavrasDiv = document.getElementById('palavras');
