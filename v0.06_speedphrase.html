@@ -200,21 +200,31 @@
         }
         
         /*Video Grid*/
-        .video-item-container {
+        .video-grid-container {
             max-width: 1200px;
             margin: 40px auto;
             padding: 20px;
         }
 
-        .video-item {
+        .page-title {
+            font-size: 2.5em;
+            text-align: center;
+            margin-bottom: 30px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        .video-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 25px;
             width: 100%;
         }
 
-        .video-grid {
-            position: relative;
+        .video-container {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
@@ -224,16 +234,15 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            cursor: pointer;
         }
 
-        .video-grid:hover {
+        .video-container:hover {
             transform: translateY(-5px);
             box-shadow: 0 15px 40px rgba(69, 183, 209, 0.4);
             border-color: rgba(69, 183, 209, 0.5);
         }
 
-        .video-grid h2 {
+        .video-container h2 {
             font-size: 1.4em;
             color: #ffffff;
             margin-bottom: 15px;
@@ -250,20 +259,21 @@
             display: block;
             transition: transform 0.3s ease;
         }
-        
-        .video-grid:hover video {
+
+        .video-container:hover video {
             transform: scale(1.02);
         }
 
-        .video-grid:hover .play-icon {
-            opacity: 1;
+        .hidden {
+            display: none;
         }
-        
+
         @media (max-width: 768px) {
-            .video-item {
+            .video-grid {
                 grid-template-columns: 1fr;
             }
-        }    
+        }
+        
         .play-icon {
             width: 50px;
             height: 50px;
@@ -976,38 +986,13 @@
 		</div>
 		
         <section id="avulsas-section" class="video-grid-container">
-            <div id="videoItem" class="video-item"></div>
+            <h2 class="page-title">Vídeos Avulsos</h2>
+            <div id="avulsas-grid" class="video-grid"></div>
         </section>
-        
-        <section id="trilha-section" class="video-grid hidden">
-            <div class="video-item" data-video="trilha-1">
-                <img src="https://images.unsplash.com/photo-1509228468518-180dd4864904?w=300&h=300&fit=crop" alt="Trilha ENEM - Matemática">
-                <div class="video-overlay">
-                    <div class="play-icon"></div>
-                    <div class="video-title">Trilha ENEM - Matemática</div>
-                </div>
-            </div>
-            <div class="video-item" data-video="trilha-2">
-                <img src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=300&h=300&fit=crop" alt="Trilha Vestibular - Ciências">
-                <div class="video-overlay">
-                    <div class="play-icon"></div>
-                    <div class="video-title">Trilha Vestibular - Ciências</div>
-                </div>
-            </div>
-            <div class="video-item" data-video="trilha-3">
-                <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=300&h=300&fit=crop" alt="Trilha Fundamental - Português">
-                <div class="video-overlay">
-                    <div class="play-icon"></div>
-                    <div class="video-title">Trilha Fundamental - Português</div>
-                </div>
-            </div>
-            <div class="video-item" data-video="trilha-4">
-                <img src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=300&h=300&fit=crop" alt="Trilha Avançada - Cálculo">
-                <div class="video-overlay">
-                    <div class="play-icon"></div>
-                    <div class="video-title">Trilha Avançada - Cálculo</div>
-                </div>
-            </div>
+
+        <section id="trilha-section" class="video-grid-container hidden">
+            <h2 class="page-title">Trilhas de Aprendizagem</h2>
+            <div id="trilha-grid" class="video-grid"></div>
         </section>
         
         <section id="mode-selection" class="mode-selection hidden">
@@ -1168,100 +1153,9 @@
         </div>
     </section>
     
-	<script>
-// Inicialização
-document.addEventListener('DOMContentLoaded', () => {
-    btnAvulsas.click();
-    setupVideoSelection();
-    gameSection.classList.add('hidden');
-    renderVideoLessons();
-});
-
+<script>
 //=============================
-// Bloco Avulsas
-//=============================
-function renderVideoLessons() {
-    const videoItem = document.getElementById('videoItem');
-    const lessons = [
-        {
-            name: "Chapter 1. Welcome & Nationalities",
-            srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
-            videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
-        },
-        {
-            name: "Chapter 1. Welcome & Nationalities",
-            srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
-            videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
-        },
-        {
-            name: "Chapter 1. Welcome & Nationalities",
-            srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
-            videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
-        },
-        {
-            name: "Chapter 1. Welcome & Nationalities",
-            srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
-            videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
-        }
-    ];
-
-    function createVideoElement(lesson) {
-        const videoContainer = document.createElement('div');
-        videoContainer.classList.add('video-grid');
-
-        const videoTitle = document.createElement('h2');
-        videoTitle.textContent = lesson.name;
-
-        const videoElement = document.createElement('video');
-        videoElement.setAttribute('preload', 'metadata');
-        videoElement.setAttribute('poster', 'https://via.placeholder.com/600x400.png?text=Loading...');
-        
-        const sourceElement = document.createElement('source');
-        sourceElement.src = lesson.videoUrl;
-        sourceElement.type = 'video/mp4';
-
-        const trackElement = document.createElement('track');
-        trackElement.src = lesson.srtUrl;
-        trackElement.kind = 'subtitles';
-        trackElement.srclang = 'en';
-        trackElement.label = 'English';
-
-        videoElement.appendChild(sourceElement);
-        videoElement.appendChild(trackElement);
-        
-        videoContainer.appendChild(videoTitle);
-        videoContainer.appendChild(videoElement);
-
-        videoElement.controls = false;
-
-        videoElement.addEventListener('loadeddata', () => {
-            videoElement.currentTime = 0.5;
-            videoElement.pause();
-        });
-
-        videoContainer.addEventListener('click', () => {
-            if (videoElement.paused) {
-                videoElement.play();
-            } else {
-                videoElement.pause();
-            }
-        });
-
-        videoElement.addEventListener('click', () => {
-            videoElement.controls = true;
-        });
-
-        return videoContainer;
-    }
-
-    lessons.forEach(lesson => {
-        const videoElement = createVideoElement(lesson);
-        videoItem.appendChild(videoElement);
-    });
-}
-
-//=============================
-// Bloco Sem Nome
+// Bloco de Estado
 //=============================
 let selectedVideo = null;
 let selectedPlayerMode = null; // 'solo', 'multi', 'computer'
@@ -1270,517 +1164,413 @@ let selectedMultiplayerGameMode = null; // 'corrida', 'ataque'
 let isLoggedIn = false; // Simula status de login
 let currentSection = 'avulsas';
 
-// Elementos
-const btnTrilha = document.getElementById('btnTrilha');
-const btnBuscar = document.getElementById('btnBuscar');
-const trilhaSection = document.getElementById('trilha-section');
+// Dados dos amigos (simulado)
+const friends = [
+    { id: 1, name: 'João Silva', avatar: '👨‍🎓' },
+    { id: 2, name: 'Maria Santos', avatar: '👩‍🎓' },
+    { id: 3, name: 'Pedro Costa', avatar: '👨‍💻' },
+    { id: 4, name: 'Ana Oliveira', avatar: '👩‍🔬' }
+];
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', () => {
+
+    // Render videos for both sections
+    generateVideoCards(avulsasLessons, avulsasGrid);
+    generateVideoCards(trilhaLessons, trilhaGrid);
+    
+    gameSection.classList.add('hidden');
+    
+    // Check user authentication status
+    checkAuthStatus();
+});
+
+//=============================
+// Bloco Avulsas / Trilha
+//=============================
+        const avulsasLessons = [
+            {
+                name: "Chapter 1. Welcome & Nationalities",
+                srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
+                videoUrl: "https://f005.backblazeb2.com/file/Trilha/Chapter-1.-Welcome-%26-Nationalities.mp4"
+            },
+            {
+                name: "Chapter 2. Common Phrases",
+                srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
+                videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
+            },
+            {
+                name: "Chapter 3. Greetings",
+                srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
+                videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
+            },
+            {
+                name: "Chapter 4. Numbers",
+                srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
+                videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
+            }
+        ];
+
+        const trilhaLessons = [
+            {
+                name: "Lesson 1: The Alphabet",
+                srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
+                videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
+            },
+            {
+                name: "Lesson 2: Vowels",
+                srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
+                videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
+            }
+        ];
+
+        const avulsasGrid = document.getElementById('avulsas-grid');
+        const trilhaGrid = document.getElementById('trilha-grid');
+        const avulsasSection = document.getElementById('avulsas-section');
+        const trilhaSection = document.getElementById('trilha-section');
+        const btnAvulsas = document.getElementById('btnAvulsas');
+        const btnTrilha = document.getElementById('btnTrilha');
+        const navButtons = document.querySelectorAll('.nav-buttons button');
+
+        function generateVideoCards(lessons, container) {
+            container.innerHTML = ''; // Clear existing content
+            lessons.forEach(lesson => {
+                const videoContainer = document.createElement('div');
+                videoContainer.classList.add('video-container');
+
+                const title = document.createElement('h2');
+                title.textContent = lesson.name;
+
+                const video = document.createElement('video');
+                video.controls = true;
+                video.src = lesson.videoUrl;
+
+                const track = document.createElement('track');
+                track.kind = "subtitles";
+                track.src = lesson.srtUrl;
+                track.srclang = "en";
+                track.label = "English";
+                video.appendChild(track);
+
+                videoContainer.appendChild(title);
+                videoContainer.appendChild(video);
+                container.appendChild(videoContainer);
+            });
+        }
+
+        function switchSection(targetSection) {
+            navButtons.forEach(btn => btn.classList.remove('active'));
+
+            if (targetSection === 'avulsas') {
+                avulsasSection.classList.remove('hidden');
+                trilhaSection.classList.add('hidden');
+                btnAvulsas.classList.add('active');
+            } else if (targetSection === 'trilha') {
+                trilhaSection.classList.remove('hidden');
+                avulsasSection.classList.add('hidden');
+                btnTrilha.classList.add('active');
+            }
+        }
+
+        // Event listeners for navigation buttons
+        btnAvulsas.addEventListener('click', () => {
+            switchSection('avulsas');
+        });
+
+        btnTrilha.addEventListener('click', () => {
+            switchSection('trilha');
+        });
+// Navegação principal
+btnAvulsas.addEventListener('click', () => {
+    currentSection = 'avulsas';
+    deactivateAllButtons();
+    btnAvulsas.classList.add('active');
+    hideAllSections();
+    avulsasSection.classList.remove('hidden');
+    loginScreen.classList.add('hidden');
+    signupScreen.classList.add('hidden');
+});
+
+btnTrilha.addEventListener('click', () => {
+    currentSection = 'trilha';
+    deactivateAllButtons();
+    btnTrilha.classList.add('active');
+    hideAllSections();
+    trilhaSection.classList.remove('hidden');
+    loginScreen.classList.add('hidden');
+    signupScreen.classList.add('hidden');
+});
+
+btnBuscar.addEventListener('click', () => {
+    deactivateAllButtons();
+    btnBuscar.classList.add('active');
+    hideAllSections();
+    const searchTerm = prompt('🔍 Digite o termo de busca:');
+    if (searchTerm) {
+        alert(`Buscando por: "${searchTerm}"\n\nFuncionalidade em desenvolvimento!`);
+    }
+    if (currentSection === 'avulsas') {
+        btnAvulsas.click();
+    } else {
+        btnTrilha.click();
+    }
+});
+
+// Funções de Seleção de Modo
 const modeSelection = document.getElementById('mode-selection');
-const playerModeButtons = document.getElementById('player-mode-buttons');
 const timeModeContainer = document.getElementById('time-mode-container');
+const playerModeButtons = document.getElementById('player-mode-buttons');
+function showModeSelection() {
+    hideAllSections();
+    const videoTitle = document.querySelector('.video-item.selected .video-title').textContent;
+    document.getElementById('selected-video-title').textContent = videoTitle;
+    
+    // Reseta as seleções de modo
+    selectedPlayerMode = null;
+    selectedTimeMode = null;
+    selectedMultiplayerGameMode = null;
+    document.querySelectorAll('#player-mode-buttons .mode-button').forEach(btn => btn.classList.remove('selected'));
+    document.querySelectorAll('#time-mode-buttons .mode-button').forEach(btn => btn.classList.remove('selected'));
+    timeModeContainer.classList.add('hidden');
+    
+    modeSelection.classList.remove('hidden');
+}
+
+// Função para selecionar o modo de jogador (Solo, Multi, vs. Computador)
+function selectPlayerMode(mode) {
+    selectedPlayerMode = mode;
+    document.querySelectorAll('#player-mode-buttons .mode-button').forEach(btn => btn.classList.remove('selected'));
+    
+    // Adiciona a classe 'selected' ao botão clicado
+    const clickedButton = event.target;
+    clickedButton.classList.add('selected');
+    
+    timeModeContainer.classList.add('hidden');
+    
+    setTimeout(() => {
+        if (mode === 'solo' || mode === 'computer') {
+            timeModeContainer.classList.remove('hidden');
+        } else if (mode === 'multi') {
+            showMultiplayerGameModeSelection();
+        }
+    }, 500);
+}
+
+// Função para selecionar o modo de tempo (Estudo ou Desafio)
+function selectTimeMode(mode) {
+    selectedTimeMode = mode;
+    document.querySelectorAll('#time-mode-buttons .mode-button').forEach(btn => btn.classList.remove('selected'));
+    
+    const clickedButton = event.target;
+    clickedButton.classList.add('selected');
+    
+    setTimeout(() => {
+        let alertMessage = '';
+        if (selectedPlayerMode === 'solo') {
+            alertMessage += '🎯 Modo Solo selecionado.\n\n';
+        } else if (selectedPlayerMode === 'computer') {
+            alertMessage += '🤖 Modo vs. Computador selecionado.\n\n';
+        }
+        
+        if (mode === 'study') {
+            alertMessage += '📖 Modo de Estudo ativado. Jogue sem pressão!';
+        } else {
+            alertMessage += '⏱️ Modo de Desafio ativado. O cronômetro já está correndo!';
+        }
+        showAlert(alertMessage);
+        
+        showGameSection();
+    }, 500);
+}
+
+// Funções de Multiplayer
 const multiplayerGameModeSelection = document.getElementById('multiplayer-game-mode-selection');
 const multiplayerChallengeOptions = document.getElementById('multiplayer-challenge-options');
 const friendChallenge = document.getElementById('friend-challenge');
 const gameStatus = document.getElementById('game-status');
 const gameReady = document.getElementById('game-ready');
-const navButtons = document.querySelectorAll('.nav-buttons button');
-const gameSection = document.getElementById('game-section');
-
-// Dados dos amigos (simulado)
-const friends = [
-    { id: 1, name: 'João Silva', avatar: '👨‍🎓' },
-    { id: 2, name: 'Maria Santos', avatar: '👩‍🎓' },
-    { id: 3, name: 'Pedro Costa', avatar: '👨‍💻' },
-    { id: 4, name: 'Ana Oliveira', avatar: '👩‍🔬' }
-];
-
-// A função de alerta deve estar aqui, antes das funções que a chamam
-function showAlert(message) {
-    const customAlert = document.getElementById('custom-alert');
-    const alertMessage = document.getElementById('alert-message');
-
-    alertMessage.textContent = message;
-    customAlert.classList.remove('hidden');
-}
-
-// O event listener do botão de fechar
-document.getElementById('close-alert-btn').addEventListener('click', () => {
-    document.getElementById('custom-alert').classList.add('hidden');
-});
-
-// Configuração do Appwrite
-    const client = new Appwrite.Client()
-        .setEndpoint('https://nyc.cloud.appwrite.io/v1')
-        .setProject('689f3d3a00095fde3112');
-
-    const account = new Appwrite.Account(client);
-
-    // Seletores de elementos HTML (TODOS JUNTOS AQUI)
-    const loginScreen = document.getElementById('login-screen');
-    const signupScreen = document.getElementById('signup-screen');
-    const recoverScreen = document.getElementById('recover-screen');
-    const userScreen = document.getElementById('user-screen');
-
-    const btnLoginHeader = document.getElementById('btnLogin');
-    const btnSignupHeader = document.getElementById('btnSignup');
-    
-    const btnCloseLogin = document.getElementById('btnCloseLogin');
-    const btnCloseSignup = document.getElementById('btnCloseSignup');
-    const btnCloseRecover = document.getElementById('btnCloseRecover');
-
-    const loginForm = document.getElementById('login-form');
-    const signupForm = document.getElementById('signup-form');
-    const recoverForm = document.getElementById('recover-form');
-    const logoutButton = document.getElementById('logout-button');
-
-    const welcomeMessage = document.getElementById('welcome-message');
-    const loginMessage = document.getElementById('login-message');
-    const signupMessage = document.getElementById('signup-message');
-    const recoverMessage = document.getElementById('recover-message');
-
-    const linkToSignup = document.getElementById('link-to-signup');
-    const linkToLogin = document.getElementById('link-to-login');
-    const linkToRecover = document.getElementById('link-to-recover');
-    const linkToLoginFromRecover = document.getElementById('link-to-login-from-recover');
-    const linkToSignupFromRecover = document.getElementById('link-to-signup-from-recover');
-
-    // Função para mostrar uma seção específica
-    function showSection(section) {
-        // Esconde todas as seções primeiro
-        loginScreen.classList.add('hidden');
-        signupScreen.classList.add('hidden');
-        recoverScreen.classList.add('hidden');
-        userScreen.classList.add('hidden');
-    
-        // Apenas mostra a seção correta
-        if (section === 'login') {
-            loginScreen.classList.remove('hidden');
-        } else if (section === 'signup') {
-            signupScreen.classList.remove('hidden');
-        } else if (section === 'recover') {
-            recoverScreen.classList.remove('hidden');
-        } else if (section === 'user') {
-            userScreen.classList.remove('hidden');
-        }
-    }
-
-    // Função para verificar o status de login
-    async function checkAuthStatus() {
-        try {
-            const user = await account.get();
-            welcomeMessage.textContent = `Bem-vindo, ${user.name || user.email}!`;
-            showSection('user');
-        } catch (error) {
-            showSection('main');
-        }
-    }
-    
-    // Eventos para abrir as modais a partir do cabeçalho
-    btnLoginHeader.addEventListener('click', () => {
-        showSection('login');
-    });
-    btnSignupHeader.addEventListener('click', () => {
-        showSection('signup');
-    });
-
-    btnCloseLogin.addEventListener('click', () => {
-        loginScreen.classList.add('hidden');
-    });
-    btnCloseSignup.addEventListener('click', () => {
-        signupScreen.classList.add('hidden');
-    });
-    btnCloseRecover.addEventListener('click', () => {
-        recoverScreen.classList.add('hidden');
-    });
-
-    // Eventos para alternar entre as telas de login, cadastro e recuperação
-    linkToSignup.addEventListener('click', (e) => {
-        e.preventDefault();
-        showSection('signup');
-    });
-    linkToLogin.addEventListener('click', (e) => {
-        e.preventDefault();
-        showSection('login');
-    });
-    linkToRecover.addEventListener('click', (e) => {
-        e.preventDefault();
-        showSection('recover');
-    });
-    linkToLoginFromRecover.addEventListener('click', (e) => {
-        e.preventDefault();
-        showSection('login');
-    });
-    linkToSignupFromRecover.addEventListener('click', (e) => {
-        e.preventDefault();
-        showSection('signup');
-    });
-
-    // Evento de submissão do formulário de login
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('email-login').value;
-        const password = document.getElementById('password-login').value;
-        loginMessage.textContent = '';
-        try {
-            await account.createEmailPasswordSession(email, password);
-            checkAuthStatus();
-        } catch (error) {
-            loginMessage.textContent = 'Erro no login: ' + error.message;
-        }
-    });
-
-    // Evento de submissão do formulário de cadastro
-    signupForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const nome = document.getElementById('nome-signup').value;
-        const email = document.getElementById('email-signup').value;
-        const senha = document.getElementById('senha-signup').value;
-        signupMessage.textContent = '';
-        try {
-            await account.create(Appwrite.ID.unique(), email, senha, nome);
-            signupMessage.textContent = 'Usuário cadastrado com sucesso! Você pode fazer login agora.';
-            setTimeout(() => showSection('login'), 2000);
-        } catch (error) {
-            signupMessage.textContent = 'Erro ao cadastrar: ' + error.message;
-        }
-    });
-
-    // Evento de submissão do formulário de recuperação
-    recoverForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('email-recover').value;
-        recoverMessage.textContent = '';
-        try {
-            const resetUrl = window.location.href.split('#')[0] + '#reset-password';
-            await account.createRecovery(email, resetUrl);
-            recoverMessage.textContent = 'Se o e-mail existir, um link de recuperação foi enviado.';
-        } catch (error) {
-            recoverMessage.textContent = 'Erro ao enviar o link: ' + error.message;
-        }
-    });
-
-    // Evento de clique do botão de logout
-    logoutButton.addEventListener('click', async () => {
-        try {
-            await account.deleteSession('current');
-            checkAuthStatus(); // Redireciona para a tela inicial
-        } catch (error) {
-            alert('Falha ao sair: ' + error.message);
-        }
-    });
-
-    // Chama a função para verificar o status de login ao carregar a página
-    window.addEventListener('load', checkAuthStatus);
-// Funções Primárias de Navegação
-function deactivateAllButtons() {
-    navButtons.forEach(button => {
-        button.classList.remove('active');
-    });
-}
-
-function hideAllSections() {
-    avulsasSection.classList.add('hidden');
-    trilhaSection.classList.add('hidden');
-    modeSelection.classList.add('hidden');
-    multiplayerGameModeSelection.classList.add('hidden');
-    multiplayerChallengeOptions.classList.add('hidden');
-    friendChallenge.classList.add('hidden');
-    gameStatus.classList.add('hidden');
-    gameReady.classList.add('hidden');
-    gameSection.classList.add('hidden');
-}
-
-function setupVideoSelection() {
-    const videoItems = document.querySelectorAll('.video-item');
-    videoItems.forEach(item => {
-        item.addEventListener('click', () => {
-            videoItems.forEach(v => v.classList.remove('selected'));
-            item.classList.add('selected');
-            selectedVideo = item.dataset.video;
-            setTimeout(() => {
-                showModeSelection();
-            }, 500);
-        });
-    });
-}
-
-function showModeSelection() {
-    hideAllSections();
-    const videoTitle = document.querySelector('.video-item.selected .video-title').textContent;
-    document.getElementById('selected-video-title').textContent = videoTitle;
-    
-    // Reseta as seleções de modo
-    selectedPlayerMode = null;
-    selectedTimeMode = null;
-    selectedMultiplayerGameMode = null;
-    document.querySelectorAll('#player-mode-buttons .mode-button').forEach(btn => btn.classList.remove('selected'));
-    document.querySelectorAll('#time-mode-buttons .mode-button').forEach(btn => btn.classList.remove('selected'));
-    timeModeContainer.classList.add('hidden');
-    
-    modeSelection.classList.remove('hidden');
-}
-
-// Função para selecionar o modo de jogador (Solo, Multi, vs. Computador)
-function selectPlayerMode(mode) {
-    selectedPlayerMode = mode;
-    document.querySelectorAll('#player-mode-buttons .mode-button').forEach(btn => btn.classList.remove('selected'));
-    
-    // Adiciona a classe 'selected' ao botão clicado
-    const clickedButton = event.target;
-    clickedButton.classList.add('selected');
-    
-    timeModeContainer.classList.add('hidden');
-    
-    setTimeout(() => {
-        if (mode === 'solo' || mode === 'computer') {
-            timeModeContainer.classList.remove('hidden');
-        } else if (mode === 'multi') {
-            showMultiplayerGameModeSelection();
-        }
-    }, 500);
-}
-
-// Função para selecionar o modo de tempo (Estudo ou Desafio)
-function selectTimeMode(mode) {
-    selectedTimeMode = mode;
-    document.querySelectorAll('#time-mode-buttons .mode-button').forEach(btn => btn.classList.remove('selected'));
-    
-    const clickedButton = event.target;
-    clickedButton.classList.add('selected');
-    
-    setTimeout(() => {
-        let alertMessage = '';
-        if (selectedPlayerMode === 'solo') {
-            alertMessage += '🎯 Modo Solo selecionado.\n\n';
-        } else if (selectedPlayerMode === 'computer') {
-            alertMessage += '🤖 Modo vs. Computador selecionado.\n\n';
-        }
-        
-        if (mode === 'study') {
-            alertMessage += '📖 Modo de Estudo ativado. Jogue sem pressão!';
-        } else {
-            alertMessage += '⏱️ Modo de Desafio ativado. O cronômetro já está correndo!';
-        }
-        showAlert(alertMessage);
-        
-        showGameSection();
-    }, 500);
-}
-
 function showMultiplayerGameModeSelection() {
-    hideAllSections();
-    const videoTitle = document.querySelector('.video-item.selected .video-title').textContent;
-    document.getElementById('selected-video-title-multiplayer').textContent = videoTitle;
-    document.querySelectorAll('#multiplayer-game-mode-selection .mode-button').forEach(btn => btn.classList.remove('selected'));
-    multiplayerGameModeSelection.classList.remove('hidden');
+    hideAllSections();
+    const videoTitle = document.querySelector('.video-item.selected .video-title').textContent;
+    document.getElementById('selected-video-title-multiplayer').textContent = videoTitle;
+    document.querySelectorAll('#multiplayer-game-mode-selection .mode-button').forEach(btn => btn.classList.remove('selected'));
+    multiplayerGameModeSelection.classList.remove('hidden');
 }
 
 function selectMultiplayerGameMode(gameMode) {
-    selectedMultiplayerGameMode = gameMode;
-    document.querySelectorAll('#multiplayer-game-mode-selection .mode-button').forEach(btn => {
-        btn.classList.remove('selected');
-    });
-    if (event && event.target) {
-        event.target.classList.add('selected');
-    }
-    setTimeout(() => {
-        showMultiplayerChallengeOptions();
-    }, 500);
+    selectedMultiplayerGameMode = gameMode;
+    document.querySelectorAll('#multiplayer-game-mode-selection .mode-button').forEach(btn => {
+        btn.classList.remove('selected');
+    });
+    if (event && event.target) {
+        event.target.classList.add('selected');
+    }
+    setTimeout(() => {
+        showMultiplayerChallengeOptions();
+    }, 500);
 }
 
 function showMultiplayerChallengeOptions() {
-    hideAllSections();
-    const gameModeTitleElement = document.getElementById('selected-multiplayer-game-mode-title');
-    if (selectedMultiplayerGameMode === 'corrida') {
-        gameModeTitleElement.textContent = 'Corrida de Frases';
-    } else if (selectedMultiplayerGameMode === 'ataque') {
-        gameModeTitleElement.textContent = 'Ataque de Palavras';
-    }
-    multiplayerChallengeOptions.classList.remove('hidden');
+    hideAllSections();
+    const gameModeTitleElement = document.getElementById('selected-multiplayer-game-mode-title');
+    if (selectedMultiplayerGameMode === 'corrida') {
+        gameModeTitleElement.textContent = 'Corrida de Frases';
+    } else if (selectedMultiplayerGameMode === 'ataque') {
+        gameModeTitleElement.textContent = 'Ataque de Palavras';
+    }
+    multiplayerChallengeOptions.classList.remove('hidden');
 }
 
 function challengeFriend() {
-    hideAllSections();
-    friendChallenge.classList.remove('hidden');
-    if (!isLoggedIn) {
-        document.getElementById('login-prompt').classList.remove('hidden');
-        document.getElementById('friend-list-container').classList.add('hidden');
-    } else {
-        document.getElementById('login-prompt').classList.add('hidden');
-        document.getElementById('friend-list-container').classList.remove('hidden');
-        loadFriendList();
-    }
+    hideAllSections();
+    friendChallenge.classList.remove('hidden');
+    if (!isLoggedIn) {
+        document.getElementById('login-prompt').classList.remove('hidden');
+        document.getElementById('friend-list-container').classList.add('hidden');
+    } else {
+        document.getElementById('login-prompt').classList.add('hidden');
+        document.getElementById('friend-list-container').classList.remove('hidden');
+        loadFriendList();
+    }
 }
 
 function loginPrompt() {
-    isLoggedIn = true;
-    document.getElementById('login-prompt').classList.add('hidden');
-    document.getElementById('friend-list-container').classList.remove('hidden');
-    loadFriendList();
+    isLoggedIn = true;
+    document.getElementById('login-prompt').classList.add('hidden');
+    document.getElementById('friend-list-container').classList.remove('hidden');
+    loadFriendList();
 }
 
 function loadFriendList() {
-    const friendList = document.getElementById('friend-list');
-    friendList.innerHTML = '';
-    friends.forEach(friend => {
-        const friendItem = document.createElement('div');
-        friendItem.className = 'friend-item';
-        friendItem.innerHTML = `
-            <div style="font-size: 2em; margin-bottom: 10px;">${friend.avatar}</div>
-            <div>${friend.name}</div>
-        `;
-        friendItem.addEventListener('click', () => challengeSpecificFriend(friend));
-        friendList.appendChild(friendItem);
-    });
+    const friendList = document.getElementById('friend-list');
+    friendList.innerHTML = '';
+    friends.forEach(friend => {
+        const friendItem = document.createElement('div');
+        friendItem.className = 'friend-item';
+        friendItem.innerHTML = `
+            <div style="font-size: 2em; margin-bottom: 10px;">${friend.avatar}</div>
+            <div>${friend.name}</div>
+        `;
+        friendItem.addEventListener('click', () => challengeSpecificFriend(friend));
+        friendList.appendChild(friendItem);
+    });
 }
 
 function challengeSpecificFriend(friend) {
-    showGameStatus('Desafio enviado!', `Aguardando ${friend.name} aceitar o desafio...`);
-    setTimeout(() => {
-        if (Math.random() > 0.3) {
-            showGameReady(friend.name);
-        } else {
-            showGameStatus('Desafio recusado', `${friend.name} recusou o desafio. Tente novamente!`);
-        }
-    }, 3000);
+    showGameStatus('Desafio enviado!', `Aguardando ${friend.name} aceitar o desafio...`);
+    setTimeout(() => {
+        if (Math.random() > 0.3) {
+            showGameReady(friend.name);
+        } else {
+            showGameStatus('Desafio recusado', `${friend.name} recusou o desafio. Tente novamente!`);
+        }
+    }, 3000);
 }
 
 function waitForOpponent() {
-    showGameStatus('Buscando oponente...', 'Aguarde enquanto procuramos um oponente para você!');
-    setTimeout(() => {
-        const randomOpponent = `Jogador${Math.floor(Math.random() * 1000)}`;
-        showGameReady(randomOpponent);
-    }, 2000 + Math.random() * 3000);
+    showGameStatus('Buscando oponente...', 'Aguarde enquanto procuramos um oponente para você!');
+    setTimeout(() => {
+        const randomOpponent = `Jogador${Math.floor(Math.random() * 1000)}`;
+        showGameReady(randomOpponent);
+    }, 2000 + Math.random() * 3000);
 }
 
 function showGameStatus(title, message) {
-    hideAllSections();
-    document.getElementById('status-title').textContent = title;
-    document.getElementById('status-message').textContent = message;
-    gameStatus.classList.remove('hidden');
+    hideAllSections();
+    document.getElementById('status-title').textContent = title;
+    document.getElementById('status-message').textContent = message;
+    gameStatus.classList.remove('hidden');
 }
 
 function showGameReady(opponentName) {
-    hideAllSections();
-    document.getElementById('opponent-name').textContent = opponentName;
-    gameReady.classList.remove('hidden');
-    let countdown = 3;
-    const countdownElement = document.getElementById('countdown');
-    countdownElement.textContent = countdown;
-    const countdownInterval = setInterval(() => {
-        countdown--;
-        countdownElement.textContent = countdown;
-        if (countdown <= 0) {
-            clearInterval(countdownInterval);
-            startGame();
-        }
-    }, 1000);
+    hideAllSections();
+    document.getElementById('opponent-name').textContent = opponentName;
+    gameReady.classList.remove('hidden');
+    let countdown = 3;
+    const countdownElement = document.getElementById('countdown');
+    countdownElement.textContent = countdown;
+    const countdownInterval = setInterval(() => {
+        countdown--;
+        countdownElement.textContent = countdown;
+        if (countdown <= 0) {
+            clearInterval(countdownInterval);
+            startGame();
+        }
+    }, 1000);
 }
 
+// Funções de Jogo
+const gameSection = document.getElementById('game-section');
 function showGameSection() {
-    hideAllSections();
-    gameSection.classList.remove('hidden');
-    console.log("Iniciando jogo na seção game-section...");
+    hideAllSections();
+    gameSection.classList.remove('hidden');
+    console.log("Iniciando jogo na seção game-section...");
 }
 
 function startGame() {
-    let gameModeText = '';
-    if (selectedPlayerMode === 'solo' && selectedTimeMode === 'study') {
-        gameModeText = 'Solo - Modo de Estudo';
-    } else if (selectedPlayerMode === 'solo' && selectedTimeMode === 'challenge') {
-        gameModeText = 'Solo - Modo de Desafio';
-    } else if (selectedPlayerMode === 'computer' && selectedTimeMode === 'study') {
-        gameModeText = 'vs Computador - Modo de Estudo';
-    } else if (selectedPlayerMode === 'computer' && selectedTimeMode === 'challenge') {
-        gameModeText = 'vs Computador - Modo de Desafio';
-    } else if (selectedPlayerMode === 'multi' && selectedMultiplayerGameMode === 'corrida') {
-        gameModeText = 'Multiplayer - Corrida de Frases';
-    } else if (selectedPlayerMode === 'multi' && selectedMultiplayerGameMode === 'ataque') {
-        gameModeText = 'Multiplayer - Ataque de Palavras';
-    }
+    let gameModeText = '';
+    if (selectedPlayerMode === 'solo' && selectedTimeMode === 'study') {
+        gameModeText = 'Solo - Modo de Estudo';
+    } else if (selectedPlayerMode === 'solo' && selectedTimeMode === 'challenge') {
+        gameModeText = 'Solo - Modo de Desafio';
+    } else if (selectedPlayerMode === 'computer' && selectedTimeMode === 'study') {
+        gameModeText = 'vs Computador - Modo de Estudo';
+    } else if (selectedPlayerMode === 'computer' && selectedTimeMode === 'challenge') {
+        gameModeText = 'vs Computador - Modo de Desafio';
+    } else if (selectedPlayerMode === 'multi' && selectedMultiplayerGameMode === 'corrida') {
+        gameModeText = 'Multiplayer - Corrida de Frases';
+    } else if (selectedPlayerMode === 'multi' && selectedMultiplayerGameMode === 'ataque') {
+        gameModeText = 'Multiplayer - Ataque de Palavras';
+    }
 
-    showAlert(`🚀 Iniciando partida de "${document.querySelector('.video-item.selected .video-title').textContent}" no modo ${gameModeText}!\n\nBoa sorte!`);
+    showAlert(`🚀 Iniciando partida de "${document.querySelector('.video-item.selected .video-title').textContent}" no modo ${gameModeText}!\n\nBoa sorte!`);
 
-    showGameSection();
+    showGameSection();
 }
 
+// Funções de Gerenciamento de Jogo
 function cancelGame() {
-    resetToSelection();
+    resetToSelection();
 }
 
 function resetToSelection() {
-    selectedVideo = null;
-    selectedPlayerMode = null;
-    selectedTimeMode = null;
-    selectedMultiplayerGameMode = null;
-    document.querySelectorAll('.video-item').forEach(item => {
-        item.classList.remove('selected');
-    });
-    document.querySelectorAll('.mode-button').forEach(btn => {
-        btn.classList.remove('selected');
-    });
-    if (currentSection === 'avulsas') {
-        btnAvulsas.click();
-    } else {
-        btnTrilha.click();
-    }
+    selectedVideo = null;
+    selectedPlayerMode = null;
+    selectedTimeMode = null;
+    selectedMultiplayerGameMode = null;
+    document.querySelectorAll('.video-item').forEach(item => {
+        item.classList.remove('selected');
+    });
+    document.querySelectorAll('.mode-button').forEach(btn => {
+        btn.classList.remove('selected');
+    });
+    if (currentSection === 'avulsas') {
+        btnAvulsas.click();
+    } else {
+        btnTrilha.click();
+    }
 }
 
 // Funções de "Voltar"
 function goBack() {
-    if (currentSection === 'avulsas') {
-        btnAvulsas.click();
-    } else {
-        btnTrilha.click();
-    }
+    if (currentSection === 'avulsas') {
+        btnAvulsas.click();
+    } else {
+        btnTrilha.click();
+    }
 }
 
 function goBackToModeSelection() {
-    showModeSelection();
+    showModeSelection();
 }
 
 function goBackToMultiplayerGameModeSelection() {
-    showMultiplayerGameModeSelection();
+    showMultiplayerGameModeSelection();
 }
 
 function goBackToMultiplayerChallengeOptions() {
-    showMultiplayerChallengeOptions();
+    showMultiplayerChallengeOptions();
 }
-
-// Navegação principal
-btnAvulsas.addEventListener('click', () => {
-    currentSection = 'avulsas';
-    deactivateAllButtons();
-    btnAvulsas.classList.add('active');
-    hideAllSections();
-    avulsasSection.classList.remove('hidden');
-    loginScreen.classList.add('hidden');
-    signupScreen.classList.add('hidden');
-});
-
-btnTrilha.addEventListener('click', () => {
-    currentSection = 'trilha';
-    deactivateAllButtons();
-    btnTrilha.classList.add('active');
-    hideAllSections();
-    trilhaSection.classList.remove('hidden');
-    loginScreen.classList.add('hidden');
-    signupScreen.classList.add('hidden');
-});
-
-btnBuscar.addEventListener('click', () => {
-    deactivateAllButtons();
-    btnBuscar.classList.add('active');
-    hideAllSections();
-    const searchTerm = prompt('🔍 Digite o termo de busca:');
-    if (searchTerm) {
-        alert(`Buscando por: "${searchTerm}"\n\nFuncionalidade em desenvolvimento!`);
-    }
-    if (currentSection === 'avulsas') {
-        btnAvulsas.click();
-    } else {
-        btnTrilha.click();
-    }
-});
 	</script>
   </body>
-	</html>
+</html>
