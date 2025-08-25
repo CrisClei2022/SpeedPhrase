@@ -200,14 +200,21 @@
         }
         
         /*Video Grid*/
-        .video-grid {
+        .video-item-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .video-item {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 25px;
             width: 100%;
         }
 
-        .video-item {
+        .video-grid {
+            position: relative;
             background: rgba(255, 255, 255, 0.05);
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
@@ -217,15 +224,16 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
         }
 
-        .video-item:hover {
+        .video-grid:hover {
             transform: translateY(-5px);
             box-shadow: 0 15px 40px rgba(69, 183, 209, 0.4);
             border-color: rgba(69, 183, 209, 0.5);
         }
 
-        .video-item h2 {
+        .video-grid h2 {
             font-size: 1.4em;
             color: #ffffff;
             margin-bottom: 15px;
@@ -242,16 +250,20 @@
             display: block;
             transition: transform 0.3s ease;
         }
-
-        .video-item:hover video {
+        
+        .video-grid:hover video {
             transform: scale(1.02);
         }
 
+        .video-grid:hover .play-icon {
+            opacity: 1;
+        }
+        
         @media (max-width: 768px) {
-            .video-grid {
+            .video-item {
                 grid-template-columns: 1fr;
             }
-        }
+        }    
         .play-icon {
             width: 50px;
             height: 50px;
@@ -963,8 +975,8 @@
 		  <button id="close-alert-btn" class="close-btn">✕</button>
 		</div>
 		
-        <section id="avulsas-section" class="video-grid">
-            <div id="videoGrid" class="video-grid"></div>
+        <section id="avulsas-section" class="video-grid-container">
+            <div id="videoItem" class="video-item"></div>
         </section>
         
         <section id="trilha-section" class="video-grid hidden">
@@ -1162,53 +1174,91 @@ document.addEventListener('DOMContentLoaded', () => {
     btnAvulsas.click();
     setupVideoSelection();
     gameSection.classList.add('hidden');
+    renderVideoLessons();
 });
 
 //=============================
 // Bloco Avulsas
 //=============================
+function renderVideoLessons() {
+    const videoItem = document.getElementById('videoItem');
+    const lessons = [
+        {
+            name: "Chapter 1. Welcome & Nationalities",
+            srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
+            videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
+        },
+        {
+            name: "Chapter 1. Welcome & Nationalities",
+            srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
+            videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
+        },
+        {
+            name: "Chapter 1. Welcome & Nationalities",
+            srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
+            videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
+        },
+        {
+            name: "Chapter 1. Welcome & Nationalities",
+            srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
+            videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
+        }
+    ];
 
-        const lessons = [
-            {
-                name: "Chapter 1. Welcome & Nationalities",
-                srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
-                videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
-            },
-            {
-                name: "Chapter 2. Welcome & Nationalities",
-                srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
-                videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
-            },
-            {
-                name: "Chapter 3. Welcome & Nationalities",
-                srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
-                videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
-            },
-            {
-                name: "Chapter 4. Welcome & Nationalities",
-                srtUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43c3000f1c44f724/view?project=689f3d3a00095fde3112&mode=admin",
-                videoUrl: "https://nyc.cloud.appwrite.io/v1/storage/buckets/68ab42ec0024a2d3330c/files/68ab43db002c1ba8b7b9/view?project=689f3d3a00095fde3112&mode=admin"
-            }
-        ];
+    function createVideoElement(lesson) {
+        const videoContainer = document.createElement('div');
+        videoContainer.classList.add('video-grid');
 
-        const avulsasSection = document.getElementById('avulsas-section');
+        const videoTitle = document.createElement('h2');
+        videoTitle.textContent = lesson.name;
 
-        lessons.forEach(lesson => {
-            const container = document.createElement('div');
-            container.className = 'video-item';
+        const videoElement = document.createElement('video');
+        videoElement.setAttribute('preload', 'metadata');
+        videoElement.setAttribute('poster', 'https://via.placeholder.com/600x400.png?text=Loading...');
+        
+        const sourceElement = document.createElement('source');
+        sourceElement.src = lesson.videoUrl;
+        sourceElement.type = 'video/mp4';
 
-            const title = document.createElement('h2');
-            title.textContent = lesson.name;
-            
-            const video = document.createElement('video');
-            video.src = lesson.videoUrl;
-            video.preload = 'metadata'; // Carrega metadados sem o vídeo completo
-            video.controls = false; // Oculta todos os controles padrão do vídeo
+        const trackElement = document.createElement('track');
+        trackElement.src = lesson.srtUrl;
+        trackElement.kind = 'subtitles';
+        trackElement.srclang = 'en';
+        trackElement.label = 'English';
 
-            container.appendChild(title);
-            container.appendChild(video);
-            avulsasSection.appendChild(container);
+        videoElement.appendChild(sourceElement);
+        videoElement.appendChild(trackElement);
+        
+        videoContainer.appendChild(videoTitle);
+        videoContainer.appendChild(videoElement);
+
+        videoElement.controls = false;
+
+        videoElement.addEventListener('loadeddata', () => {
+            videoElement.currentTime = 0.5;
+            videoElement.pause();
         });
+
+        videoContainer.addEventListener('click', () => {
+            if (videoElement.paused) {
+                videoElement.play();
+            } else {
+                videoElement.pause();
+            }
+        });
+
+        videoElement.addEventListener('click', () => {
+            videoElement.controls = true;
+        });
+
+        return videoContainer;
+    }
+
+    lessons.forEach(lesson => {
+        const videoElement = createVideoElement(lesson);
+        videoItem.appendChild(videoElement);
+    });
+}
 
 //=============================
 // Bloco Sem Nome
@@ -1733,4 +1783,4 @@ btnBuscar.addEventListener('click', () => {
 });
 	</script>
   </body>
-</html>
+	</html>
