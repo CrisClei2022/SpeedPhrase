@@ -1178,7 +1178,7 @@ const friends = [
 ];
 
 //=============================
-// Declaração de Elementos
+// Declaração de Elementos e Dados
 //=============================
 const avulsasLessons = [
     {
@@ -1240,7 +1240,7 @@ const gameReady = document.getElementById('game-ready');
 // Funções
 //=============================
 function generateVideoCards(lessons, container) {
-    container.innerHTML = ''; // Limpa o conteúdo existente
+    container.innerHTML = ''; 
     lessons.forEach(lesson => {
         const videoContainer = document.createElement('div');
         videoContainer.classList.add('video-container', 'video-item');
@@ -1283,7 +1283,6 @@ function hideAllSections() {
     document.querySelectorAll('main > section').forEach(section => {
         section.classList.add('hidden');
     });
-    // Adiciona as telas de jogo/login/etc. que não são <section>
     modeSelection.classList.add('hidden');
     multiplayerGameModeSelection.classList.add('hidden');
     multiplayerChallengeOptions.classList.add('hidden');
@@ -1295,21 +1294,19 @@ function hideAllSections() {
 
 function switchSection(targetSection) {
     deactivateAllButtons();
+    hideAllSections();
 
     if (targetSection === 'avulsas') {
-        hideAllSections();
         avulsasSection.classList.remove('hidden');
         btnAvulsas.classList.add('active');
         currentSection = 'avulsas';
     } else if (targetSection === 'trilha') {
-        hideAllSections();
         trilhaSection.classList.remove('hidden');
         btnTrilha.classList.add('active');
         currentSection = 'trilha';
     }
 }
 
-// Funções de Jogo e Navegação
 function showModeSelection() {
     hideAllSections();
     const videoTitle = selectedVideo ? selectedVideo.name : 'N/A';
@@ -1328,8 +1325,9 @@ function showModeSelection() {
 function selectPlayerMode(mode) {
     selectedPlayerMode = mode;
     document.querySelectorAll('#player-mode-buttons .mode-button').forEach(btn => btn.classList.remove('selected'));
-    const clickedButton = event.target;
-    clickedButton.classList.add('selected');
+    if (event && event.target) {
+        event.target.classList.add('selected');
+    }
     
     timeModeContainer.classList.add('hidden');
     
@@ -1345,22 +1343,25 @@ function selectPlayerMode(mode) {
 function selectTimeMode(mode) {
     selectedTimeMode = mode;
     document.querySelectorAll('#time-mode-buttons .mode-button').forEach(btn => btn.classList.remove('selected'));
-    const clickedButton = event.target;
-    clickedButton.classList.add('selected');
+    if (event && event.target) {
+        event.target.classList.add('selected');
+    }
     
     setTimeout(() => {
         let alertMessage = '';
+        
         if (selectedPlayerMode === 'solo') {
             alertMessage += '🎯 Modo Solo selecionado.\n\n';
         } else if (selectedPlayerMode === 'computer') {
             alertMessage += '🤖 Modo vs. Computador selecionado.\n\n';
         }
         
-        if (mode === 'study') {
+        if (selectedTimeMode === 'study') {
             alertMessage += '📖 Modo de Estudo ativado. Jogue sem pressão!';
-        } else {
+        } else if (selectedTimeMode === 'challenge') {
             alertMessage += '⏱️ Modo de Desafio ativado. O cronômetro já está correndo!';
         }
+        
         showAlert(alertMessage);
         
         showGameSection();
@@ -1548,8 +1549,13 @@ function goBackToMultiplayerChallengeOptions() {
     showMultiplayerChallengeOptions();
 }
 
+// A função de alerta deve estar aqui, antes das funções que a chamam
 function showAlert(message) {
-    alert(message);
+    const customAlert = document.getElementById('custom-alert');
+    const alertMessage = document.getElementById('alert-message');
+
+    alertMessage.textContent = message;
+    customAlert.classList.remove('hidden');
 }
 
 function checkAuthStatus() {
@@ -1570,6 +1576,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Oculta todas as seções, exceto a inicial
     hideAllSections();
     avulsasSection.classList.remove('hidden');
+    btnAvulsas.classList.add('active');
 
     // Event listeners para navegação principal
     btnAvulsas.addEventListener('click', () => {
@@ -1587,23 +1594,37 @@ document.addEventListener('DOMContentLoaded', () => {
         if (searchTerm) {
             alert(`Buscando por: "${searchTerm}"\n\nFuncionalidade em desenvolvimento!`);
         }
-        goBack(); // Volta para a seção anterior após a busca
+        goBack();
     });
-    
-    // Opcional: Adicionar event listeners para os botões de modo
-    document.querySelectorAll('#player-mode-buttons .mode-button').forEach(button => {
-        button.addEventListener('click', (event) => selectPlayerMode(event.target.dataset.mode));
-    });
+    // O event listener do botão de fechar
+document.getElementById('close-alert-btn').addEventListener('click', () => {
+    document.getElementById('custom-alert').classList.add('hidden');
+});
+    // Event listeners para os botões de modo de jogo
+    // Adiciona event listeners para os botões do player-mode
+    document.getElementById('solo-mode').addEventListener('click', () => selectPlayerMode('solo'));
+    document.getElementById('multi-mode').addEventListener('click', () => selectPlayerMode('multi'));
+    document.getElementById('computer-mode').addEventListener('click', () => selectPlayerMode('computer'));
 
-    document.querySelectorAll('#time-mode-buttons .mode-button').forEach(button => {
-        button.addEventListener('click', (event) => selectTimeMode(event.target.dataset.mode));
-    });
+    // Adiciona event listeners para os botões de tempo
+    document.getElementById('study-mode').addEventListener('click', () => selectTimeMode('study'));
+    document.getElementById('challenge-mode').addEventListener('click', () => selectTimeMode('challenge'));
 
-    document.querySelectorAll('#multiplayer-game-mode-selection .mode-button').forEach(button => {
-        button.addEventListener('click', (event) => selectMultiplayerGameMode(event.target.dataset.mode));
-    });
+    // Adiciona event listeners para os botões de multiplayer
+    document.getElementById('corrida-mode').addEventListener('click', () => selectMultiplayerGameMode('corrida'));
+    document.getElementById('ataque-mode').addEventListener('click', () => selectMultiplayerGameMode('ataque'));
+
+    // Adiciona event listeners para os botões de desafio
+    document.getElementById('challenge-friend-btn').addEventListener('click', challengeFriend);
+    document.getElementById('find-opponent-btn').addEventListener('click', waitForOpponent);
+    document.getElementById('login-btn').addEventListener('click', loginPrompt);
+    document.getElementById('ready-btn').addEventListener('click', startGame);
+
+    // Event listeners para botões de voltar
+    document.getElementById('go-back-mode-selection-btn').addEventListener('click', goBackToModeSelection);
+    document.getElementById('go-back-multi-mode-btn').addEventListener('click', goBackToMultiplayerGameModeSelection);
+    document.getElementById('go-back-challenge-options-btn').addEventListener('click', goBackToMultiplayerChallengeOptions);
     
-    // Checa o status de autenticação
     checkAuthStatus();
 });
 	</script>
