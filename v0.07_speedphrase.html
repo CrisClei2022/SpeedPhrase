@@ -1549,8 +1549,13 @@ function goBackToMultiplayerChallengeOptions() {
     showMultiplayerChallengeOptions();
 }
 
+// A função de alerta deve estar aqui, antes das funções que a chamam
 function showAlert(message) {
-    alert(message);
+    const customAlert = document.getElementById('custom-alert');
+    const alertMessage = document.getElementById('alert-message');
+
+    alertMessage.textContent = message;
+    customAlert.classList.remove('hidden');
 }
 
 function checkAuthStatus() {
@@ -1591,7 +1596,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         goBack();
     });
-    
+    // O event listener do botão de fechar
+document.getElementById('close-alert-btn').addEventListener('click', () => {
+    document.getElementById('custom-alert').classList.add('hidden');
+});
     // Event listeners para os botões de modo de jogo
     // Adiciona event listeners para os botões do player-mode
     document.getElementById('solo-mode').addEventListener('click', () => selectPlayerMode('solo'));
