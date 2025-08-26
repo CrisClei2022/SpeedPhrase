@@ -1248,12 +1248,17 @@ header {
 
 <script>
 // Lições disponíveis (nome do arquivo SRT e URL do vídeo)
-const lessons = [
+const avulsasLessons = [
     {
         name: "I'm Gonna Be - 500 Miles.mp4",
         srtUrl: "https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.srt",
         videoUrl: "https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.mp4"
-    },
+    }
+    // Adicione mais lições conforme necessário
+];
+
+
+const trilhaLessons = [
     {
         name: "Chapter 1 - Welcome & Nationalities",
         srtUrl: "https://f005.backblazeb2.com/file/Trilha/Chapter-1.-Welcome-%26-Nationalities.srt",
@@ -1282,6 +1287,24 @@ let player1Clock; // Global variable for player 1's clock
 let player2Clock; // Global variable for player 2's clock
 let mostrarTraducao = false;
 let palavrasDisponiveisElementos = [];
+
+// Variável global para rastrear qual lista de lições está ativa
+let currentLessonList = avulsasLessons;
+
+// Funções para alternar entre as listas de lições
+function showAvulsasLessons() {
+    currentLessonList = avulsasLessons;
+    document.getElementById('btnAvulsas').classList.add('active');
+    document.getElementById('btnTrilha').classList.remove('active');
+    initializeMenuButtons();
+}
+
+function showTrilhaLessons() {
+    currentLessonList = trilhaLessons;
+    document.getElementById('btnTrilha').classList.add('active');
+    document.getElementById('btnAvulsas').classList.remove('active');
+    initializeMenuButtons();
+}
 
 // Função para carregar o arquivo SRT de uma URL
 async function loadSrtFromUrl(url) { // A função recebe a URL aqui
@@ -1406,27 +1429,31 @@ function startRandomPlayerClock() {
     }
 }
 	
-// Function to handle the process after a lesson is selected
+// Função para carregar uma lição
 function loadLesson(lessonIndex) {
-    const lesson = lessons[lessonIndex];
+    // Usa a lista de lições atualmente ativa
+    const lesson = currentLessonList[lessonIndex];
     currentLessonName = lesson.name;
 
-    // Save this lesson as the last one accessed
-    localStorage.setItem('lastLessonIndex', lessonIndex.toString());
+    // Salva esta lição como a última acessada, incluindo a categoria
+    localStorage.setItem('lastLesson', JSON.stringify({
+        index: lessonIndex,
+        category: (currentLessonList === avulsasLessons) ? 'avulsas' : 'trilha'
+    }));
 
-    // Hide the main menu overlay and show the mode selection screen
+    // Esconde o menu e mostra a tela de seleção de modo
     document.getElementById('menu-overlay').classList.remove('active');
     document.getElementById('mode-selection').classList.remove('hidden');
     document.getElementById('selected-video-title').textContent = currentLessonName;
 
-    // Reset player mode and time mode to be selected again
+    // Esconde a seção do jogo imediatamente
+    document.querySelector('.game-section').style.display = 'none';
+
+    // Reseta as variáveis de modo para a nova seleção
     selectedPlayerMode = null;
     selectedTimeMode = null;
     document.getElementById('player-mode-buttons').classList.remove('hidden');
     document.getElementById('time-mode-container').classList.add('hidden');
-    
-    // Hide the game section immediately
-    document.querySelector('.game-section').style.display = 'none';
 }
 
 // Global variables to store the selected modes
@@ -1443,27 +1470,34 @@ function selectPlayerMode(mode) {
     document.getElementById('time-mode-container').classList.remove('hidden');
 }
 
-// Function to handle time mode selection and start the game
+// Função para lidar com a seleção de modo de tempo e iniciar o jogo
 async function selectTimeMode(mode) {
     selectedTimeMode = mode;
     console.log("Time mode selected:", selectedTimeMode);
 
-    // Get the video and SRT URLs from the previously selected lesson
-    const lessonIndex = parseInt(localStorage.getItem('lastLessonIndex'));
-    const lesson = lessons[lessonIndex];
+    // Obtém os dados da última lição acessada do localStorage
+    const lastLessonData = JSON.parse(localStorage.getItem('lastLesson'));
+    if (!lastLessonData) {
+        alert("Nenhuma lição selecionada.");
+        goBack();
+        return;
+    }
 
-    // Show loading spinner
+    const lesson = (lastLessonData.category === 'avulsas' ? avulsasLessons : trilhaLessons)[lastLessonData.index];
+    currentLessonName = lesson.name;
+
+    // Mostra o spinner de carregamento
     showLoading(true);
 
-    // Load the SRT file and start the game
+    // Carrega o arquivo SRT e inicia o jogo
     const srtLoaded = await loadSrtFromUrl(lesson.srtUrl);
 
     if (srtLoaded) {
-        // Load video if SRT was successful
+        // Carrega o vídeo se o SRT for bem-sucedido
         videoElement.src = lesson.videoUrl;
         videoElement.load();
-
-        // Check for saved progress for this lesson
+        
+        // Verifica se há progresso salvo para esta lição
         const progressoSalvo = carregarProgresso();
         if (progressoSalvo && progressoSalvo.lessonName === currentLessonName) {
             const retomar = confirm(`Deseja continuar da frase onde parou? | Frase ${progressoSalvo.fraseIndex + 1} | ${progressoSalvo.lessonName} |`);
@@ -1484,23 +1518,23 @@ async function selectTimeMode(mode) {
         atualizarProgresso();
         atualizarPlacares();
 
-        // Hide the mode selection screen and show the game
+        // Esconde a tela de seleção de modo e mostra a seção do jogo
         document.getElementById('mode-selection').classList.add('hidden');
         document.querySelector('.game-section').style.display = 'flex';
 
-        // Start the appropriate clock based on player and time mode
+        // Inicia o relógio apropriado com base no modo
         if (selectedPlayerMode === 'multi' && selectedTimeMode === 'challenge') {
             startRandomPlayerClock();
         } else {
-            console.log("Starting in a non-timed or single-player mode. Clocks are not active.");
+            console.log("Iniciando em um modo sem tempo ou de um jogador. Relógios não estão ativos.");
         }
     } else {
-        // If SRT failed to load, go back to the lesson menu
+        // Se o SRT falhou, volte para o menu de lições
         alert("Erro ao carregar os dados da lição. Por favor, tente outra lição.");
         goBack();
     }
     
-    // Hide loading spinner regardless of success or failure
+    // Esconde o spinner de carregamento
     showLoading(false);
 }
 
@@ -1917,18 +1951,27 @@ function reproduzirTrechoAtual() {
 function toggleMenu() {
     const menuButton = document.getElementById('menu-button');
     const menuOverlay = document.getElementById('menu-overlay');
+    const gameSection = document.querySelector('.game-section');
 
     menuButton.classList.toggle('active');
     menuOverlay.classList.toggle('active');
+
+    // Verifica se o menu está fechado e mostra a seção do jogo
+    if (!menuOverlay.classList.contains('active')) {
+        gameSection.style.display = 'flex'; // ou 'block', dependendo do seu layout
+    } else {
+        gameSection.style.display = 'none';
+    }
 }
 
-// Inicializar botões de menu
+// Função para inicializar os botões de lição do menu
 function initializeMenuButtons() {
     const menuItemsContainer = document.getElementById('menu-items');
-    // Clear existing lesson buttons before adding new ones, keep the title
+    // Limpa os botões de lição existentes, mantendo o título
     menuItemsContainer.innerHTML = '<h2 class="menu-title">Lista de Lições</h2>';
 
-    lessons.forEach((lesson, index) => {
+    // Cria um botão para cada lição na lista atual
+    currentLessonList.forEach((lesson, index) => {
         const button = document.createElement('button');
         button.textContent = lesson.name;
         button.classList.add('lesson-button');
@@ -2206,6 +2249,13 @@ function switchActiveClock() {
 // *** Inicializar a aplicação *** //
 function init() {
     initializeMenuButtons();
+    
+    // Configura os listeners dos botões de navegação
+    document.getElementById('btnAvulsas').onclick = showAvulsasLessons;
+    document.getElementById('btnTrilha').onclick = showTrilhaLessons;
+
+    // Carrega a lista de lições avulsas por padrão
+    showAvulsasLessons();
 
     // Initialize clocks
     player1Clock = createClock('clock-face1');
