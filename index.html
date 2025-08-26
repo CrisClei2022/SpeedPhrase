@@ -35,12 +35,12 @@
 
         body {
             display: flex;
-            height: 100vh;
+            min-height: 100vh;
             justify-content: center;
             align-items: flex-start;
             background: linear-gradient(-135deg, #000000, #3b0047, #660000, #000000);
             margin: 0;
-            padding-top: 1.2%;
+            padding: 1.2% 2% 2%;
             font-family: 'Orbitron', sans-serif;
             color: #00ccff;
             text-shadow:
@@ -48,7 +48,7 @@
                 0 0 25px rgba(0, 220, 255, 0.5), /* Um pouco mais claro e difuso */
                 0 0 35px rgba(0, 235, 255, 0.3); /* Mais claro e ainda mais difuso */
             letter-spacing: 1.5px;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
         button {
@@ -61,6 +61,7 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
             text-shadow: 0 1px 1px rgba(0,0,0,0.1);
             transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+            font-size: clamp(12px, 2vw, 16px);
         }
 
         button:hover {
@@ -74,164 +75,409 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.12);
             transform: translateY(1px);
         }
-	    
-        #menu-button {
-            margin-top: -5%;
-            background: transparent;
-            text-decoration: none;
-            color: #14fff1;
-            border: 0px solid #14fff1;
-            border-radius: 6px; /* Keep your existing border-radius */
-            box-shadow:
-                0px 0px 16px rgba(0, 0, 0, 0.6), /* Existing outer shadow */
-                /* Inner bottom glow - Adjust these values for the "egg tip" shape */
-                inset 0px -5px 6px -5px rgba(0, 204, 255, 0.7), /* Base inner glow */
-                inset 0px -7px 6px -8px rgba(0, 220, 255, 0.5), /* Lighter, more diffuse */
-                inset 0px -10px 6px -10px rgba(0, 235, 255, 0.3); /* Lightest, most diffuse */
-            transition: transform 0.15s ease-out, box-shadow 0.15s ease-out; /* Added box-shadow transition too */
-            font-family: 'Audiowide', sans-serif; /* Apply the font */
-            font-size: 0.65em;
-            letter-spacing: 0.2em; /* Optional: adds a slight space between letters for a techy look */
-            text-transform: uppercase; /* Optional: makes text uppercase, common in futuristic UIs */
-        }
-
-        #menu-button:hover {
-            box-shadow:
-                0px 0px 16px rgba(0, 0, 0, 0.6), /* Existing outer shadow */
-                inset 0px -5px 6px -5px rgba(0, 204, 255, 0.7),
-                inset 0px -7px 6px -8px rgba(0, 220, 255, 0.5),
-                inset 0px -10px 6px -10px rgba(0, 235, 255, 0.3);
-            transform: translateY(-1px); /* Lifts up slightly on hover */
-        }
-
-        #menu-button:active {
-            box-shadow:
-                0px 0px 8px rgba(0, 0, 0, 0.8), /* outer shadow darker/more intense when pressed */
-                inset 0px 0px 3px rgba(0, 204, 255, 0.9), /* inner glow when pressed */
-                inset 0px 0px 5px rgba(0, 220, 255, 0.7); /* inner glow for depth */
-            transform: translateY(2px); /* Moves down when clicked */
-            background-color: transparent; /* Keep background transparent */
-        }
-
-        #menu-overlay {
-            position: fixed;
-            top: 0; /* Changed from 1% for full top alignment */
-            right: 0; /* Changed from 1% for full right alignment */
-            width: 100vw;
-            height: 100vh;
-            background-color: rgba(0, 0, 0, 0.8);
-            font-family: 'Audiowide', sans-serif;
-            z-index: 999;
-            display: flex; /* Enable Flexbox */
-            flex-direction: column; /* Stack items vertically (close-button above menu-items) */
-            align-items: center; /* This centers items horizontally in a column layout */
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s, visibility 0.3s;
-            backdrop-filter: blur(8px);
-        }
-
-        #menu-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        #menu-items {
-            justify-content: center;
-            width: 80%;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-            padding: 10px;
-            background-color: #3b0047;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-        }
-
-        .menu-title {
-            text-align: center;
-            color: #f9fff2;
-            font-size: 22px;
-            margin-bottom: 18px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            font-family: 'Audiowide', sans-serif; /* Apply the font */
-            letter-spacing: 0.05em; /* Optional: adds a slight space between letters for a techy look */
-            text-transform: uppercase; /* Optional: makes text uppercase, common in futuristic UIs */
-        }
-
-        .lesson-button {
-            display: block;
+		
+        main {
             width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            text-align: left;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            max-width: 1400px;
+            margin: 0 auto;
         }
+	    /* Menu Button - mantém o estilo original */
+#menu-button {
+    margin-top: -5%;
+    background: transparent;
+    text-decoration: none;
+    color: #14fff1;
+    border: 0px solid #14fff1;
+    border-radius: 6px;
+    box-shadow:
+        0px 0px 16px rgba(0, 0, 0, 0.6),
+        inset 0px -5px 6px -5px rgba(0, 204, 255, 0.7),
+        inset 0px -7px 6px -8px rgba(0, 220, 255, 0.5),
+        inset 0px -10px 6px -10px rgba(0, 235, 255, 0.3);
+    transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+    font-family: 'Audiowide', sans-serif;
+    font-size: clamp(10px, 1.5vw, 14px);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 8px 16px;
+}
 
-        .lesson-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 7px 14px rgba(0,0,0,0.2);
-        }
+#menu-button:hover {
+    box-shadow:
+        0px 0px 16px rgba(0, 0, 0, 0.6),
+        inset 0px -5px 6px -5px rgba(0, 204, 255, 0.7),
+        inset 0px -7px 6px -8px rgba(0, 220, 255, 0.5),
+        inset 0px -10px 6px -10px rgba(0, 235, 255, 0.3);
+    transform: translateY(-1px);
+}
 
-        .lesson-button:after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
-            transform: translateX(-100%);
-            transition: all 0.6s ease;
-        }
+#menu-button:active {
+    box-shadow:
+        0px 0px 8px rgba(0, 0, 0, 0.8),
+        inset 0px 0px 3px rgba(0, 204, 255, 0.9),
+        inset 0px 0px 5px rgba(0, 220, 255, 0.7);
+    transform: translateY(2px);
+    background-color: transparent;
+}/* Menu Button - mantém o estilo original */
+#menu-button {
+    margin-top: -5%;
+    background: transparent;
+    text-decoration: none;
+    color: #14fff1;
+    border: 0px solid #14fff1;
+    border-radius: 6px;
+    box-shadow:
+        0px 0px 16px rgba(0, 0, 0, 0.6),
+        inset 0px -5px 6px -5px rgba(0, 204, 255, 0.7),
+        inset 0px -7px 6px -8px rgba(0, 220, 255, 0.5),
+        inset 0px -10px 6px -10px rgba(0, 235, 255, 0.3);
+    transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+    font-family: 'Audiowide', sans-serif;
+    font-size: clamp(10px, 1.5vw, 14px);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 8px 16px;
+}
 
-        .lesson-button:hover:after {
-            transform: translateX(100%);
-        }
+#menu-button:hover {
+    box-shadow:
+        0px 0px 16px rgba(0, 0, 0, 0.6),
+        inset 0px -5px 6px -5px rgba(0, 204, 255, 0.7),
+        inset 0px -7px 6px -8px rgba(0, 220, 255, 0.5),
+        inset 0px -10px 6px -10px rgba(0, 235, 255, 0.3);
+    transform: translateY(-1px);
+}
 
-		/* New CSS for the header row containing 'Ajuda' and the close button */
-		.menu-header {
-		    display: flex;
-		    justify-content: space-between; /* ✨ REVERTIDO: Para empurrar Ajuda e Fechar para as extremidades */
-		    align-items: center;
-		    width: 100%;
-		    padding: 10px 20px;
-		    box-sizing: border-box;
-		    /* Remover 'gap' aqui, já que space-between e margens auto vão gerenciar o espaçamento */
-		}
-        
-		/* Ajustes para o botão "Ajuda" */
-		.close-button, #info {
-		    background: grey;
-            color: white;
-		    border-radius: 8px;
-		    padding: 10px;
-		    flex-shrink: 0;
-		    /* Remover margin-right: auto; daqui se estiver, não é necessário com justify-content: space-between */
-		}
+#menu-button:active {
+    box-shadow:
+        0px 0px 8px rgba(0, 0, 0, 0.8),
+        inset 0px 0px 3px rgba(0, 204, 255, 0.9),
+        inset 0px 0px 5px rgba(0, 220, 255, 0.7);
+    transform: translateY(2px);
+    background-color: transparent;
+}
 
-        .close-button:hover {
-            background: rgba(255, 255, 255, 0.4);
-            transform: rotate(90deg);
-        }
+/* Menu Overlay - aplicando estilo similar ao mode selection */
+#menu-overlay {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.8);
+    font-family: 'Orbitron', sans-serif;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+    backdrop-filter: blur(8px);
+    padding: 2% 4%;
+    box-sizing: border-box;
+}
 
-        .close-button:before {
-            transform: rotate(45deg);
-        }
+#menu-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
 
-        .close-button:after {
-            transform: rotate(-45deg);
-        }
+/* Container principal do menu - estilo mode selection */
+#menu-items {
+    background-image: linear-gradient(-135deg, #171627, #111d4a, #171627, #111d4a);
+    background-color: #171627;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.1);
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: clamp(20px, 4vw, 40px);
+    width: 100%;
+    max-width: 800px;
+    max-height: 80vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(15px, 3vw, 25px);
+    animation: fadeInScale 1s ease-out;
+    box-sizing: border-box;
+}
 
+/* Header do menu integrado */
+header {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: clamp(15px, 3vw, 20px);
+    margin-bottom: clamp(15px, 3vw, 25px);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+}
+
+.header-content {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(15px, 3vw, 20px);
+    align-items: center;
+}
+
+.user-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+}
+
+.nav-buttons {
+    display: flex;
+    align-items: center;  
+    gap: clamp(8px, 2vw, 15px);
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+}
+
+.nav-buttons button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    padding: clamp(10px, 2vw, 15px) clamp(15px, 3vw, 20px);
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: clamp(12px, 2vw, 14px);
+    font-family: 'Orbitron', sans-serif;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    flex: 1;
+    min-width: clamp(80px, 20vw, 100px);
+    max-width: 150px;
+    text-align: center;
+}
+
+.nav-buttons button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.nav-buttons button:hover::before {
+    left: 100%;
+}
+
+.nav-buttons button:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    background: linear-gradient(135deg, #7c8ef0 0%, #8a5cb8 100%);
+}
+
+.nav-buttons button.active {
+    background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
+    border-color: transparent;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+    transform: scale(1.05);
+}
+
+.nav-buttons button.active:hover {
+    background: linear-gradient(135deg, #ff7979 0%, #55efc4 100%);
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+}
+
+/* Título do menu com estilo mode selection */
+.menu-title {
+    text-align: center;
+    color: #00ccff;
+    font-size: clamp(20px, 4vw, 28px);
+    margin: 0;
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 1.5px;
+    text-shadow:
+        0 0 15px rgba(0, 204, 255, 0.7),
+        0 0 25px rgba(0, 220, 255, 0.5),
+        0 0 35px rgba(0, 235, 255, 0.3);
+    flex-grow: 1;
+}
+
+/* Botões de Ajuda e Fechar com estilo atualizado */
+.close-button, #info {
+    background: linear-gradient(to bottom, #666 0%, #555 50%, #444 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 16px);
+    cursor: pointer;
+    font-size: clamp(12px, 2vw, 16px);
+    font-weight: bold;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    text-shadow: 0 1px 1px rgba(0,0,0,0.1);
+    transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+    font-family: 'Orbitron', sans-serif;
+    flex-shrink: 0;
+}
+
+.close-button:hover, #info:hover {
+    background: linear-gradient(to bottom, #777 0%, #666 50%, #555 100%);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+    transform: translateY(-1px);
+}
+
+.close-button:hover {
+    transform: translateY(-1px) rotate(90deg);
+}
+
+.close-button:active, #info:active {
+    background: linear-gradient(to bottom, #444 0%, #555 50%, #666 100%);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    transform: translateY(1px);
+}
+
+/* Container dos botões de lição */
+.lessons-container {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(10px, 2vw, 15px);
+    width: 100%;
+}
+
+/* Botões de lição com estilo mode selection */
+.lesson-button {
+    width: 100%;
+    padding: clamp(15px, 3vw, 25px) clamp(15px, 3vw, 20px);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: clamp(14px, 2.5vw, 18px);
+    font-weight: bold;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 0.5px;
+    display: block;
+}
+
+.lesson-button:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    background: linear-gradient(135deg, #7c8ef0 0%, #8a5cb8 100%);
+}
+
+.lesson-button:active {
+    transform: translateY(-1px) scale(0.98);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.lesson-button:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+    transform: translateX(-100%);
+    transition: all 0.6s ease;
+}
+
+.lesson-button:hover:after {
+    transform: translateX(100%);
+}
+
+/* Animação para fade in scale */
+@keyframes fadeInScale {
+    0% {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #menu-items {
+        padding: clamp(15px, 3vw, 30px);
+        gap: clamp(10px, 2vw, 20px);
+        max-height: 85vh;
+    }
+
+    .header-content {
+        gap: clamp(10px, 2vw, 15px);
+    }
+
+    .nav-buttons {
+        gap: clamp(6px, 1.5vw, 10px);
+    }
+
+    .nav-buttons button {
+        padding: 8px 12px;
+        font-size: 12px;
+        min-width: 70px;
+    }
+
+    .lessons-container {
+        gap: clamp(8px, 1.5vw, 12px);
+    }
+}
+
+@media (max-width: 480px) {
+    #menu-overlay {
+        padding: 10px;
+    }
+
+    #menu-items {
+        padding: 15px;
+        gap: 15px;
+        max-height: 90vh;
+    }
+
+    .header-content {
+        gap: 12px;
+    }
+
+    .nav-buttons {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .nav-buttons button {
+        width: 100%;
+        max-width: none;
+        padding: 12px;
+        font-size: 13px;
+    }
+
+    .user-buttons {
+        gap: 8px;
+    }
+
+    .lesson-button {
+        padding: 15px;
+        font-size: 14px;
+    }
+
+    .menu-title {
+        font-size: 18px;
+    }
+}
         /* Loading Indicator */
         #loading {
             position: fixed;
@@ -255,8 +501,8 @@
         }
 
         .spinner {
-            width: 50px;
-            height: 50px;
+            width: clamp(30px, 8vw, 50px);
+            height: clamp(30px, 8vw, 50px);
             border: 5px solid #f3f3f3;
             border-radius: 50%;
             border-top: 5px solid #3498db;
@@ -273,7 +519,7 @@
             text-align: center;
             color: #f9fff2;
             margin-top: 5px;
-            font-size: 16px;
+            font-size: clamp(14px, 3vw, 16px);
             font-weight: bold;
         }
 		
@@ -285,78 +531,84 @@
             background-color: #f9f9f9;
             min-height: 100px;
             text-align: left;
-            font-size: 1.1em;
+            font-size: clamp(14px, 2.5vw, 18px);
             color: #555;
-            transition: opacity 0.5s ease-in-out; /* Transição para o efeito de "sumir" */
+            transition: opacity 0.5s ease-in-out;
             line-height: 1.6;
+            box-sizing: border-box;
         }
 
         #subtitle-content.hidden {
-            opacity: 0; /* Torna o conteúdo invisível */
-            max-height: 0; /* Colapsa o espaço ocupado */
+            opacity: 0;
+            max-height: 0;
             overflow: hidden;
-            padding: 0 25px; /* Remove padding quando oculto */
-            border: none; /* Remove a borda quando oculto */
+            padding: 0 25px;
+            border: none;
         }
         
         /* ==========
         // Containers
         // ========== */
-        .main-container {
+        .game-section {
             background-image: linear-gradient(-135deg, #171627, #111d4a, #171627, #111d4a);
             background-color: #171627;
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.1);
             border: 3px solid rgba(255, 255, 255, 0.2);
             border-radius: 8px;
             text-align: center;
-            width: 90%;
-            max-width: 600px;
-            padding: 10px;
-            display: flex; /* Make main-container a flex container */
-            flex-direction: column; /* Stack children vertically */
-            gap: 5px; /* MUDANÇA: Reduzido de 10px para 5px */
+            padding: clamp(10px, 2vw, 20px);
+            display: flex;
+            flex-direction: column;
+            gap: clamp(5px, 1vw, 10px);
             justify-content: flex-start;
             align-items: center;
             animation: fadeInScale 1s ease-out;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .title-container {
             text-align: center;
         }
 
+        .title-container h2 {
+            font-size: clamp(20px, 4vw, 32px);
+            margin: 0;
+        }
+
         .content-row {
             display: flex;
             flex-direction: row;
             margin-top: 1%;
-            gap: 10px;
-            align-items: center; /* ← MUDANÇA: centraliza verticalmente */
-            justify-content: center; /* ← ADICIONE: centraliza horizontalmente */
-            width: 96%;
+            gap: clamp(10px, 2vw, 20px);
+            align-items: center;
+            justify-content: center;
+            width: 100%;
             flex-wrap: nowrap;
             overflow: hidden;
-            min-height: 180px; /* ← ADICIONE: altura mínima para melhor centralização */
+            min-height: clamp(120px, 25vh, 200px);
         }
         
         /* Ajustes para o container do vídeo */
         .content-row .video-container {
-            flex: 1 1 70%;
+            flex: 1 1 65%;
             min-width: 0;
-            max-width: 80%;
+            max-width: 70%;
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative; /* ADICIONE ISSO: Torna este o contêiner de posicionamento para o filho absoluto */
+            position: relative;
         }
 
         /* O container do vídeo onde o player e a legenda ficam */
         .video-container #custom-video {
-            /* Mantenha suas propriedades de tamanho para o vídeo em si */
-            width: 100%; /* MUDANÇA: Use 100% para preencher o pai */
-            height: auto; /* MUDANÇA: Use auto para manter o aspect ratio original do vídeo */
-            aspect-ratio: 16/9; /* Mantenha isso para garantir a proporção do vídeo */
-            display: block; /* Garante que não haja espaço extra abaixo do vídeo */
+            width: 100%;
+            height: auto;
+            aspect-ratio: 16/9;
+            display: block;
             background-color: #000;
             border: none;
+            border-radius: 8px;
         }
 
 		/* Estilos para o conteúdo da legenda que aparecerá sobre o vídeo */
@@ -366,13 +618,14 @@
             height: auto;
             background-color: rgba(0, 0, 0, 0.7);
             color: white;
-            padding: 10px;
+            padding: clamp(5px, 1.5vw, 10px);
             text-align: center;
-            font-size: 1.0em;
+            font-size: clamp(12px, 2vw, 16px);
             box-sizing: border-box;
             z-index: 10;
-            top: 50%; /* Moves the top edge of the element to the middle of its parent */
-            transform: translateY(-50%); /* Shifts the element up by half of its own height */
+            top: 50%;
+            transform: translateY(-50%);
+            border-radius: 4px;
         }
 		
 		/* Classe para ocultar o conteúdo da legenda */
@@ -382,40 +635,44 @@
         
         /* Ajustes para os botões */
         .content-row #buttons {
-            flex: 1 1 40%;
+            flex: 1 1 35%;
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            align-items: center; /* ← MUDANÇA: centraliza botões horizontalmente */
-            justify-content: center; /* ← ADICIONE: centraliza botões verticalmente */
+            gap: clamp(6px, 1.5vw, 12px);
+            align-items: center;
+            justify-content: center;
             min-width: 0;
-            max-width: 40%;
-            padding: 0; /* ← MUDANÇA: remove padding-top */
+            max-width: 35%;
+            padding: 0;
         }
         
-        /* Opcional: Para garantir que os botões tenham largura consistente */
+        /* Para garantir que os botões tenham largura consistente */
         .content-row #buttons button {
             width: 100%;
-            max-width: 200px; /* ← ADICIONE: largura máxima para os botões */
-            padding: 10px;
+            max-width: clamp(150px, 20vw, 200px);
+            padding: clamp(8px, 2vw, 12px);
             border: none;
             border-radius: 5px;
             color: white;
             font-weight: bold;
             cursor: pointer;
+            font-size: clamp(10px, 1.8vw, 14px);
+            text-align: center;
         }
 
         p {
             margin: 10px 0;
             color: #666;
+            font-size: clamp(12px, 2vw, 16px);
         }
         
         .phrase-container {
-            font-size: 24px;
-            width: 95%;
-            min-height: 60px;
+            font-size: clamp(16px, 3vw, 24px);
+            width: 100%;
+            max-width: 100%;
+            min-height: clamp(40px, 8vh, 60px);
             border: 1px dashed #a5b68f;
-            padding: 10px;
+            padding: clamp(8px, 2vw, 15px);
             border-radius: 5px;
             display: flex;
             flex-wrap: wrap;
@@ -424,70 +681,74 @@
             background-color: #f9fff2;
             color: #333;
             box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+            box-sizing: border-box;
         }
         
-        .palavra-na-frase { /* Added style for words in the displayed phrase */
+        .palavra-na-frase {
             margin-right: 1.2%;
-            color: #0056b3; /* A distinct color for correctly placed words */
+            color: #0056b3;
             border: 1px solid #ccc; 
             border-radius: 4px;
-            font-size: 0.8em;
+            font-size: clamp(12px, 2vw, 18px);
             font-weight: bold;
+            padding: 2px 4px;
+            margin-bottom: 4px;
         }
         
         .word-button-wrapper {
-            width: 100%; /* Ensures the wrapper takes full available width */
-            display: flex; /* Keeping it flex allows for easy centering of its children */
-            flex-direction: column; /* Stack children vertically */
-            align-items: center; /* Center children horizontally */
-            gap: 10px; /* Adjust gap as needed for spacing between word container and button */
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: clamp(8px, 2vw, 15px);
         }
 
         .word-container {
             flex-wrap: wrap;
-            width: 95%;
+            width: 100%;
             border: none;
             display: flex;
             justify-content: center;
             flex-wrap: wrap;
-            padding: 10px;
+            padding: clamp(8px, 2vw, 15px);
+            box-sizing: border-box;
         }
 
         .palavra { 
             background-color: #007bff;
             color: white;
-            padding: 2px 5px; /* Change this line */
-            margin: 5px; /* Added margin for spacing between words */
+            padding: clamp(4px, 1vw, 8px) clamp(6px, 1.5vw, 10px);
+            margin: clamp(3px, 1vw, 5px);
             border-radius: 6px;
             cursor: pointer;
-            font-size: 0.9em;
+            font-size: clamp(12px, 2vw, 16px);
             font-weight: bold;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             transition: transform 0.2s ease, background-color 0.2s ease;
-            user-select: none; /* Impede seleção de texto */
+            user-select: none;
         }
 
         .palavra.selecionada {
-            background: linear-gradient(to bottom, #ffc107, #e0a800); /* Um gradiente laranja para destaque */
-            transform: translateY(-2px); /* Efeito de elevação */
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Sombra mais forte */
+            background: linear-gradient(to bottom, #ffc107, #e0a800);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
         }
 
-        .palavra.errada { /* Corrected class name */
+        .palavra.errada {
             animation: shake 0.4s ease-in-out;
-            background-color: #dc3545; /* Vermelho */
+            background-color: #dc3545;
         }
 
         .palavra.acertada {
-            background-color: #28a745; /* Green for correct words */
-            pointer-events: none; /* Disable clicks on already correct words */
+            background-color: #28a745;
+            pointer-events: none;
         }
 
-	.palavra.no-click {
-	    pointer-events: none; /* Impede que o mouse interaja com o elemento */
-	    opacity: 0.6;        /* Torna um pouco transparente para indicar desativação */
-	    cursor: default;     /* Muda o cursor para indicar que não é clicável */
-	}
+	    .palavra.no-click {
+	        pointer-events: none;
+	        opacity: 0.6;
+	        cursor: default;
+	    }
 
         @keyframes shake {
             0% { transform: translateX(0); }
@@ -501,10 +762,10 @@
             position: relative;
             display: flex;
             justify-content: center;
-            gap: 10px;
-            width: 100%; /* ← MUDANÇA: garante que não exceda o container pai */
-            max-width: 100%; /* ← ADICIONE: força limitação */
-            margin: 0 auto;      /* Center it horizontally */
+            gap: clamp(8px, 2vw, 15px);
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
         }
 
         .player-container {
@@ -518,34 +779,34 @@
 
         .player-container,
         .title-container {
-            flex: 1; /* Ocupa partes iguais */
+            flex: 1;
             display: flex;
             flex-direction: column;
-            align-items: center; /* ← Centraliza horizontalmente */
+            align-items: center;
         }
 
         .player-content {
             position: relative;
-            width: 70px;
-            height: 70px;
+            width: clamp(50px, 10vw, 70px);
+            height: clamp(50px, 10vw, 70px);
             background: linear-gradient(-135deg, #000000, #3b0047, #660000, #000000);
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transform: translateY(calc((85px - 70px) / 2));
+            transform: translateY(calc((clamp(60px, 12vw, 85px) - clamp(50px, 10vw, 70px)) / 2));
         }
 
         .player-content h6 {
-            margin: 0; /* Remove default margins from h6 and p for tighter control */
+            margin: 0;
             margin-bottom: 0.4em;
             padding-top: 0.4em;
-            line-height: 1.6em; /* Adjust line height if needed */
-            font-size: 0.7em; /* Adjust font size if too large */
+            line-height: 1.6em;
+            font-size: clamp(10px, 2vw, 14px);
         }
 
         .clock-face {
             position: absolute;
-            width: 85px;
-            height: 85px;
+            width: clamp(60px, 12vw, 85px);
+            height: clamp(60px, 12vw, 85px);
             background: linear-gradient(135deg, var(--blue-gradient-start), var(--blue-gradient-end));
             border-radius: 15px;
             box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
@@ -554,7 +815,6 @@
             transition: background 0.7s ease-in-out;
         }
 
-        /* Onde a magia do preenchimento circular acontece (sempre cinza) */
         .clock-face::before {
             content: '';
             position: absolute;
@@ -563,7 +823,6 @@
             width: 100%;
             height: 100%;
             border-radius: 8px;
-            /* A cor de preenchimento SEMPRE será cinza */
             background: conic-gradient(
                 var(--grey-gradient-start) calc(var(--progress) * 1%),
                 var(--grey-gradient-end) calc(var(--progress) * 1% + 1%),
@@ -571,16 +830,13 @@
             );
             transform: rotate(-0deg);
             transform-origin: center;
-            transition: background 0.1s linear; /* Transição suave para o preenchimento */
+            transition: background 0.1s linear;
         }
 
-        /* Estilo para quando o tempo estiver nos 30% finais (ativado pelo JavaScript) */
         .clock-face.time-almost-up {
-            /* O fundo do clock-face agora piscará com esta animação */
             animation: blink-red-to-orange 1s infinite alternate;
         }
 
-        /* Animação para o piscar de vermelho degradê para laranja degradê NO FUNDO DO CLOCK-FACE */
         @keyframes blink-red-to-orange {
             0%, 100% {
                 background: linear-gradient(135deg, var(--red-gradient-start), var(--red-gradient-end));
@@ -589,24 +845,339 @@
                 background: linear-gradient(135deg, var(--orange-gradient-start), var(--orange-gradient-end));
             }
         }
+
+        #progresso {
+            margin-top: 10px;
+            font-size: clamp(12px, 2vw, 16px);
+        }
+
+        /* Media Queries para layout mobile */
+        @media (max-width: 768px) {
+            .content-row {
+                flex-direction: column;
+                gap: 15px;
+                min-height: auto;
+            }
+            
+            .content-row .video-container {
+                flex: none;
+                max-width: 100%;
+                width: 100%;
+                order: 1;
+            }
+            
+            .content-row #buttons {
+                flex: none;
+                max-width: 100%;
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                order: 2;
+            }
+            
+            .content-row #buttons button {
+                flex: 1;
+                min-width: 120px;
+                max-width: 150px;
+                margin: 2px;
+            }
+
+            .players-container {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .player-container {
+                min-width: 100px;
+            }
+
+            #menu-items {
+                width: 95%;
+                max-width: none;
+                padding: 15px;
+            }
+
+            .phrase-container {
+                min-height: 50px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+
+            .game-section {
+                padding: 10px;
+            }
+
+            .content-row #buttons {
+                flex-direction: column;
+            }
+
+            .content-row #buttons button {
+                max-width: 100%;
+                width: 100%;
+            }
+
+            .word-container {
+                padding: 10px;
+            }
+
+            .palavra {
+                margin: 2px;
+                padding: 6px 8px;
+            }
+        }
+        
+        /* Mode Selection Styles */
+        #mode-selection {
+            background-image: linear-gradient(-135deg, #171627, #111d4a, #171627, #111d4a);
+            background-color: #171627;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.1);
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            text-align: center;
+            padding: clamp(20px, 4vw, 40px);
+            display: flex;
+            flex-direction: column;
+            gap: clamp(15px, 3vw, 25px);
+            justify-content: flex-start;
+            align-items: center;
+            animation: fadeInScale 1s ease-out;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            box-sizing: border-box;
+            color: #00ccff;
+            text-shadow:
+                0 0 15px rgba(0, 204, 255, 0.7),
+                0 0 25px rgba(0, 220, 255, 0.5),
+                0 0 35px rgba(0, 235, 255, 0.3);
+        }
+
+        #mode-selection.hidden {
+            display: none;
+        }
+
+        #mode-selection h2 {
+            font-size: clamp(20px, 4vw, 28px);
+            margin: 0;
+            color: #00ccff;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1.5px;
+        }
+
+        #mode-selection p {
+            font-size: clamp(14px, 2.5vw, 18px);
+            color: #f9fff2;
+            margin: 0;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        #mode-selection #selected-video-title {
+            color: #14fff1;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(20, 255, 241, 0.5);
+        }
+
+        .back-button {
+            align-self: flex-start;
+            background: linear-gradient(to bottom, #666 0%, #555 50%, #444 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 20px);
+            cursor: pointer;
+            font-size: clamp(12px, 2vw, 16px);
+            font-weight: bold;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+            text-shadow: 0 1px 1px rgba(0,0,0,0.1);
+            transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .back-button:hover {
+            background: linear-gradient(to bottom, #777 0%, #666 50%, #555 100%);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+            transform: translateY(-1px);
+        }
+
+        .back-button:active {
+            background: linear-gradient(to bottom, #444 0%, #555 50%, #666 100%);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            transform: translateY(1px);
+        }
+
+        .mode-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: clamp(10px, 2vw, 20px);
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .mode-button {
+            flex: 1;
+            min-width: clamp(120px, 25vw, 180px);
+            max-width: 200px;
+            padding: clamp(15px, 3vw, 25px) clamp(10px, 2vw, 20px);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: clamp(14px, 2.5vw, 18px);
+            font-weight: bold;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 0.5px;
+        }
+
+        .mode-button:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            background: linear-gradient(135deg, #7c8ef0 0%, #8a5cb8 100%);
+        }
+
+        .mode-button:active {
+            transform: translateY(-1px) scale(0.98);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .mode-button:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+            transform: translateX(-100%);
+            transition: all 0.6s ease;
+        }
+
+        .mode-button:hover:after {
+            transform: translateX(100%);
+        }
+
+        #time-mode-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: clamp(15px, 3vw, 20px);
+            align-items: center;
+            margin-top: clamp(10px, 2vw, 20px);
+        }
+
+        #time-mode-container.hidden {
+            display: none;
+        }
+
+        #time-mode-container h2 {
+            font-size: clamp(18px, 3.5vw, 24px);
+            margin: 0;
+            color: #00ccff;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1.5px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .mode-buttons {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .mode-button {
+                width: 100%;
+                max-width: 300px;
+                min-width: auto;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #mode-selection {
+                padding: 15px;
+            }
+
+            .mode-buttons {
+                gap: 10px;
+            }
+
+            .mode-button {
+                padding: 15px 10px;
+                max-width: 100%;
+            }
+        }
+
+        /* Animation for fade in scale */
+        @keyframes fadeInScale {
+            0% {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="main-container">
+<main>
 
-        <div id="menu-overlay">
+        <section id="menu-overlay">
         
-            <div class="menu-header">
-                <button id="info">Ajuda</button>
-                
-                <button class="close-button">⛌</button>
+        <header>
+            <div class="header-content">
+                <div class="user-buttons">
+                    <button id="info">Ajuda</button>
+                    <button class="close-button">⛌</button>
+                </div>
+                <div class="nav-buttons">
+                    <button id="btnBuscar">🔍 Buscar</button>
+                    <button id="btnAvulsas" class="active">📹 Avulsas</button>
+                    <button id="btnTrilha">🛤️ Trilha</button>
+                </div>
             </div>
+        </header>
             
             <div id="menu-items">
                 <h2 class="menu-title">Lista de Lições</h2>
             </div>
             
-        </div>
+        </section>
+        
+        <section id="mode-selection" class="mode-selection hidden">
+            <button class="back-button" onclick="goBack()">← Voltar</button>
+            <h2>Escolha o modo de jogo</h2>
+            <p>Videoaula selecionada: <span id="selected-video-title"></span></p>
+            <div id="player-mode-buttons" class="mode-buttons">
+                <button class="mode-button" onclick="selectPlayerMode('solo')">🎯 Solo</button>
+                <button class="mode-button" onclick="selectPlayerMode('multi')">👥 Multiplayer</button>
+                <button class="mode-button" onclick="selectPlayerMode('computer')">🤖 vs Computador</button>
+            </div>
+            <br>
+            <br>
+            <div id="time-mode-container" class="hidden">
+                <h2>Tempo ligado ou desligado?</h2>
+                <div id="time-mode-buttons" class="mode-buttons">
+                    <button class="mode-button" onclick="selectTimeMode('study')">📖 Modo de Estudo</button>
+                    <button class="mode-button" onclick="selectTimeMode('challenge')">⏱️ Modo de Desafio</button>
+                </div>
+            </div>
+        </section>
+        
+    <section class="game-section">
 
         <div id="loading">
             <div class="spinner"></div>
@@ -672,8 +1243,8 @@
         
         <div id="progresso" style="margin-top: 10px; font-size: 0.9em;">Progresso: 0 de 0</div>
 
-    </div>
-
+    </section>
+</main>
 <script>
 // Lições disponíveis (nome do arquivo SRT e URL do vídeo)
 const lessons = [
@@ -681,11 +1252,6 @@ const lessons = [
         name: "Chapter 1 - Welcome & Nationalities",
         srtUrl: "https://f005.backblazeb2.com/file/Trilha/Chapter-1.-Welcome-%26-Nationalities.srt",
         videoUrl: "https://f005.backblazeb2.com/file/Trilha/Chapter-1.-Welcome-%26-Nationalities.mp4"
-    },
-    {
-        name: "Chapter 1 - Welcome & Nationalities",
-        srtUrl: "https://f005.backblazeb2.com/file/Avulsas/I'm_Gonna_Be_-_500_Miles.srt",
-        videoUrl: "https://f005.backblazeb2.com/file/Avulsas/I'm_Gonna_Be_-_500_Miles.mp4"
     }
     // Adicione mais lições conforme necessário
 ];
@@ -1575,9 +2141,226 @@ function switchActiveClock() {
     }
 }
 
+// Variáveis globais para controle do modo de jogo
+let gameMode = {
+    playerMode: null,  // 'solo', 'multi', 'computer'
+    timeMode: null,    // 'study', 'challenge'
+    selectedLessonIndex: null
+};
+
+// Função para exibir a seção de seleção de modo
+function showModeSelection(lessonIndex) {
+    const lesson = lessons[lessonIndex];
+    gameMode.selectedLessonIndex = lessonIndex;
+    
+    // Ocultar o jogo principal e mostrar seleção de modo
+    document.querySelector('.game-section').style.display = 'none';
+    document.getElementById('mode-selection').classList.remove('hidden');
+    
+    // Definir o título da videoaula selecionada
+    document.getElementById('selected-video-title').textContent = lesson.name;
+    
+    // Resetar seleções anteriores
+    gameMode.playerMode = null;
+    gameMode.timeMode = null;
+    document.getElementById('time-mode-container').classList.add('hidden');
+    
+    // Remover estados visuais dos botões
+    resetModeButtonStates();
+}
+
+// Função para voltar ao menu principal
+function goBack() {
+    document.getElementById('mode-selection').classList.add('hidden');
+    document.querySelector('.game-section').style.display = 'flex';
+    toggleMenu(); // Reabrir o menu de lições
+}
+
+// Função para selecionar modo de jogador
+function selectPlayerMode(mode) {
+    gameMode.playerMode = mode;
+    
+    // Atualizar estado visual dos botões
+    updatePlayerModeButtons(mode);
+    
+    // Mostrar opções de tempo após selecionar modo de jogador
+    document.getElementById('time-mode-container').classList.remove('hidden');
+    
+    // Auto-selecionar modo de tempo baseado no modo de jogador
+    if (mode === 'solo') {
+        // Para modo solo, padrão é estudo (sem tempo)
+        selectTimeMode('study');
+    } else {
+        // Para multiplayer e vs computador, mostrar ambas opções
+        resetTimeModeButtons();
+    }
+}
+
+// Função para selecionar modo de tempo
+function selectTimeMode(mode) {
+    gameMode.timeMode = mode;
+    
+    // Atualizar estado visual dos botões
+    updateTimeModeButtons(mode);
+    
+    // Aguardar um pouco e depois iniciar o jogo
+    setTimeout(() => {
+        startGameWithSelectedModes();
+    }, 500);
+}
+
+// Função para atualizar estado visual dos botões de modo de jogador
+function updatePlayerModeButtons(selectedMode) {
+    const buttons = document.querySelectorAll('#player-mode-buttons .mode-button');
+    buttons.forEach(button => {
+        button.classList.remove('selected');
+        if (button.onclick.toString().includes(`'${selectedMode}'`)) {
+            button.classList.add('selected');
+        }
+    });
+}
+
+// Função para atualizar estado visual dos botões de modo de tempo
+function updateTimeModeButtons(selectedMode) {
+    const buttons = document.querySelectorAll('#time-mode-buttons .mode-button');
+    buttons.forEach(button => {
+        button.classList.remove('selected');
+        if (button.onclick.toString().includes(`'${selectedMode}'`)) {
+            button.classList.add('selected');
+        }
+    });
+}
+
+// Função para resetar estado visual dos botões
+function resetModeButtonStates() {
+    const allButtons = document.querySelectorAll('.mode-button');
+    allButtons.forEach(button => button.classList.remove('selected'));
+}
+
+// Função para resetar botões de modo de tempo
+function resetTimeModeButtons() {
+    const buttons = document.querySelectorAll('#time-mode-buttons .mode-button');
+    buttons.forEach(button => button.classList.remove('selected'));
+}
+
+// Função para iniciar o jogo com os modos selecionados
+function startGameWithSelectedModes() {
+    // Ocultar seleção de modo e mostrar jogo
+    document.getElementById('mode-selection').classList.add('hidden');
+    document.querySelector('.game-section').style.display = 'flex';
+    
+    // Aplicar configurações baseadas no modo selecionado
+    applyGameModeSettings();
+    
+    // Carregar a lição selecionada
+    loadLesson(gameMode.selectedLessonIndex);
+}
+
+// Função para aplicar configurações baseadas no modo selecionado
+function applyGameModeSettings() {
+    const playerContainers = document.querySelectorAll('.player-container');
+    
+    switch(gameMode.playerMode) {
+        case 'solo':
+            // Modo solo - ocultar jogador 2, mostrar apenas jogador 1 centralizado
+            playerContainers[1].style.display = 'none';
+            playerContainers[0].querySelector('h6:last-child').textContent = 'Você';
+            break;
+            
+        case 'multi':
+            // Modo multiplayer - mostrar ambos jogadores
+            playerContainers[0].style.display = 'flex';
+            playerContainers[1].style.display = 'flex';
+            playerContainers[0].querySelector('h6:last-child').textContent = 'Jogador 1';
+            playerContainers[1].querySelector('h6:last-child').textContent = 'Jogador 2';
+            break;
+            
+        case 'computer':
+            // Modo vs computador - mostrar ambos, mas renomear jogador 2
+            playerContainers[0].style.display = 'flex';
+            playerContainers[1].style.display = 'flex';
+            playerContainers[0].querySelector('h6:last-child').textContent = 'Você';
+            playerContainers[1].querySelector('h6:last-child').textContent = 'IA';
+            break;
+    }
+    
+    // Configurações de tempo
+    if (gameMode.timeMode === 'study') {
+        // Modo estudo - desabilitar relógios
+        disableClocks();
+    } else if (gameMode.timeMode === 'challenge') {
+        // Modo desafio - habilitar relógios
+        enableClocks();
+    }
+}
+
+// Função para desabilitar relógios (modo estudo)
+function disableClocks() {
+    if (player1Clock) player1Clock.stop();
+    if (player2Clock) player2Clock.stop();
+    
+    // Ocultar visualmente os relógios
+    document.querySelectorAll('.clock-face').forEach(clock => {
+        clock.style.opacity = '0.3';
+        clock.style.pointerEvents = 'none';
+    });
+    
+    // Remover qualquer restrição de clique nas palavras
+    document.querySelectorAll('.palavra').forEach(p => p.classList.remove('no-click'));
+}
+
+// Função para habilitar relógios (modo desafio)
+function enableClocks() {
+    // Mostrar visualmente os relógios
+    document.querySelectorAll('.clock-face').forEach(clock => {
+        clock.style.opacity = '1';
+        clock.style.pointerEvents = 'auto';
+    });
+}
+
+// Modificar a função loadLesson original para usar seleção de modo
+function loadLessonWithModeSelection(lessonIndex) {
+    showModeSelection(lessonIndex);
+}
+
+// Atualizar os botões de lição para usar a nova função
+function initializeMenuButtonsWithModeSelection() {
+    const menuItemsContainer = document.getElementById('menu-items');
+    menuItemsContainer.innerHTML = '<h2 class="menu-title">Lista de Lições</h2>';
+
+    lessons.forEach((lesson, index) => {
+        const button = document.createElement('button');
+        button.textContent = lesson.name;
+        button.classList.add('lesson-button');
+        button.onclick = () => loadLessonWithModeSelection(index);
+        menuItemsContainer.appendChild(button);
+    });
+}
+
+// CSS adicional para botões selecionados (adicionar ao CSS existente)
+const additionalCSS = `
+.mode-button.selected {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 12px rgba(40, 167, 69, 0.4);
+}
+
+.mode-button.selected:hover {
+    background: linear-gradient(135deg, #34ce57 0%, #2dd4aa 100%) !important;
+}
+`;
+
+// Adicionar o CSS adicional ao documento
+const styleSheet = document.createElement('style');
+styleSheet.textContent = additionalCSS;
+document.head.appendChild(styleSheet);
+
+// Atualizar a inicialização para usar os novos botões com seleção de modo
+// Substitua a chamada initializeMenuButtons() por initializeMenuButtonsWithModeSelection() na função init()
+
 // *** Inicializar a aplicação *** //
 function init() {
-    initializeMenuButtons();
+    initializeMenuButtonsWithModeSelection()
 
     // Initialize clocks
     player1Clock = createClock('clock-face1');
@@ -1697,4 +2480,4 @@ function verificarProgressoLicao(lessonName) {
 document.addEventListener('DOMContentLoaded', init);
 		</script>
 	</body>
-</html>
+						</html>
