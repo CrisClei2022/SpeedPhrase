@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exibição de Legendas</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        #subtitles {
+            white-space: pre-wrap;
+            border: 1px solid #ccc;
+            padding: 15px;
+            background-color: #fafafa;
+            border-radius: 4px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .loading {
+            text-align: center;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Legendas - I'm Gonna Be (500 Miles)</h1>
+        <div class="loading" id="loadingMessage">Carregando legendas...</div>
+        <pre id="subtitles"></pre>
+    </div>
+
+    <script>
+        const lessons = [
+            {
+                name: "I'm Gonna Be - 500 Miles.mp4",
+                srtUrl: "https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.srt",
+            }
+        ];
+
+        // Função assíncrona para buscar e exibir a legenda
+        async function displaySrt(url) {
+            const subtitlesElement = document.getElementById('subtitles');
+            const loadingMessage = document.getElementById('loadingMessage');
+
+            // Exibe mensagem de carregamento
+            loadingMessage.style.display = 'block';
+            subtitlesElement.textContent = ''; // Limpa o conteúdo anterior
+
+            try {
+                // Faz a requisição para o URL do arquivo SRT
+                const response = await fetch(url);
+                
+                // Verifica se a resposta foi bem-sucedida
+                if (!response.ok) {
+                    throw new Error(`Erro ao buscar a legenda: ${response.statusText}`);
+                }
+
+                // Obtém o texto da resposta
+                const srtText = await response.text();
+
+                // Exibe o texto da legenda no elemento <pre>
+                subtitlesElement.textContent = srtText;
+                
+            } catch (error) {
+                console.error("Falha ao carregar a legenda:", error);
+                subtitlesElement.textContent = "Não foi possível carregar a legenda. Verifique o link e tente novamente.";
+            } finally {
+                // Esconde a mensagem de carregamento
+                loadingMessage.style.display = 'none';
+            }
+        }
+
+        // Chama a função para exibir a legenda do primeiro item do array
+        if (lessons.length > 0) {
+            displaySrt(lessons[0].srtUrl);
+        }
+    </script>
+</body>
+</html>
