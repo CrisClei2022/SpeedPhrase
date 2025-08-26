@@ -1,0 +1,1981 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhraseCraft</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto+Mono:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Audiowide&display:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@17.0.0"></script>
+
+    <style>
+        :root {
+            /* Cores de Fundo e Sombra */
+            --background-color: #f0f0f0;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+
+            /* Novos Degradês */
+            --blue-gradient-start: #007bff; /* Azul vibrante */
+            --blue-gradient-end: #0056b3;    /* Azul mais escuro */
+
+            --grey-gradient-start: #d0d0d0; /* Agora o 'escuro' (que era o fim) */
+            --grey-gradient-end: #e0e0e0;    /* Agora o 'claro' (que era o início) */
+
+            --red-gradient-start: #dc3545; /* Vermelho vibrante */
+            --red-gradient-end: #a71d2a;    /* Vermelho mais escuro */
+
+            --orange-gradient-start: #ffc107; /* Laranja vibrante */
+            --orange-gradient-end: #e0a800;    /* Laranja mais escuro */
+
+            /* Variáveis para o progresso do JavaScript (mantidas) */
+            --progress: 0; /* 0 a 100 - Controla o preenchimento pelo JS */
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            justify-content: center;
+            align-items: flex-start;
+            background: linear-gradient(-135deg, #000000, #3b0047, #660000, #000000);
+            margin: 0;
+            padding: 1.2% 2% 2%;
+            font-family: 'Orbitron', sans-serif;
+            color: #00ccff;
+            text-shadow:
+                0 0 15px rgba(0, 204, 255, 0.7), /* Tom da cor base mais claro */
+                0 0 25px rgba(0, 220, 255, 0.5), /* Um pouco mais claro e difuso */
+                0 0 35px rgba(0, 235, 255, 0.3); /* Mais claro e ainda mais difuso */
+            letter-spacing: 1.5px;
+            overflow-x: hidden;
+        }
+
+        button {
+            padding: 10px 15px;
+            background: linear-gradient(to bottom, #5cbc5c 0%, #4CAF50 50%, #45a049 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+            text-shadow: 0 1px 1px rgba(0,0,0,0.1);
+            transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+            font-size: clamp(12px, 2vw, 16px);
+        }
+
+        button:hover {
+            background: linear-gradient(to bottom, #6ad26a 0%, #5cbc5c 50%, #4CAF50 100%);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            background: linear-gradient(to bottom, #45a049 0%, #4CAF50 50%, #5cbc5c 100%);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            transform: translateY(1px);
+        }
+		
+        main {
+            width: 100%;
+            max-width: 1080px;
+            margin: 0 auto;
+            
+            background-image: linear-gradient(-135deg, #171627, #111d4a, #171627, #111d4a);
+            background-color: #171627;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.1);
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            text-align: center;
+            padding: clamp(10px, 2vw, 20px);
+            display: flex;
+            flex-direction: column;
+            gap: clamp(5px, 1vw, 10px);
+            justify-content: flex-start;
+            align-items: center;
+            animation: fadeInScale 1s ease-out;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+	    /* Menu Button - mantém o estilo original */
+#menu-button {
+    margin-top: -5%;
+    background: transparent;
+    text-decoration: none;
+    color: #14fff1;
+    border: 0px solid #14fff1;
+    border-radius: 6px;
+    box-shadow:
+        0px 0px 16px rgba(0, 0, 0, 0.6),
+        inset 0px -5px 6px -5px rgba(0, 204, 255, 0.7),
+        inset 0px -7px 6px -8px rgba(0, 220, 255, 0.5),
+        inset 0px -10px 6px -10px rgba(0, 235, 255, 0.3);
+    transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+    font-family: 'Audiowide', sans-serif;
+    font-size: clamp(10px, 1.5vw, 14px);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 8px 16px;
+}
+
+#menu-button:hover {
+    box-shadow:
+        0px 0px 16px rgba(0, 0, 0, 0.6),
+        inset 0px -5px 6px -5px rgba(0, 204, 255, 0.7),
+        inset 0px -7px 6px -8px rgba(0, 220, 255, 0.5),
+        inset 0px -10px 6px -10px rgba(0, 235, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+#menu-button:active {
+    box-shadow:
+        0px 0px 8px rgba(0, 0, 0, 0.8),
+        inset 0px 0px 3px rgba(0, 204, 255, 0.9),
+        inset 0px 0px 5px rgba(0, 220, 255, 0.7);
+    transform: translateY(2px);
+    background-color: transparent;
+}
+
+/* Menu Overlay - aplicando estilo similar ao mode selection */
+#menu-overlay {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.8);
+    font-family: 'Orbitron', sans-serif;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* This centers horizontally */
+    justify-content: flex-start; /* This aligns to the top */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+    backdrop-filter: blur(8px);
+    padding: 2% 4%;
+    box-sizing: border-box;
+    animation: fadeInScale 1s ease-out;
+}
+
+#menu-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Container principal do menu - estilo mode selection */
+#menu-items {
+    background-image: linear-gradient(-135deg, #171627, #111d4a, #171627, #111d4a);
+    background-color: #171627;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.1);
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: clamp(20px, 4vw, 40px);
+    width: 100%;
+    max-width: 800px;
+    max-height: 80vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(15px, 3vw, 25px);
+    animation: fadeInScale 1s ease-out;
+    box-sizing: border-box;
+}
+
+/* Header do menu integrado */
+header {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: clamp(15px, 3vw, 20px);
+    margin-bottom: clamp(15px, 3vw, 25px);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+}
+
+.header-content {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(15px, 3vw, 20px);
+    align-items: center;
+}
+
+.user-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+}
+
+.nav-buttons {
+    display: flex;
+    align-items: center;  
+    gap: clamp(8px, 2vw, 15px);
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+}
+
+.nav-buttons button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    padding: clamp(10px, 2vw, 15px) clamp(15px, 3vw, 20px);
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: clamp(12px, 2vw, 14px);
+    font-family: 'Orbitron', sans-serif;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    flex: 1;
+    min-width: clamp(80px, 20vw, 100px);
+    max-width: 150px;
+    text-align: center;
+}
+
+.nav-buttons button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.nav-buttons button:hover::before {
+    left: 100%;
+}
+
+.nav-buttons button:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    background: linear-gradient(135deg, #7c8ef0 0%, #8a5cb8 100%);
+}
+
+.nav-buttons button.active {
+    background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
+    border-color: transparent;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+    transform: scale(1.05);
+}
+
+.nav-buttons button.active:hover {
+    background: linear-gradient(135deg, #ff7979 0%, #55efc4 100%);
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+}
+
+/* Título do menu com estilo mode selection */
+.menu-title {
+    text-align: center;
+    color: #00ccff;
+    font-size: clamp(20px, 4vw, 28px);
+    margin: 0;
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 1.5px;
+    text-shadow:
+        0 0 15px rgba(0, 204, 255, 0.7),
+        0 0 25px rgba(0, 220, 255, 0.5),
+        0 0 35px rgba(0, 235, 255, 0.3);
+    flex-grow: 1;
+}
+
+/* Botões de Ajuda e Fechar com estilo atualizado */
+.close-button, #info {
+    background: linear-gradient(to bottom, #666 0%, #555 50%, #444 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 16px);
+    cursor: pointer;
+    font-size: clamp(12px, 2vw, 16px);
+    font-weight: bold;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    text-shadow: 0 1px 1px rgba(0,0,0,0.1);
+    transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+    font-family: 'Orbitron', sans-serif;
+    flex-shrink: 0;
+}
+
+.close-button:hover, #info:hover {
+    background: linear-gradient(to bottom, #777 0%, #666 50%, #555 100%);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+    transform: translateY(-1px);
+}
+
+.close-button:hover {
+    transform: translateY(-1px) rotate(90deg);
+}
+
+.close-button:active, #info:active {
+    background: linear-gradient(to bottom, #444 0%, #555 50%, #666 100%);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    transform: translateY(1px);
+}
+
+/* Container dos botões de lição */
+.lessons-container {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(10px, 2vw, 15px);
+    width: 100%;
+}
+
+/* Botões de lição com estilo mode selection */
+.lesson-button {
+    width: 100%;
+    padding: clamp(15px, 3vw, 25px) clamp(15px, 3vw, 20px);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: clamp(14px, 2.5vw, 18px);
+    font-weight: bold;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 0.5px;
+    display: block;
+}
+
+.lesson-button:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    background: linear-gradient(135deg, #7c8ef0 0%, #8a5cb8 100%);
+}
+
+.lesson-button:active {
+    transform: translateY(-1px) scale(0.98);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.lesson-button:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+    transform: translateX(-100%);
+    transition: all 0.6s ease;
+}
+
+.lesson-button:hover:after {
+    transform: translateX(100%);
+}
+
+/* Animação para fade in scale */
+@keyframes fadeInScale {
+    0% {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #menu-items {
+        padding: clamp(15px, 3vw, 30px);
+        gap: clamp(10px, 2vw, 20px);
+        max-height: 85vh;
+    }
+
+    .header-content {
+        gap: clamp(10px, 2vw, 15px);
+    }
+
+    .nav-buttons {
+        gap: clamp(6px, 1.5vw, 10px);
+    }
+
+    .nav-buttons button {
+        padding: 8px 12px;
+        font-size: 12px;
+        min-width: 70px;
+    }
+
+    .lessons-container {
+        gap: clamp(8px, 1.5vw, 12px);
+    }
+}
+
+@media (max-width: 480px) {
+    #menu-overlay {
+        padding: 10px;
+    }
+
+    #menu-items {
+        padding: 15px;
+        gap: 15px;
+        max-height: 90vh;
+    }
+
+    .header-content {
+        gap: 12px;
+    }
+
+    .nav-buttons {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .nav-buttons button {
+        width: 100%;
+        max-width: none;
+        padding: 12px;
+        font-size: 13px;
+    }
+
+    .user-buttons {
+        gap: 8px;
+    }
+
+    .lesson-button {
+        padding: 15px;
+        font-size: 14px;
+    }
+
+    .menu-title {
+        font-size: 18px;
+    }
+}
+        /* Loading Indicator */
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        #loading.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .spinner {
+            width: clamp(30px, 8vw, 50px);
+            height: clamp(30px, 8vw, 50px);
+            border: 5px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 5px solid #3498db;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Current lesson info */
+        #current-lesson {
+            text-align: center;
+            color: #f9fff2;
+            margin-top: 5px;
+            font-size: clamp(14px, 3vw, 16px);
+            font-weight: bold;
+        }
+		
+        #subtitle-content {
+            margin-top: 20px;
+            padding: 25px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            min-height: 100px;
+            text-align: left;
+            font-size: clamp(14px, 2.5vw, 18px);
+            color: #555;
+            transition: opacity 0.5s ease-in-out;
+            line-height: 1.6;
+            box-sizing: border-box;
+        }
+
+        #subtitle-content.hidden {
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            padding: 0 25px;
+            border: none;
+        }
+        
+        /* ==========
+        // Containers
+        // ========== */
+        .game-section {
+            text-align: center;
+            padding: clamp(10px, 2vw, 20px);
+            display: flex;
+            flex-direction: column;
+            gap: clamp(5px, 1vw, 10px);
+            justify-content: flex-start;
+            align-items: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .title-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centraliza horizontalmente */
+            justify-content: center; /* Centraliza verticalmente, se houver espaço */
+            gap: 15px; /* Adiciona um espaço de 10px entre o título e o botão */
+        }
+
+        .title-container h2 {
+            font-size: clamp(20px, 4vw, 32px);
+            margin: 0;
+        }
+
+        .content-row {
+            display: flex;
+            flex-direction: row;
+            margin-top: 1%;
+            gap: clamp(10px, 2vw, 20px);
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            flex-wrap: nowrap;
+            overflow: hidden;
+            min-height: clamp(120px, 25vh, 200px);
+        }
+        
+        /* Ajustes para o container do vídeo */
+        .content-row .video-container {
+            flex: 1 1 65%;
+            min-width: 0;
+            max-width: 70%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* O container do vídeo onde o player e a legenda ficam */
+        .video-container #custom-video {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 16/9;
+            display: block;
+            background-color: #000;
+            border: none;
+            border-radius: 8px;
+        }
+
+		/* Estilos para o conteúdo da legenda que aparecerá sobre o vídeo */
+		#subtitle-content {
+            position: absolute;
+            width: 95%;
+            height: auto;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: clamp(5px, 1.5vw, 10px);
+            text-align: center;
+            font-size: clamp(12px, 2vw, 16px);
+            box-sizing: border-box;
+            z-index: 10;
+            top: 50%;
+            transform: translateY(-50%);
+            border-radius: 4px;
+        }
+		
+		/* Classe para ocultar o conteúdo da legenda */
+		#subtitle-content.hidden {
+		    display: none;
+		}
+        
+        /* Ajustes para os botões */
+        .content-row #buttons {
+            flex: 1 1 35%;
+            display: flex;
+            flex-direction: column;
+            gap: clamp(6px, 1.5vw, 12px);
+            align-items: center;
+            justify-content: center;
+            min-width: 0;
+            max-width: 35%;
+            padding: 0;
+        }
+        
+        /* Para garantir que os botões tenham largura consistente */
+        .content-row #buttons button {
+            width: 100%;
+            max-width: clamp(150px, 20vw, 200px);
+            padding: clamp(8px, 2vw, 12px);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: clamp(10px, 1.8vw, 14px);
+            text-align: center;
+        }
+
+        p {
+            margin: 10px 0;
+            color: #666;
+            font-size: clamp(12px, 2vw, 16px);
+        }
+        
+        .phrase-container {
+            font-size: clamp(16px, 3vw, 24px);
+            width: 100%;
+            max-width: 100%;
+            min-height: clamp(40px, 8vh, 60px);
+            border: 1px dashed #a5b68f;
+            padding: clamp(8px, 2vw, 15px);
+            border-radius: 5px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            word-break: break-word;
+            background-color: #f9fff2;
+            color: #333;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+        }
+        
+        .palavra-na-frase {
+            margin-right: 1.2%;
+            color: #0056b3;
+            border: 1px solid #ccc; 
+            border-radius: 4px;
+            font-size: clamp(12px, 2vw, 18px);
+            font-weight: bold;
+            padding: 2px 4px;
+            margin-bottom: 4px;
+        }
+        
+        .word-button-wrapper {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: clamp(8px, 2vw, 15px);
+        }
+
+        .word-container {
+            flex-wrap: wrap;
+            width: 100%;
+            border: none;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: clamp(8px, 2vw, 15px);
+            box-sizing: border-box;
+        }
+
+        .palavra { 
+            background-color: #007bff;
+            color: white;
+            padding: clamp(4px, 1vw, 8px) clamp(6px, 1.5vw, 10px);
+            margin: clamp(3px, 1vw, 5px);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: clamp(12px, 2vw, 16px);
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease, background-color 0.2s ease;
+            user-select: none;
+        }
+
+        .palavra.selecionada {
+            background: linear-gradient(to bottom, #ffc107, #e0a800);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .palavra.errada {
+            animation: shake 0.4s ease-in-out;
+            background-color: #dc3545;
+        }
+
+        .palavra.acertada {
+            background-color: #28a745;
+            pointer-events: none;
+        }
+
+	    .palavra.no-click {
+	        pointer-events: none;
+	        opacity: 0.6;
+	        cursor: default;
+	    }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        
+		
+		.game-info-container {
+		    display: flex;
+		    justify-content: space-between;
+		    align-items: center;           
+		    text-align: center;
+		    margin-bottom: 25px;
+		    padding: 10px;
+		    background: rgba(255, 255, 255, 0.03);
+		    border-radius: 15px;
+		    border: 1px solid rgba(255, 255, 255, 0.1);
+		}
+		
+		.player-info {
+		    display: flex;
+		    flex-direction: column;
+		    align-items: center;
+		    gap: 10px;
+            margin: 0 20px 0 20px;
+		}
+		
+		.player-label {
+		    font-size: 1.1em;
+		    font-weight: 600;
+		    color: #ffffff;
+		    margin-bottom: 5px;
+		}
+		
+		.placar {
+		    font-size: 1.8em;
+		    font-weight: 700;
+		    background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+		    background-clip: text;
+		    -webkit-background-clip: text;
+		    -webkit-text-fill-color: transparent;
+		    padding: 0 20px;
+		    background-color: rgba(255, 255, 255, 0.1);
+		}
+        
+        /* Clockface */
+        .clock-face {
+		    min-width: 60px;
+		    min-height: 60px;
+            margin: 20px 0 20px 0;
+		    border: 3px solid rgba(255, 255, 255, 0.3);
+		    border-radius: 50%;
+		    position: relative;
+		    background: rgba(255, 255, 255, 0.1);
+		    backdrop-filter: blur(10px);
+		}       
+
+        .pointer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 3px;
+            height: 25px;
+            background-color: #fff;
+            transform-origin: bottom;
+            transform: translateX(-50%) translateY(-100%) rotate(0deg);
+            border-radius: 5px 5px 0 0;
+        }
+        
+        #progresso {
+            margin-top: 10px;
+            font-size: clamp(12px, 2vw, 16px);
+        }
+
+        /* Media Queries para layout mobile */
+        @media (max-width: 768px) {
+            .content-row {
+                flex-direction: column;
+                gap: 15px;
+                min-height: auto;
+            }
+            
+            .content-row .video-container {
+                flex: none;
+                max-width: 100%;
+                width: 100%;
+                order: 1;
+            }
+            
+            .content-row #buttons {
+                flex: none;
+                max-width: 100%;
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                order: 2;
+            }
+            
+            .content-row #buttons button {
+                flex: 1;
+                min-width: 120px;
+                max-width: 150px;
+                margin: 2px;
+            }
+
+            .players-container {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .player-container {
+                min-width: 100px;
+            }
+
+            #menu-items {
+                width: 95%;
+                max-width: none;
+                padding: 15px;
+            }
+
+            .phrase-container {
+                min-height: 50px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+
+            .game-section {
+                padding: 10px;
+            }
+
+            .content-row #buttons {
+                flex-direction: column;
+            }
+
+            .content-row #buttons button {
+                max-width: 100%;
+                width: 100%;
+            }
+
+            .word-container {
+                padding: 10px;
+            }
+
+            .palavra {
+                margin: 2px;
+                padding: 6px 8px;
+            }
+        }
+        
+        /* Mode Selection Styles */
+        #mode-selection {
+            background-image: linear-gradient(-135deg, #171627, #111d4a, #171627, #111d4a);
+            background-color: #171627;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.1);
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            text-align: center;
+            padding: clamp(20px, 4vw, 40px);
+            display: flex;
+            flex-direction: column;
+            gap: clamp(15px, 3vw, 25px);
+            justify-content: flex-start;
+            align-items: center;
+            animation: fadeInScale 1s ease-out;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            box-sizing: border-box;
+            color: #00ccff;
+            text-shadow:
+                0 0 15px rgba(0, 204, 255, 0.7),
+                0 0 25px rgba(0, 220, 255, 0.5),
+                0 0 35px rgba(0, 235, 255, 0.3);
+        }
+
+        #mode-selection.hidden {
+            display: none;
+        }
+
+        #mode-selection h2 {
+            font-size: clamp(20px, 4vw, 28px);
+            margin: 0;
+            color: #00ccff;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1.5px;
+        }
+
+        #mode-selection p {
+            font-size: clamp(14px, 2.5vw, 18px);
+            color: #f9fff2;
+            margin: 0;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        #mode-selection #selected-video-title {
+            color: #14fff1;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(20, 255, 241, 0.5);
+        }
+
+        .back-button {
+            align-self: flex-start;
+            background: linear-gradient(to bottom, #666 0%, #555 50%, #444 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 20px);
+            cursor: pointer;
+            font-size: clamp(12px, 2vw, 16px);
+            font-weight: bold;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+            text-shadow: 0 1px 1px rgba(0,0,0,0.1);
+            transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .back-button:hover {
+            background: linear-gradient(to bottom, #777 0%, #666 50%, #555 100%);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+            transform: translateY(-1px);
+        }
+
+        .back-button:active {
+            background: linear-gradient(to bottom, #444 0%, #555 50%, #666 100%);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            transform: translateY(1px);
+        }
+
+        .mode-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: clamp(10px, 2vw, 20px);
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .mode-button {
+            flex: 1;
+            min-width: clamp(120px, 25vw, 180px);
+            max-width: 200px;
+            padding: clamp(15px, 3vw, 25px) clamp(10px, 2vw, 20px);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: clamp(14px, 2.5vw, 18px);
+            font-weight: bold;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 0.5px;
+        }
+
+        .mode-button:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            background: linear-gradient(135deg, #7c8ef0 0%, #8a5cb8 100%);
+        }
+
+        .mode-button:active {
+            transform: translateY(-1px) scale(0.98);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .mode-button:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+            transform: translateX(-100%);
+            transition: all 0.6s ease;
+        }
+
+        .mode-button:hover:after {
+            transform: translateX(100%);
+        }
+
+        #time-mode-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: clamp(15px, 3vw, 20px);
+            align-items: center;
+            margin-top: clamp(10px, 2vw, 20px);
+        }
+
+        #time-mode-container.hidden {
+            display: none;
+        }
+
+        #time-mode-container h2 {
+            font-size: clamp(18px, 3.5vw, 24px);
+            margin: 0;
+            color: #00ccff;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1.5px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .mode-buttons {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .mode-button {
+                width: 100%;
+                max-width: 300px;
+                min-width: auto;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #mode-selection {
+                padding: 15px;
+            }
+
+            .mode-buttons {
+                gap: 10px;
+            }
+
+            .mode-button {
+                padding: 15px 10px;
+                max-width: 100%;
+            }
+        }
+
+        /* Animation for fade in scale */
+        @keyframes fadeInScale {
+            0% {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+<main>
+		<div class="title-container">
+            <h2>SpeedPhrase</h2>
+        </div>
+
+        <div id="loading">
+            <div class="spinner"></div>
+        </div>
+        
+        <section id="menu-overlay">        
+            <header>
+                <div class="header-content">
+                    <div class="user-buttons">
+                        <button id="info">Ajuda</button>
+                        <button class="close-button">⛌</button>
+                    </div>
+                    <div class="nav-buttons">
+                        <button id="btnBuscar">🔍 Buscar</button>
+                        <button id="btnAvulsas" class="active">📹 Avulsas</button>
+                        <button id="btnTrilha">🛤️ Trilha</button>
+                    </div>
+                </div>
+            </header>            
+            <div id="menu-items">
+                <h2 class="menu-title">Lista de Lições</h2>
+            </div>            
+        </section>
+        
+        <section id="mode-selection" class="mode-selection hidden">
+            <button class="back-button" onclick="goBack()">← Voltar</button>
+            <h2>Escolha o modo de jogo</h2>
+            <p>Videoaula selecionada: <span id="selected-video-title"></span></p>
+            <div id="player-mode-buttons" class="mode-buttons">
+                <button class="mode-button" onclick="selectPlayerMode('solo')">🎯 Solo</button>
+                <button class="mode-button" onclick="selectPlayerMode('multi')">👥 Multiplayer</button>
+                <button class="mode-button" onclick="selectPlayerMode('computer')">🤖 vs Computador</button>
+            </div>
+            <br>
+            <br>
+            <div id="time-mode-container" class="hidden">
+                <h2>Tempo ligado ou desligado?</h2>
+                <div id="time-mode-buttons" class="mode-buttons">
+                    <button class="mode-button" onclick="selectTimeMode('study')">📖 Modo de Estudo</button>
+                    <button class="mode-button" onclick="selectTimeMode('challenge')">⏱️ Modo de Desafio</button>
+                </div>
+            </div>
+        </section>
+        
+        <section class="game-section">        
+            <div class="game-info-container">
+                <div class="player-info">
+                    <span class="player-label">Jogador 1:</span>
+                    <span id="placar1" class="placar">0s</span>
+                </div>
+                
+                <div class="player-info">
+                	<div class="clock-face">
+                        <div class="pointer" id="pointer"></div>
+                    </div>
+                    <button id="menu-button">Menu</button>
+                </div>
+                
+                <div class="player-info">
+                    <span class="player-label">Jogador 2:</span>
+                    <span id="placar2" class="placar">0s</span>
+                </div>
+            </div>
+
+        	<div id="current-lesson"></div>
+
+            <div class="content-row">
+                <div class="video-container">
+                    <video id="custom-video" class="hide-controls" preload="auto">
+                    </video>
+
+                    <div id="subtitle-content" class="hidden"> 
+                        <!- As legendas aparecem aqui: -->
+                    </div>
+                </div>
+
+                <div id="buttons">
+                    <button id="repetir" style="background: linear-gradient(to bottom, #b34dd6 0%, #9C27B0 50%, #7c1f8e 100%);">Tocar Trecho</button>
+                    <button id="lerFrase" style="background: linear-gradient(to bottom, #78c0ff 0%, #5babf0 50%, #4d98e5 100%);">Tocar Lento</button>
+                    <button id="traduzir-btn" class="control-button" style="background: linear-gradient(to bottom, #ffc078 0%, #ffa94d 50%, #e59442 100%);">Traduzir</button>
+                    <button id="desistir" style="background: linear-gradient(to bottom, #66bb6a 0%, #43a047 50%, #2e7d32 100%);">Passar: palavra</button>
+
+                    <button id="desistir" style="background: linear-gradient(to bottom, #ff5e91 0%, #E91E63 50%, #c41858 100%);">Desistir: frase</button>
+                 </div>
+            </div>
+
+            <div class="phrase-container" id="frase"></div>
+
+            <div class="word-button-wrapper">
+                <div class="word-container" id="palavras"></div>
+            </div>
+
+            <div id="progresso" style="margin-top: 10px; font-size: 0.9em;">Progresso: 0 de 0</div>
+    </section>
+</main>
+
+<script>
+// Lições disponíveis (nome do arquivo SRT e URL do vídeo)
+const avulsasLessons = [
+    {
+        name: "I'm Gonna Be - 500 Miles.mp4",
+        srtUrl: "https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.srt",
+        videoUrl: "https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.mp4"
+    }
+    // Adicione mais lições conforme necessário
+];
+
+
+const trilhaLessons = [
+    {
+        name: "Chapter 1 - Welcome & Nationalities",
+        srtUrl: "https://f005.backblazeb2.com/file/Trilha/Chapter-1.-Welcome-%26-Nationalities.srt",
+        videoUrl: "https://f005.backblazeb2.com/file/Trilha/Chapter-1.-Welcome-%26-Nationalities.mp4"
+    }
+    // Adicione mais lições conforme necessário
+];
+
+// Variáveis globais
+let videoElement = document.getElementById('custom-video');
+let frases = [];
+let indiceFrase = 0;
+let fraseAtual = null;
+let palavrasEmbaralhadas = [];
+let palavrasClicadas = [];
+let palavraElementos = {};
+let progresso = 0;
+let acertos1 = 0;
+let acertos2 = 0;
+let playerReady = false;
+let monitorTempoId;
+let fraseAcertada = false;
+let audioPlaying = false;
+let currentLessonName = "";
+let player1Clock;
+let player2Clock;
+let mostrarTraducao = false;
+let palavrasDisponiveisElementos = [];
+
+const ponteiro = document.getElementById('clock-face');
+let inicioTempo = null;
+let animacaoQuadro;
+let tempoTotal;
+let tempoPassado = 0;
+let fraseParaTempo;
+
+// Variável global para rastrear qual lista de lições está ativa
+let currentLessonList = avulsasLessons;
+
+// Funções para alternar entre as listas de lições
+function showAvulsasLessons() {
+    currentLessonList = avulsasLessons;
+    document.getElementById('btnAvulsas').classList.add('active');
+    document.getElementById('btnTrilha').classList.remove('active');
+    initializeMenuButtons();
+}
+
+function showTrilhaLessons() {
+    currentLessonList = trilhaLessons;
+    document.getElementById('btnTrilha').classList.add('active');
+    document.getElementById('btnAvulsas').classList.remove('active');
+    initializeMenuButtons();
+}
+
+// Função para carregar o arquivo SRT de uma URL
+async function loadSrtFromUrl(url) {
+    let srtLoadedSuccessfully = false;
+    try {
+        showLoading(true);
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Failed to load SRT: ${response.status}`);
+        }
+        const srtContent = await response.text();
+
+        processSrtContent(srtContent);
+        srtLoadedSuccessfully = true;
+
+        if (!playerReady) {
+            console.warn("Vídeo não está pronto. O jogo continuará usando apenas as legendas.");
+            criarPalavras();
+            atualizarFrase();
+            atualizarProgresso();
+            atualizarPlacares();
+            pararMonitorTempo();
+        }
+
+    } catch (error) {
+        console.error("Erro ao carregar o arquivo SRT:", error);
+        alert("Erro ao carregar o arquivo de legendas. O jogo continuará sem sincronização de vídeo. Por favor, tente novamente mais tarde.");
+    } finally {
+        showLoading(false);
+    }
+
+    if (playerReady && fraseAtual && srtLoadedSuccessfully) {
+        reproduzirTrechoAtual();
+    }
+
+    return srtLoadedSuccessfully;
+}
+
+// Função para processar o conteúdo SRT
+function processSrtContent(srt) {
+    frases = [];
+    const linhas = srt.split('\n');
+    let blocoAtual = null;
+
+    linhas.forEach(linha => {
+        const linhaTrim = linha.trim();
+
+        if (linhaTrim === '' || !isNaN(linhaTrim)) {
+            return;
+        }
+
+        if (linhaTrim.includes('-->')) {
+            if (blocoAtual) {
+                if (blocoAtual.texto !== '' && !blocoAtual.texto.includes('www.RentAnAdviser.com')) {
+                    frases.push(blocoAtual);
+                }
+            }
+            blocoAtual = {
+                tempoInicio: converterTempo(linhaTrim.split(' --> ')[0].trim()),
+                tempoFim: converterTempo(linhaTrim.split(' --> ')[1].trim()),
+                texto: ''
+            };
+        } else if (blocoAtual) {
+            blocoAtual.texto += (blocoAtual.texto === '' ? '' : ' ') + linhaTrim;
+        }
+    });
+
+    if (blocoAtual && blocoAtual.texto !== '' && !blocoAtual.texto.includes('www.RentAnAdviser.com')) {
+        frases.push(blocoAtual);
+    }
+    
+    console.log("Frases processadas (corrigido):", frases);
+
+    indiceFrase = 0;
+    fraseAtual = frases[indiceFrase];
+    palavrasEmbaralhadas = embaralharPalavras(fraseAtual.texto);
+    palavrasClicadas = [];
+    progresso = 0;
+    acertos1 = 0;
+    acertos2 = 0;
+    fraseAcertada = false;
+
+    criarPalavras();
+    atualizarFrase();
+    atualizarProgresso();
+    atualizarPlacares();
+}
+
+function startRandomPlayerClock() {
+    // Stop both clocks first to ensure only one is running or both are reset
+    if (player1Clock) player1Clock.stop();
+    if (player2Clock) player2Clock.stop();
+
+    const randomPlayer = Math.random();
+    if (randomPlayer < 0.5) {
+        if (player1Clock) player1Clock.start();
+        console.log("Player 1's clock started.");
+    } else {
+        if (player2Clock) player2Clock.start();
+        console.log("Player 2's clock started.");
+    }
+}
+    
+// Função para carregar uma lição
+function loadLesson(lessonIndex) {
+    const lesson = currentLessonList[lessonIndex];
+    currentLessonName = lesson.name;
+
+    localStorage.setItem('lastLesson', JSON.stringify({
+        index: lessonIndex,
+        category: (currentLessonList === avulsasLessons) ? 'avulsas' : 'trilha'
+    }));
+
+    document.getElementById('menu-overlay').classList.remove('active');
+    document.getElementById('mode-selection').classList.remove('hidden');
+    document.getElementById('selected-video-title').textContent = currentLessonName;
+
+    document.querySelector('.game-section').style.display = 'none';
+
+    selectedPlayerMode = null;
+    selectedTimeMode = null;
+    document.getElementById('player-mode-buttons').classList.remove('hidden');
+    document.getElementById('time-mode-container').classList.add('hidden');
+}
+
+// Global variables to store the selected modes
+let selectedPlayerMode = null;
+let selectedTimeMode = null;
+
+// Function to handle player mode selection
+function selectPlayerMode(mode) {
+    selectedPlayerMode = mode;
+    console.log("Player mode selected:", selectedPlayerMode);
+
+    document.getElementById('player-mode-buttons').classList.add('hidden');
+    document.getElementById('time-mode-container').classList.remove('hidden');
+}
+
+// Função para lidar com a seleção de modo de tempo e iniciar o jogo
+async function selectTimeMode(mode) {
+    selectedTimeMode = mode;
+    console.log("Time mode selected:", selectedTimeMode);
+
+    const lastLessonData = JSON.parse(localStorage.getItem('lastLesson'));
+    if (!lastLessonData) {
+        alert("Nenhuma lição selecionada.");
+        goBack();
+        return;
+    }
+
+    const lesson = (lastLessonData.category === 'avulsas' ? avulsasLessons : trilhaLessons)[lastLessonData.index];
+    currentLessonName = lesson.name;
+
+    showLoading(true);
+
+    const srtLoaded = await loadSrtFromUrl(lesson.srtUrl);
+
+    if (srtLoaded) {
+        videoElement.src = lesson.videoUrl;
+        videoElement.load();
+        
+        const progressoSalvo = carregarProgresso();
+        if (progressoSalvo && progressoSalvo.lessonName === currentLessonName) {
+            const retomar = confirm(`Deseja continuar da frase onde parou? | Frase ${progressoSalvo.fraseIndex + 1} | ${progressoSalvo.lessonName} |`);
+            if (retomar && progressoSalvo.fraseIndex < frases.length) {
+                indiceFrase = progressoSalvo.fraseIndex;
+                acertos1 = progressoSalvo.acertos1;
+                acertos2 = progressoSalvo.acertos2;
+                progresso = indiceFrase;
+            }
+        }
+
+        fraseAtual = frases[indiceFrase];
+        palavrasEmbaralhadas = embaralharPalavras(fraseAtual.texto);
+        palavrasClicadas = [];
+        fraseAcertada = false;
+        criarPalavras();
+        atualizarFrase();
+        atualizarProgresso();
+        atualizarPlacares();
+
+        document.getElementById('mode-selection').classList.add('hidden');
+        document.querySelector('.game-section').style.display = 'flex';
+
+        if (selectedTimeMode === 'challenge') {
+            iniciarAnimacao();
+        } else {
+            resetarCronometro();
+        }
+    } else {
+        alert("Erro ao carregar os dados da lição. Por favor, tente outra lição.");
+        goBack();
+    }
+    
+    showLoading(false);
+}
+
+// Function to go back from the mode selection screen to the main menu
+function goBack() {
+    document.getElementById('mode-selection').classList.add('hidden');
+    document.getElementById('menu-overlay').classList.add('active');
+}
+
+// Função para mostrar/esconder o indicador de carregamento
+function showLoading(show) {
+    const loadingElement = document.getElementById('loading');
+    if (show) {
+        loadingElement.classList.add('active');
+    } else {
+        loadingElement.classList.remove('active');
+    }
+}
+
+// Função para converter tempo de legenda para segundos
+function converterTempo(tempo) {
+    let partes = tempo.split(',');
+    let segundos = partes[0].split(':');
+    return parseInt(segundos[0]) * 3600 + parseInt(segundos[1]) * 60 + parseInt(segundos[2]) + parseInt(partes[1]) / 1000;
+}
+
+// Evento que ocorre quando o vídeo está pronto
+videoElement.addEventListener('loadedmetadata', function() {
+    playerReady = true;
+    if (fraseAtual) {
+        reproduzirTrechoAtual();
+    }
+});
+
+function iniciarMonitorTempo() {
+    pararMonitorTempo();
+    monitorTempoId = setInterval(() => {
+        if (playerReady && fraseAtual) {
+            let tempoAtual = videoElement.currentTime;
+            if (tempoAtual >= fraseAtual.tempoFim) {
+                videoElement.pause();
+                pararMonitorTempo();
+            }
+        }
+    }, 100);
+}
+
+function pararMonitorTempo() {
+    if (monitorTempoId) {
+        clearInterval(monitorTempoId);
+        monitorTempoId = null;
+    }
+}
+
+// Função para embaralhar palavras
+function embaralharPalavras(frase) {
+    if (!frase) return [];
+    let palavras = frase.split(' ');
+    for (let i = palavras.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        let temp = palavras[i];
+        palavras[i] = palavras[j];
+        palavras[j] = temp;
+    }
+    return palavras;
+}
+
+// Função para contar os caracteres da frase
+function contarCaracteres(frase) {
+    return frase.length;
+}
+
+// Nova função para calcular o tempo total de animação em segundos
+function calcularDuracaoAnimacao() {
+    const numCaracteres = contarCaracteres(fraseAtual.texto);
+    const duracaoSegundos = numCaracteres * 1;
+    tempoTotal = duracaoSegundos * 1000;
+}
+
+// A função animarPonteiro agora usa `tempoTotal`
+function animarPonteiro(timestamp) {
+    if (!inicioTempo) {
+        inicioTempo = timestamp;
+    }
+
+    const tempoDecorrido = timestamp - inicioTempo;
+    const graus = (tempoDecorrido / tempoTotal) * 360;
+
+    if (tempoDecorrido >= tempoTotal) {
+        cancelAnimationFrame(animacaoQuadro);
+        animacaoQuadro = null;
+        inicioTempo = null;
+        ponteiro.style.transform = `translateX(-50%) translateY(-100%) rotate(360deg)`;
+        
+        handleTempoEsgotado();
+        
+        return;
+    }
+
+    ponteiro.style.transform = `translateX(-50%) translateY(-100%) rotate(${graus}deg)`;
+
+    animacaoQuadro = requestAnimationFrame(animarPonteiro);
+}
+
+// A função iniciarAnimacao deve calcular a duração antes de começar
+function iniciarAnimacao() {
+    if (!animacaoQuadro) {
+        calcularDuracaoAnimacao();
+        inicioTempo = performance.now() - tempoPassado;
+        animacaoQuadro = requestAnimationFrame(animarPonteiro);
+    }
+}
+
+// Função para parar a animação
+function pararAnimacao() {
+    if (animacaoQuadro) {
+        tempoPassado += performance.now() - inicioTempo;
+    }
+    cancelAnimationFrame(animacaoQuadro);
+    animacaoQuadro = null;
+}
+
+// Função para resetar o cronômetro
+function resetarCronometro() {
+    pararAnimacao();
+    inicioTempo = null;
+    tempoPassado = 0;
+    ponteiro.style.transform = `translateX(-50%) translateY(-100%) rotate(0deg)`;
+}
+
+// Nova função para lidar com o tempo esgotado
+function handleTempoEsgotado() {
+    console.log("Tempo esgotado! Frase não completada.");
+    processAndAdvancePhrase();
+}
+
+// Função para criar elementos de palavras
+function criarPalavras() {
+    let palavrasDiv = document.getElementById('palavras');
+    palavrasDiv.innerHTML = '';
+    palavrasDisponiveisElementos = [];
+    palavraElementos = {};
+
+    if (!palavrasEmbaralhadas || palavrasEmbaralhadas.length === 0) return;
+
+    palavrasEmbaralhadas.forEach(palavra => {
+        let palavraDiv = document.createElement('div');
+        palavraDiv.classList.add('palavra');
+        palavraDiv.innerText = palavra;
+        palavraDiv.onclick = () => clicarPalavra(palavra, palavraDiv);
+
+        if (!palavraElementos[palavra]) {
+            palavraElementos[palavra] = [];
+        }
+        palavraElementos[palavra].push(palavraDiv);
+        palavrasDiv.appendChild(palavraDiv);
+        palavrasDisponiveisElementos.push(palavraDiv);
+    });
+}
+
+function clicarPalavra(palavra, elemento) {
+    if (!fraseAtual) return;
+
+    if (elemento.classList.contains('acertada')) {
+        return;
+    }
+
+    const fraseSplit = fraseAtual.texto.split(' ');
+    const proximaPalavraCorreta = fraseSplit[palavrasClicadas.length];
+    const comprimentoFraseAtual = palavrasClicadas.length;
+
+    if (speechSynthesis.speaking) speechSynthesis.cancel();
+    if (playerReady && !videoElement.paused) videoElement.pause();
+    
+    const utterance = new SpeechSynthesisUtterance(palavra);
+    utterance.lang = detectarIdioma(fraseAtual.texto);
+    let currentUtterance = utterance;
+    audioPlaying = true;
+    
+    currentUtterance.onend = function() {
+        audioPlaying = false;
+    };
+
+    if (palavra === proximaPalavraCorreta) {
+        palavrasClicadas.push(palavra);
+        elemento.classList.add('acertada');
+        elemento.classList.remove('selecionada');
+        
+        const activeClockId = getActiveClockId();
+        if (comprimentoFraseAtual < fraseSplit.length - 1) {
+            if (activeClockId === 'clock-face1') {
+                acertos1++;
+            } else if (activeClockId === 'clock-face2') {
+                acertos2++;
+            }
+            atualizarPlacares();
+        }
+        
+        atualizarFrase();
+
+        if (comprimentoFraseAtual === fraseSplit.length - 2 && fraseSplit.length > 1) {
+            const ultimaPalavra = fraseSplit[fraseSplit.length - 1];
+            let elementoUltimaPalavraParaAutoEnviar = null;
+
+            if (palavrasDisponiveisElementos && palavrasDisponiveisElementos.length > 0) {
+                 elementoUltimaPalavraParaAutoEnviar = palavrasDisponiveisElementos.find(el => 
+                    el.innerText === ultimaPalavra && !el.classList.contains('acertada') && !palavrasClicadas.includes(ultimaPalavra)
+                );
+            }
+            
+            if (elementoUltimaPalavraParaAutoEnviar) {
+                palavrasClicadas.push(ultimaPalavra);
+                elementoUltimaPalavraParaAutoEnviar.classList.add('acertada');
+                elementoUltimaPalavraParaAutoEnviar.classList.remove('selecionada');
+                atualizarFrase();
+
+                currentUtterance.onend = function() {
+                    audioPlaying = false;
+                    if (speechSynthesis.speaking) speechSynthesis.cancel(); 
+                    if (playerReady && !videoElement.paused) videoElement.pause();
+
+                    const utteranceUltima = new SpeechSynthesisUtterance(ultimaPalavra);
+                    utteranceUltima.lang = detectarIdioma(fraseAtual.texto);
+                    audioPlaying = true;
+                    utteranceUltima.onend = function() {
+                        audioPlaying = false;
+                        processAndAdvancePhrase();
+                    };
+                    speechSynthesis.speak(utteranceUltima);
+                };
+            } else {
+                currentUtterance.onend = function() {
+                    audioPlaying = false;
+                    processAndAdvancePhrase();
+                };
+            }
+        }
+        else if (palavrasClicadas.length === fraseSplit.length) {
+            currentUtterance.onend = function() {
+                audioPlaying = false;
+                processAndAdvancePhrase();
+            };
+        }
+
+    } else {
+        elemento.classList.add('errada');
+        setTimeout(() => {
+            elemento.classList.remove('errada');
+        }, 500);
+        
+        currentUtterance.onend = function() {
+            audioPlaying = false;
+        };
+    }
+
+    speechSynthesis.speak(currentUtterance); 
+}
+
+function processAndAdvancePhrase() {
+    if (selectedTimeMode === 'challenge') {
+        pararAnimacao();
+    }
+    
+    showLoading(true);
+
+    progresso++;
+    atualizarProgresso();
+    salvarProgresso();
+
+    setTimeout(() => {
+        indiceFrase++;
+        if (indiceFrase >= frases.length) {
+            alert("Parabéns! Você completou todas as frases!");
+            indiceFrase = 0;
+            acertos1 = 0;
+            acertos2 = 0;
+            progresso = 0;
+            salvarProgresso();
+        }
+        fraseAtual = frases[indiceFrase];
+        palavrasEmbaralhadas = embaralharPalavras(fraseAtual.texto);
+        palavrasClicadas = [];
+        fraseAcertada = false;
+        criarPalavras();
+        mostrarTraducao = false;
+        atualizarFrase();
+        reproduzirTrechoAtual();
+        showLoading(false);
+        atualizarPlacares();
+        
+        if (selectedTimeMode === 'challenge' && indiceFrase < frases.length) {
+            resetarCronometro();
+            iniciarAnimacao();
+        }
+    }, 1500);
+}
+    
+function pausarAudios() {
+    if (speechSynthesis.speaking) {
+        speechSynthesis.cancel();
+        audioPlaying = false;
+    }
+
+    if (playerReady && !videoElement.paused) {
+        videoElement.pause();
+    }
+}
+
+function detectarIdioma(texto) {
+    if (!texto) return 'en-US';
+
+    if (texto.includes('Aku') || texto.includes('kamu')) {
+        return 'id-ID';
+    } else if (texto.includes('Scheiße')) {
+        return 'de-DE';
+    }
+    return 'en-US';
+}
+
+function translateSrt(text) {
+    return new Promise((resolve, reject) => {
+        if (text.trim() === '') {
+            resolve('');
+            return;
+        }
+
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=pt&dt=t&q=${encodeURI(text)}`;
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                let translation = '';
+                data[0].forEach(item => {
+                    translation += item[0];
+                });
+                resolve(translation);
+            })
+            .catch(error => {
+                console.error('Erro na tradução:', error);
+                reject(error);
+            });
+    });
+}
+
+function atualizarFrase() {
+    let fraseDiv = document.getElementById('frase');
+    let subtitleContentDiv = document.getElementById('subtitle-content');
+    fraseDiv.innerHTML = '';
+
+    palavrasClicadas.forEach((palavra) => {
+        const span = document.createElement('span');
+        span.textContent = palavra + ' ';
+        span.classList.add('palavra-na-frase');
+        fraseDiv.appendChild(span);
+    });
+
+    if (fraseAtual && subtitleContentDiv) {
+        if (mostrarTraducao) {
+            translateSrt(fraseAtual.texto)
+                .then(translatedText => {
+                    subtitleContentDiv.textContent = translatedText;
+                    subtitleContentDiv.classList.remove('hidden');
+                })
+                .catch(error => {
+                    console.error('Erro na tradução:', error);
+                    subtitleContentDiv.textContent = fraseAtual.texto;
+                    subtitleContentDiv.classList.remove('hidden');
+                });
+        } else {
+            subtitleContentDiv.classList.add('hidden');
+            subtitleContentDiv.textContent = '';
+        }
+    } else if (subtitleContentDiv) {
+        subtitleContentDiv.classList.add('hidden');
+        subtitleContentDiv.textContent = '';
+    }
+}
+
+function lerFraseAtual() {
+    if (!fraseAtual) return;
+
+    pausarAudios();
+
+    const utterance = new SpeechSynthesisUtterance(fraseAtual.texto);
+    utterance.lang = detectarIdioma(fraseAtual.texto);
+
+    audioPlaying = true;
+    utterance.onend = function() {
+        audioPlaying = false;
+    };
+
+    speechSynthesis.speak(utterance);
+}
+
+function atualizarProgresso() {
+    document.getElementById('progresso').innerText = `Progresso: ${progresso} de ${frases.length}`;
+}
+
+function atualizarPlacares() {
+    document.getElementById('placar1').innerText = ` ${acertos1}`;
+    document.getElementById('placar2').innerText = ` ${acertos2}`;
+}
+
+function reproduzirTrechoAtual() {
+    if (!fraseAtual) return;
+
+    pausarAudios();
+
+    if (playerReady) {
+        videoElement.currentTime = fraseAtual.tempoInicio;
+        videoElement.play();
+        iniciarMonitorTempo();
+    } else {
+        console.log("Player não está pronto. Lendo a frase em vez de reproduzir o vídeo.");
+        lerFraseAtual();
+    }
+}
+
+function toggleMenu() {
+    const menuButton = document.getElementById('menu-button');
+    const menuOverlay = document.getElementById('menu-overlay');
+    const gameSection = document.querySelector('.game-section');
+
+    menuButton.classList.toggle('active');
+    menuOverlay.classList.toggle('active');
+
+    if (!menuOverlay.classList.contains('active')) {
+        gameSection.style.display = 'flex';
+    } else {
+        gameSection.style.display = 'none';
+    }
+}
+
+function initializeMenuButtons() {
+    const menuItemsContainer = document.getElementById('menu-items');
+    menuItemsContainer.innerHTML = '<h2 class="menu-title">Lista de Lições</h2>';
+
+    currentLessonList.forEach((lesson, index) => {
+        const button = document.createElement('button');
+        button.textContent = lesson.name;
+        button.classList.add('lesson-button');
+        button.onclick = () => loadLesson(index);
+        menuItemsContainer.appendChild(button);
+    });
+}
+
+document.getElementById('desistir').onclick = function() {
+    if (!fraseAtual) return;
+
+    const fraseSplit = fraseAtual.texto.split(' ');
+    const palavraCorretaAtual = fraseSplit[palavrasClicadas.length];
+
+    if (!palavraCorretaAtual) {
+        console.warn("Nenhuma palavra para revelar. Frase já completa ou não inicializada.");
+        return;
+    }
+
+    const palavraSelecionadaAnteriormente = document.querySelector('.palavra.selecionada');
+    if (palavraSelecionadaAnteriormente) {
+        palavraSelecionadaAnteriormente.classList.remove('selecionada');
+    }
+
+    let elementoCorretoParaAcertar = null;
+    if (palavraElementos[palavraCorretaAtual]) {
+        elementoCorretoParaAcertar = palavraElementos[palavraCorretaAtual].find(el => !el.classList.contains('acertada'));
+    }
+
+    if (elementoCorretoParaAcertar) {
+        clicarPalavra(palavraCorretaAtual, elementoCorretoParaAcertar);
+    }
+};
+
+document.getElementById('menu-button').onclick = toggleMenu;
+document.querySelector('.close-button').onclick = toggleMenu;
+
+document.getElementById('btnAvulsas').onclick = showAvulsasLessons;
+document.getElementById('btnTrilha').onclick = showTrilhaLessons;
+
+document.getElementById('repetir').onclick = reproduzirTrechoAtual;
+document.getElementById('lerFrase').onclick = lerFraseAtual;
+document.getElementById('traduzir-btn').onclick = function() {
+    mostrarTraducao = !mostrarTraducao;
+    atualizarFrase();
+};
+document.getElementById('desistir-frase').onclick = function() {
+    const confirmar = confirm("Deseja realmente desistir desta frase e avançar para a próxima?");
+    if (confirmar) {
+        processAndAdvancePhrase();
+    }
+};
+
+function salvarProgresso() {
+    const progressoData = {
+        lessonName: currentLessonName,
+        fraseIndex: indiceFrase,
+        acertos1: acertos1,
+        acertos2: acertos2
+    };
+    localStorage.setItem('gameProgress', JSON.stringify(progressoData));
+}
+
+function carregarProgresso() {
+    const progressoData = localStorage.getItem('gameProgress');
+    return progressoData ? JSON.parse(progressoData) : null;
+}
+
+window.onload = function() {
+    const menuOverlay = document.getElementById('menu-overlay');
+    const gameSection = document.querySelector('.game-section');
+
+    const lastLesson = JSON.parse(localStorage.getItem('lastLesson'));
+    if (lastLesson) {
+        const category = lastLesson.category;
+        if (category === 'trilha') {
+            showTrilhaLessons();
+        } else {
+            showAvulsasLessons();
+        }
+    } else {
+        showAvulsasLessons();
+    }
+
+    if (menuOverlay.classList.contains('active')) {
+        gameSection.style.display = 'none';
+    } else {
+        gameSection.style.display = 'flex';
+    }
+};
+		</script>
+	</body>
+</html>
