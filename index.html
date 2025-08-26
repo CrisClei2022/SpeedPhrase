@@ -1,3 +1,95 @@
+// Variáveis globais para controlar o estado de carregamento
+let playerReady = false;
+let srtLoaded = false;
+let lessonData = null; // Armazenará os dados da lição
+
+// Função para iniciar o jogo quando ambos os recursos estiverem prontos
+function checkAndStartLesson() {
+    // A função só continua se ambos, o vídeo e o SRT, estiverem carregados.
+    if (playerReady && srtLoaded && lessonData) {
+        // Inicializa o jogo com os dados da lição
+        fraseAtual = lessonData[indiceFrase];
+        palavrasEmbaralhadas = embaralharPalavras(fraseAtual.texto);
+        palavrasClicadas = [];
+        fraseAcertada = false;
+
+        criarPalavras();
+        atualizarFrase();
+        atualizarProgresso();
+        atualizarPlacares();
+
+        reproduzirTrechoAtual(); // Agora a reprodução pode ser iniciada com segurança
+        showLoading(false);
+        startRandomPlayerClock();
+    }
+}
+
+// Modifique a função loadSrtFromUrl para salvar os dados
+async function loadSrtFromUrl(url) {
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Failed to load SRT: ${response.status}`);
+        }
+        const srtContent = await response.text();
+        
+        // Salva os dados processados e sinaliza que o SRT está carregado
+        lessonData = processSrtContent(srtContent);
+        srtLoaded = true;
+
+        // Tenta iniciar o jogo após o SRT carregar
+        checkAndStartLesson();
+        return true;
+    } catch (error) {
+        console.error("Erro ao carregar o arquivo SRT:", error);
+        alert("Erro ao carregar o arquivo de legendas. O jogo continuará sem sincronização de vídeo. Por favor, tente novamente mais tarde.");
+        
+        showLoading(false);
+        pararMonitorTempo();
+        return false;
+    }
+}
+
+// Modifique a função de evento do vídeo para chamar a verificação
+videoElement.addEventListener('loadedmetadata', function() {
+    console.log("Evento 'loadedmetadata' disparado. Player está pronto!");
+    playerReady = true;
+    // Tenta iniciar o jogo após o vídeo carregar
+    checkAndStartLesson();
+});
+
+// Refatore a função loadLesson
+function loadLesson(lessonIndex) {
+    const lesson = lessons[lessonIndex];
+    currentLessonName = lesson.name;
+
+    showLoading(true);
+
+    // Reinicia as variáveis de estado de carregamento
+    playerReady = false;
+    srtLoaded = false;
+    lessonData = null;
+
+    // Configura o vídeo
+    videoElement.src = lesson.videoUrl;
+    videoElement.load();
+
+    // Carrega o arquivo SRT
+    loadSrtFromUrl(lesson.srtUrl).then(success => {
+        if (!success) {
+            // Se o SRT falhar, inicializa o jogo no modo de fallback
+            frases = [{
+                tempoInicio: 0,
+                tempoFim: 5,
+                texto: "Aprenda a formar frases com prática diária"
+            }];
+            lessonData = frases; // Usa a frase de fallback
+            srtLoaded = true;
+            checkAndStartLesson(); // Tenta iniciar, mesmo sem o vídeo (se o evento 'error' do vídeo for disparado)
+        }
+    });
+}
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
