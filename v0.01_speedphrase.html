@@ -776,8 +776,9 @@ header {
 		    padding: 0 20px;
 		    background-color: rgba(255, 255, 255, 0.1);
 		}
-		
-		.clock-face {
+        
+        /* Clockface */
+        .clock-face {
 		    min-width: 60px;
 		    min-height: 60px;
             margin: 20px 0 20px 0;
@@ -786,33 +787,20 @@ header {
 		    position: relative;
 		    background: rgba(255, 255, 255, 0.1);
 		    backdrop-filter: blur(10px);
-		}
-		
-		.clock-face::before {
-		    content: '';
-		    position: absolute;
-		    top: 50%;
-		    left: 50%;
-		    width: 2px;
-		    height: 20px;
-		    background: #4ecdc4;
-		    transform-origin: bottom;
-		    transform: translate(-50%, -100%) rotate(0deg);
-		    transition: transform 0.3s ease;
-		}
-        .clock-face.time-almost-up {
-            animation: blink-red-to-orange 1s infinite alternate;
-        }
+		}       
 
-        @keyframes blink-red-to-orange {
-            0%, 100% {
-                background: linear-gradient(135deg, var(--red-gradient-start), var(--red-gradient-end));
-            }
-            50% {
-                background: linear-gradient(135deg, var(--orange-gradient-start), var(--orange-gradient-end));
-            }
+        .pointer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 3px;
+            height: 25px;
+            background-color: #fff;
+            transform-origin: bottom;
+            transform: translateX(-50%) translateY(-100%) rotate(0deg);
+            border-radius: 5px 5px 0 0;
         }
-
+        
         #progresso {
             margin-top: 10px;
             font-size: clamp(12px, 2vw, 16px);
@@ -1156,7 +1144,9 @@ header {
                 </div>
                 
                 <div class="player-info">
-                    <div id="clock-face" class="clock-face"></div>
+                	<div class="clock-face">
+                        <div class="pointer" id="pointer"></div>
+                    </div>
                     <button id="menu-button">Menu</button>
                 </div>
                 
@@ -1243,6 +1233,81 @@ let palavrasDisponiveisElementos = [];
 // Variável global para rastrear qual lista de lições está ativa
 let currentLessonList = avulsasLessons;
 
+// Variavei Clockface
+const ponteiro = document.getElementById('pointer');
+let inicioTempo = null;
+let animacaoQuadro;
+// A duração será calculada dinamicamente
+let tempoTotal;
+let tempoPassado = 0;
+
+// A constante frase com um exemplo de texto
+const frase = "motor."
+
+// Nova função para contar os caracteres da frase
+function contarCaracteres() {
+    return frase.length;
+}
+
+// Nova função para calcular o tempo total de animação em segundos
+function calcularDuracaoAnimacao() {
+    const numCaracteres = contarCaracteres();
+    // A duração em segundos é 2 vezes a quantidade de caracteres
+    const duracaoSegundos = numCaracteres * 1;
+    // Converte a duração para milissegundos, já que o `requestAnimationFrame` usa milissegundos
+    tempoTotal = duracaoSegundos * 1000;
+}
+
+// A função animarPonteiro agora usa `tempoTotal`
+function animarPonteiro(timestamp) {
+    if (!inicioTempo) {
+        inicioTempo = timestamp;
+    }
+
+    const tempoDecorrido = timestamp - inicioTempo;
+
+    // Calcula a rotação com base no `tempoTotal`
+    const graus = (tempoDecorrido / tempoTotal) * 360;
+
+    if (tempoDecorrido >= tempoTotal) {
+        cancelAnimationFrame(animacaoQuadro);
+        animacaoQuadro = null;
+        inicioTempo = null;
+        ponteiro.style.transform = `translateX(-50%) translateY(-100%) rotate(360deg)`;
+        return;
+    }
+
+    ponteiro.style.transform = `translateX(-50%) translateY(-100%) rotate(${graus}deg)`;
+
+    animacaoQuadro = requestAnimationFrame(animarPonteiro);
+}
+
+// A função iniciarAnimacao deve calcular a duração antes de começar
+function iniciarAnimacao() {
+    if (!animacaoQuadro) {
+        calcularDuracaoAnimacao(); // Calcula a duração antes de iniciar
+        inicioTempo = performance.now() - tempoPassado;
+        animacaoQuadro = requestAnimationFrame(animarPonteiro);
+    }
+}
+
+// Função para parar a animação
+function pararAnimacao() {
+    if (animacaoQuadro) {
+        tempoPassado += performance.now() - inicioTempo;
+    }
+    cancelAnimationFrame(animacaoQuadro);
+    animacaoQuadro = null;
+}
+
+// Função para resetar o cronômetro
+function resetarCronometro() {
+    pararAnimacao();
+    inicioTempo = null;
+    tempoPassado = 0;
+    ponteiro.style.transform = `translateX(-50%) translateY(-100%) rotate(0deg)`;
+}
+
 // Funções para alternar entre as listas de lições
 function showAvulsasLessons() {
     currentLessonList = avulsasLessons;
@@ -1306,37 +1371,30 @@ function processSrtContent(srt) {
     linhas.forEach(linha => {
         const linhaTrim = linha.trim();
 
-        // Ignora linhas vazias ou de numeração
         if (linhaTrim === '' || !isNaN(linhaTrim)) {
             return;
         }
 
-        // Se a linha contém os tempos, é o início de um novo bloco
         if (linhaTrim.includes('-->')) {
             if (blocoAtual) {
-                // Salva o bloco anterior se existir
                 if (blocoAtual.texto !== '' && !blocoAtual.texto.includes('www.RentAnAdviser.com')) {
                     frases.push(blocoAtual);
                 }
             }
-            // Cria um novo bloco
             blocoAtual = {
                 tempoInicio: converterTempo(linhaTrim.split(' --> ')[0].trim()),
                 tempoFim: converterTempo(linhaTrim.split(' --> ')[1].trim()),
                 texto: ''
             };
         } else if (blocoAtual) {
-            // Se já estamos em um bloco, adicione o texto da legenda
             blocoAtual.texto += (blocoAtual.texto === '' ? '' : ' ') + linhaTrim;
         }
     });
 
-    // Adiciona o último bloco após o loop
     if (blocoAtual && blocoAtual.texto !== '' && !blocoAtual.texto.includes('www.RentAnAdviser.com')) {
         frases.push(blocoAtual);
     }
     
-    // Log para verificação. Remova esta linha na versão final.
     console.log("Frases processadas (corrigido):", frases);
 
     // Reinicia o estado do jogo
@@ -2191,6 +2249,7 @@ function switchActiveClock() {
 
 // *** Inicializar a aplicação *** //
 function init() {
+    iniciarAnimacao();
     initializeMenuButtons();
     
     // Configura os listeners dos botões de navegação
