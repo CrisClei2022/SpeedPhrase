@@ -568,7 +568,11 @@ header {
         }
 
         .title-container {
-            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centraliza horizontalmente */
+            justify-content: center; /* Centraliza verticalmente, se houver espaço */
+            gap: 15px; /* Adiciona um espaço de 10px entre o título e o botão */
         }
 
         .title-container h2 {
@@ -2264,7 +2268,7 @@ function init() {
     // player1Clock.start(); // Start if game begins automatically
 
     // Mostrar inicialmente a mensagem para selecionar uma lição
-    document.getElementById('current-lesson').textContent = "Nome da Lição";
+    document.getElementById('current-lesson').textContent = "Clique em jogar para selecionar uma lição.";
 
     // Verificar se há algum parâmetro na URL para carregar uma lição específica
     const urlParams = new URLSearchParams(window.location.search);
