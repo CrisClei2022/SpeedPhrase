@@ -360,31 +360,18 @@
 		    position: relative;
 		    background: rgba(255, 255, 255, 0.1);
 		    backdrop-filter: blur(10px);
-		}
-		
-		.clock-face::before {
-		    content: '';
-		    position: absolute;
-		    top: 50%;
-		    left: 50%;
-		    width: 2px;
-		    height: 20px;
-		    background: #4ecdc4;
-		    transform-origin: bottom;
-		    transform: translate(-50%, -100%) rotate(0deg);
-		    transition: transform 0.3s ease;
-		}
-        .clock-face.time-almost-up {
-            animation: blink-red-to-orange 1s infinite alternate;
-        }
+		}       
 
-        @keyframes blink-red-to-orange {
-            0%, 100% {
-                background: linear-gradient(135deg, var(--red-gradient-start), var(--red-gradient-end));
-            }
-            50% {
-                background: linear-gradient(135deg, var(--orange-gradient-start), var(--orange-gradient-end));
-            }
+        .pointer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 3px;
+            height: 25px;
+            background-color: #fff;
+            transform-origin: bottom;
+            transform: translateX(-50%) translateY(-100%) rotate(0deg);
+            border-radius: 5px 5px 0 0;
         }
 
         #progresso {
@@ -491,7 +478,9 @@
                 </div>
                 
                 <div class="player-info">
-                    <div id="clock-face" class="clock-face"></div>
+                	<div class="clock-face">
+                        <div class="pointer" id="pointer"></div>
+                    </div>
                     <button id="menu-button">Menu</button>
                 </div>
                 
@@ -534,50 +523,83 @@
 </main>
 
 <script>
-        const lessons = [
-            {
-                name: "I'm Gonna Be - 500 Miles.mp4",
-                srtUrl: "https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.srt",
-            }
-        ];
+    const ponteiro = document.getElementById('pointer');
+let inicioTempo = null;
+let animacaoQuadro;
+// A duração será calculada dinamicamente
+let tempoTotal;
+let tempoPassado = 0;
 
-        // Função assíncrona para buscar e exibir a legenda
-        async function displaySrt(url) {
-            const subtitlesElement = document.getElementById('subtitles');
-            const loadingMessage = document.getElementById('loadingMessage');
+// A constante frase com um exemplo de texto
+const frase = "motor."
 
-            // Exibe mensagem de carregamento
-            loadingMessage.style.display = 'block';
-            subtitlesElement.textContent = ''; // Limpa o conteúdo anterior
+// Nova função para contar os caracteres da frase
+function contarCaracteres() {
+    return frase.length;
+}
 
-            try {
-                // Faz a requisição para o URL do arquivo SRT
-                const response = await fetch(url);
-                
-                // Verifica se a resposta foi bem-sucedida
-                if (!response.ok) {
-                    throw new Error(`Erro ao buscar a legenda: ${response.statusText}`);
-                }
+// Nova função para calcular o tempo total de animação em segundos
+function calcularDuracaoAnimacao() {
+    const numCaracteres = contarCaracteres();
+    // A duração em segundos é 2 vezes a quantidade de caracteres
+    const duracaoSegundos = numCaracteres * 1;
+    // Converte a duração para milissegundos, já que o `requestAnimationFrame` usa milissegundos
+    tempoTotal = duracaoSegundos * 1000;
+}
 
-                // Obtém o texto da resposta
-                const srtText = await response.text();
+// A função animarPonteiro agora usa `tempoTotal`
+function animarPonteiro(timestamp) {
+    if (!inicioTempo) {
+        inicioTempo = timestamp;
+    }
 
-                // Exibe o texto da legenda no elemento <pre>
-                subtitlesElement.textContent = srtText;
-                
-            } catch (error) {
-                console.error("Falha ao carregar a legenda:", error);
-                subtitlesElement.textContent = "Não foi possível carregar a legenda. Verifique o link e tente novamente.";
-            } finally {
-                // Esconde a mensagem de carregamento
-                loadingMessage.style.display = 'none';
-            }
-        }
+    const tempoDecorrido = timestamp - inicioTempo;
 
-        // Chama a função para exibir a legenda do primeiro item do array
-        if (lessons.length > 0) {
-            displaySrt(lessons[0].srtUrl);
-        }
-    </script>
+    // Calcula a rotação com base no `tempoTotal`
+    const graus = (tempoDecorrido / tempoTotal) * 360;
+
+    if (tempoDecorrido >= tempoTotal) {
+        cancelAnimationFrame(animacaoQuadro);
+        animacaoQuadro = null;
+        inicioTempo = null;
+        ponteiro.style.transform = `translateX(-50%) translateY(-100%) rotate(360deg)`;
+        return;
+    }
+
+    ponteiro.style.transform = `translateX(-50%) translateY(-100%) rotate(${graus}deg)`;
+
+    animacaoQuadro = requestAnimationFrame(animarPonteiro);
+}
+
+// A função iniciarAnimacao deve calcular a duração antes de começar
+function iniciarAnimacao() {
+    if (!animacaoQuadro) {
+        calcularDuracaoAnimacao(); // Calcula a duração antes de iniciar
+        inicioTempo = performance.now() - tempoPassado;
+        animacaoQuadro = requestAnimationFrame(animarPonteiro);
+    }
+}
+
+// Função para parar a animação
+function pararAnimacao() {
+    if (animacaoQuadro) {
+        tempoPassado += performance.now() - inicioTempo;
+    }
+    cancelAnimationFrame(animacaoQuadro);
+    animacaoQuadro = null;
+}
+
+// Função para resetar o cronômetro
+function resetarCronometro() {
+    pararAnimacao();
+    inicioTempo = null;
+    tempoPassado = 0;
+    ponteiro.style.transform = `translateX(-50%) translateY(-100%) rotate(0deg)`;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    iniciarAnimacao();
+});
+  </script>
 </body>
 </html>
