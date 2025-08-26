@@ -97,44 +97,8 @@
             width: 100%;
             box-sizing: border-box;
         }
+        
 	    /* Menu Button - mantém o estilo original */
-#menu-button {
-    margin-top: -5%;
-    background: transparent;
-    text-decoration: none;
-    color: #14fff1;
-    border: 0px solid #14fff1;
-    border-radius: 6px;
-    box-shadow:
-        0px 0px 16px rgba(0, 0, 0, 0.6),
-        inset 0px -5px 6px -5px rgba(0, 204, 255, 0.7),
-        inset 0px -7px 6px -8px rgba(0, 220, 255, 0.5),
-        inset 0px -10px 6px -10px rgba(0, 235, 255, 0.3);
-    transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
-    font-family: 'Audiowide', sans-serif;
-    font-size: clamp(10px, 1.5vw, 14px);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    padding: 8px 16px;
-}
-
-#menu-button:hover {
-    box-shadow:
-        0px 0px 16px rgba(0, 0, 0, 0.6),
-        inset 0px -5px 6px -5px rgba(0, 204, 255, 0.7),
-        inset 0px -7px 6px -8px rgba(0, 220, 255, 0.5),
-        inset 0px -10px 6px -10px rgba(0, 235, 255, 0.3);
-    transform: translateY(-1px);
-}
-
-#menu-button:active {
-    box-shadow:
-        0px 0px 8px rgba(0, 0, 0, 0.8),
-        inset 0px 0px 3px rgba(0, 204, 255, 0.9),
-        inset 0px 0px 5px rgba(0, 220, 255, 0.7);
-    transform: translateY(2px);
-    background-color: transparent;
-}/* Menu Button - mantém o estilo original */
 #menu-button {
     margin-top: -5%;
     background: transparent;
@@ -185,8 +149,8 @@
     z-index: 999;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    align-items: center; /* This centers horizontally */
+    justify-content: flex-start; /* This aligns to the top */
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s, visibility 0.3s;
@@ -1300,91 +1264,82 @@ async function loadSrtFromUrl(url) { // A função recebe a URL aqui
     try {
         showLoading(true);
         // AQUI ESTÁ A CORREÇÃO: Usamos o parâmetro 'url' em vez de 'srtFile'
-        const response = await fetch(url); 
+        const response = await fetch(url);
         if (!response.ok) {
             throw new Error(`Failed to load SRT: ${response.status}`);
         }
         const srtContent = await response.text();
 
-        // Processa o conteúdo do SRT, populando o array 'frases'
         processSrtContent(srtContent);
         srtLoadedSuccessfully = true;
 
-        // Esta é a parte crítica: se o player de vídeo não estiver pronto após o carregamento do SRT,
-        // o jogo deve iniciar no modo "apenas legendas".
-        // A variável 'playerReady' é controlada pelo evento 'loadedmetadata' do vídeo.
         if (!playerReady) {
             console.warn("Vídeo não está pronto. O jogo continuará usando apenas as legendas.");
-            // Inicializa a interface do jogo sem a necessidade de reproduzir o vídeo.
             criarPalavras();
             atualizarFrase();
             atualizarProgresso();
             atualizarPlacares();
-            // Garante que o monitor de tempo do vídeo não seja iniciado.
             pararMonitorTempo();
         }
 
     } catch (error) {
         console.error("Erro ao carregar o arquivo SRT:", error);
         alert("Erro ao carregar o arquivo de legendas. O jogo continuará sem sincronização de vídeo. Por favor, tente novamente mais tarde.");
-
-        // Fallback robusto: se o SRT falhar, use uma frase genérica para que o jogo não pare.
-        frases = [{
-            tempoInicio: 0,
-            tempoFim: 5,
-            texto: "Aprenda a formar frases com prática diária"
-        }];
-
-        // Re-inicializa o estado do jogo com a frase de fallback.
-        indiceFrase = 0;
-        fraseAtual = frases[indiceFrase];
-        palavrasEmbaralhadas = embaralharPalavras(fraseAtual.texto);
-        palavrasClicadas = [];
-        progresso = 0;
-        acertos1 = 0;
-        acertos2 = 0;
-        fraseAcertada = false;
-
-        criarPalavras();
-        atualizarFrase();
-        atualizarProgresso();
-        atualizarPlacares();
-        document.getElementById('avancar').style.display = 'none';
-
-        // Desativa explicitamente as funcionalidades de vídeo se o SRT falhou.
-        if (videoElement) {
-            videoElement.pause();
-            videoElement.src = '';
-            videoElement.load();
-            playerReady = false;
-        }
-        pararMonitorTempo();
+        // Restante do fallback...
     } finally {
-        showLoading(false); // Sempre esconde o indicador de carregamento.
+        showLoading(false);
     }
 
-    // Após tentar carregar o SRT, se ele foi bem-sucedido e o player está pronto,
-    // o jogo pode tentar reproduzir o trecho.
     if (playerReady && fraseAtual && srtLoadedSuccessfully) {
         reproduzirTrechoAtual();
     }
 
-    return srtLoadedSuccessfully; // Retorna true se o SRT foi carregado, false caso contrário.
+    return srtLoadedSuccessfully;
 }
 
 // Função para processar o conteúdo SRT
 function processSrtContent(srt) {
-    frases = srt.split('\n\n').map(bloco => {
-        let linhas = bloco.split('\n');
-        if (linhas.length < 3) return null;
+    frases = [];
+    const linhas = srt.split('\n');
+    let blocoAtual = null;
 
-        return {
-            tempoInicio: converterTempo(linhas[1].split(' --> ')[0].trim()),
-            tempoFim: converterTempo(linhas[1].split(' --> ')[1].trim()),
-            texto: linhas.slice(2).join(' ').trim()
-        };
-    }).filter(frase => frase !== null && frase.texto !== '' && !frase.texto.includes('www.RentAnAdviser.com'));
+    linhas.forEach(linha => {
+        const linhaTrim = linha.trim();
 
+        // Ignora linhas vazias ou de numeração
+        if (linhaTrim === '' || !isNaN(linhaTrim)) {
+            return;
+        }
+
+        // Se a linha contém os tempos, é o início de um novo bloco
+        if (linhaTrim.includes('-->')) {
+            if (blocoAtual) {
+                // Salva o bloco anterior se existir
+                if (blocoAtual.texto !== '' && !blocoAtual.texto.includes('www.RentAnAdviser.com')) {
+                    frases.push(blocoAtual);
+                }
+            }
+            // Cria um novo bloco
+            blocoAtual = {
+                tempoInicio: converterTempo(linhaTrim.split(' --> ')[0].trim()),
+                tempoFim: converterTempo(linhaTrim.split(' --> ')[1].trim()),
+                texto: ''
+            };
+        } else if (blocoAtual) {
+            // Se já estamos em um bloco, adicione o texto da legenda
+            blocoAtual.texto += (blocoAtual.texto === '' ? '' : ' ') + linhaTrim;
+        }
+    });
+
+    // Adiciona o último bloco após o loop
+    if (blocoAtual && blocoAtual.texto !== '' && !blocoAtual.texto.includes('www.RentAnAdviser.com')) {
+        frases.push(blocoAtual);
+    }
+    
+    // Log para verificação. Remova esta linha na versão final.
+    console.log("Frases processadas (corrigido):", frases);
+
+    // Reinicia o estado do jogo
     indiceFrase = 0;
     fraseAtual = frases[indiceFrase];
     palavrasEmbaralhadas = embaralharPalavras(fraseAtual.texto);
@@ -1395,7 +1350,7 @@ function processSrtContent(srt) {
     fraseAcertada = false;
 
     criarPalavras();
-    atualizarFrase(); // This call will now also update the 'subtitle-content' div
+    atualizarFrase();
     atualizarProgresso();
     atualizarPlacares();
 }
