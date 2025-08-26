@@ -1250,10 +1250,15 @@ header {
 // Lições disponíveis (nome do arquivo SRT e URL do vídeo)
 const lessons = [
     {
+        name: "I'm Gonna Be - 500 Miles.mp4",
+        srtUrl: "https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.srt",
+        videoUrl: "https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.mp4"
+    },
+    {
         name: "Chapter 1 - Welcome & Nationalities",
         srtUrl: "https://f005.backblazeb2.com/file/Trilha/Chapter-1.-Welcome-%26-Nationalities.srt",
         videoUrl: "https://f005.backblazeb2.com/file/Trilha/Chapter-1.-Welcome-%26-Nationalities.mp4"
-    }
+	}
     // Adicione mais lições conforme necessário
 ];
 
@@ -1419,6 +1424,9 @@ function loadLesson(lessonIndex) {
     selectedTimeMode = null;
     document.getElementById('player-mode-buttons').classList.remove('hidden');
     document.getElementById('time-mode-container').classList.add('hidden');
+    
+    // Hide the game section immediately
+    document.querySelector('.game-section').style.display = 'none';
 }
 
 // Global variables to store the selected modes
@@ -1436,52 +1444,64 @@ function selectPlayerMode(mode) {
 }
 
 // Function to handle time mode selection and start the game
-function selectTimeMode(mode) {
+async function selectTimeMode(mode) {
     selectedTimeMode = mode;
     console.log("Time mode selected:", selectedTimeMode);
 
     // Get the video and SRT URLs from the previously selected lesson
     const lessonIndex = parseInt(localStorage.getItem('lastLessonIndex'));
     const lesson = lessons[lessonIndex];
-    videoElement.src = lesson.videoUrl;
-    videoElement.load();
+
+    // Show loading spinner
+    showLoading(true);
 
     // Load the SRT file and start the game
-    loadSrtFromUrl(lesson.srtUrl).then(success => {
-        if (success) {
-            // Check for saved progress for this lesson
-            const progressoSalvo = carregarProgresso();
-            if (progressoSalvo && progressoSalvo.lessonName === currentLessonName) {
-                const retomar = confirm(`Deseja continuar da frase onde parou? | Frase ${progressoSalvo.fraseIndex + 1} | ${progressoSalvo.lessonName} |`);
-                if (retomar && progressoSalvo.fraseIndex < frases.length) {
-                    indiceFrase = progressoSalvo.fraseIndex;
-                    acertos1 = progressoSalvo.acertos1;
-                    acertos2 = progressoSalvo.acertos2;
-                    progresso = indiceFrase;
-                }
-            }
+    const srtLoaded = await loadSrtFromUrl(lesson.srtUrl);
 
-            fraseAtual = frases[indiceFrase];
-            palavrasEmbaralhadas = embaralharPalavras(fraseAtual.texto);
-            palavrasClicadas = [];
-            fraseAcertada = false;
-            criarPalavras();
-            atualizarFrase();
-            atualizarProgresso();
-            atualizarPlacares();
+    if (srtLoaded) {
+        // Load video if SRT was successful
+        videoElement.src = lesson.videoUrl;
+        videoElement.load();
 
-            // Hide the mode selection screen and show the game
-            document.getElementById('mode-selection').classList.add('hidden');
-            document.querySelector('.game-section').style.display = 'block';
-
-            // Start the appropriate clock based on player and time mode
-            if (selectedPlayerMode === 'multi' && selectedTimeMode === 'challenge') {
-                startRandomPlayerClock();
-            } else {
-                console.log("Starting in a non-timed or single-player mode. Clocks are not active.");
+        // Check for saved progress for this lesson
+        const progressoSalvo = carregarProgresso();
+        if (progressoSalvo && progressoSalvo.lessonName === currentLessonName) {
+            const retomar = confirm(`Deseja continuar da frase onde parou? | Frase ${progressoSalvo.fraseIndex + 1} | ${progressoSalvo.lessonName} |`);
+            if (retomar && progressoSalvo.fraseIndex < frases.length) {
+                indiceFrase = progressoSalvo.fraseIndex;
+                acertos1 = progressoSalvo.acertos1;
+                acertos2 = progressoSalvo.acertos2;
+                progresso = indiceFrase;
             }
         }
-    });
+
+        fraseAtual = frases[indiceFrase];
+        palavrasEmbaralhadas = embaralharPalavras(fraseAtual.texto);
+        palavrasClicadas = [];
+        fraseAcertada = false;
+        criarPalavras();
+        atualizarFrase();
+        atualizarProgresso();
+        atualizarPlacares();
+
+        // Hide the mode selection screen and show the game
+        document.getElementById('mode-selection').classList.add('hidden');
+        document.querySelector('.game-section').style.display = 'flex';
+
+        // Start the appropriate clock based on player and time mode
+        if (selectedPlayerMode === 'multi' && selectedTimeMode === 'challenge') {
+            startRandomPlayerClock();
+        } else {
+            console.log("Starting in a non-timed or single-player mode. Clocks are not active.");
+        }
+    } else {
+        // If SRT failed to load, go back to the lesson menu
+        alert("Erro ao carregar os dados da lição. Por favor, tente outra lição.");
+        goBack();
+    }
+    
+    // Hide loading spinner regardless of success or failure
+    showLoading(false);
 }
 
 // Function to go back from the mode selection screen to the main menu
