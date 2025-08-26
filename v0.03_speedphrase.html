@@ -35,12 +35,12 @@
 
         body {
             display: flex;
-            height: 100vh;
+            min-height: 100vh;
             justify-content: center;
             align-items: flex-start;
             background: linear-gradient(-135deg, #000000, #3b0047, #660000, #000000);
             margin: 0;
-            padding-top: 1.2%;
+            padding: 1.2% 2% 2%;
             font-family: 'Orbitron', sans-serif;
             color: #00ccff;
             text-shadow:
@@ -48,7 +48,7 @@
                 0 0 25px rgba(0, 220, 255, 0.5), /* Um pouco mais claro e difuso */
                 0 0 35px rgba(0, 235, 255, 0.3); /* Mais claro e ainda mais difuso */
             letter-spacing: 1.5px;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
         button {
@@ -61,6 +61,7 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
             text-shadow: 0 1px 1px rgba(0,0,0,0.1);
             transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+            font-size: clamp(12px, 2vw, 16px);
         }
 
         button:hover {
@@ -74,6 +75,12 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.12);
             transform: translateY(1px);
         }
+		
+        main {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
 	    
         #menu-button {
             margin-top: -5%;
@@ -81,54 +88,56 @@
             text-decoration: none;
             color: #14fff1;
             border: 0px solid #14fff1;
-            border-radius: 6px; /* Keep your existing border-radius */
+            border-radius: 6px;
             box-shadow:
-                0px 0px 16px rgba(0, 0, 0, 0.6), /* Existing outer shadow */
-                /* Inner bottom glow - Adjust these values for the "egg tip" shape */
-                inset 0px -5px 6px -5px rgba(0, 204, 255, 0.7), /* Base inner glow */
-                inset 0px -7px 6px -8px rgba(0, 220, 255, 0.5), /* Lighter, more diffuse */
-                inset 0px -10px 6px -10px rgba(0, 235, 255, 0.3); /* Lightest, most diffuse */
-            transition: transform 0.15s ease-out, box-shadow 0.15s ease-out; /* Added box-shadow transition too */
-            font-family: 'Audiowide', sans-serif; /* Apply the font */
-            font-size: 0.65em;
-            letter-spacing: 0.2em; /* Optional: adds a slight space between letters for a techy look */
-            text-transform: uppercase; /* Optional: makes text uppercase, common in futuristic UIs */
+                0px 0px 16px rgba(0, 0, 0, 0.6),
+                inset 0px -5px 6px -5px rgba(0, 204, 255, 0.7),
+                inset 0px -7px 6px -8px rgba(0, 220, 255, 0.5),
+                inset 0px -10px 6px -10px rgba(0, 235, 255, 0.3);
+            transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+            font-family: 'Audiowide', sans-serif;
+            font-size: clamp(10px, 1.5vw, 14px);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            padding: 8px 16px;
         }
 
         #menu-button:hover {
             box-shadow:
-                0px 0px 16px rgba(0, 0, 0, 0.6), /* Existing outer shadow */
+                0px 0px 16px rgba(0, 0, 0, 0.6),
                 inset 0px -5px 6px -5px rgba(0, 204, 255, 0.7),
                 inset 0px -7px 6px -8px rgba(0, 220, 255, 0.5),
                 inset 0px -10px 6px -10px rgba(0, 235, 255, 0.3);
-            transform: translateY(-1px); /* Lifts up slightly on hover */
+            transform: translateY(-1px);
         }
 
         #menu-button:active {
             box-shadow:
-                0px 0px 8px rgba(0, 0, 0, 0.8), /* outer shadow darker/more intense when pressed */
-                inset 0px 0px 3px rgba(0, 204, 255, 0.9), /* inner glow when pressed */
-                inset 0px 0px 5px rgba(0, 220, 255, 0.7); /* inner glow for depth */
-            transform: translateY(2px); /* Moves down when clicked */
-            background-color: transparent; /* Keep background transparent */
+                0px 0px 8px rgba(0, 0, 0, 0.8),
+                inset 0px 0px 3px rgba(0, 204, 255, 0.9),
+                inset 0px 0px 5px rgba(0, 220, 255, 0.7);
+            transform: translateY(2px);
+            background-color: transparent;
         }
 
         #menu-overlay {
             position: fixed;
-            top: 0; /* Changed from 1% for full top alignment */
-            right: 0; /* Changed from 1% for full right alignment */
+            top: 0;
+            right: 0;
             width: 100vw;
             height: 100vh;
             background-color: rgba(0, 0, 0, 0.8);
             font-family: 'Audiowide', sans-serif;
             z-index: 999;
-            display: flex; /* Enable Flexbox */
-            flex-direction: column; /* Stack items vertically (close-button above menu-items) */
-            align-items: center; /* This centers items horizontally in a column layout */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.3s, visibility 0.3s;
             backdrop-filter: blur(8px);
+            padding: 2% 4%;
+            box-sizing: border-box;
         }
 
         #menu-overlay.active {
@@ -138,25 +147,26 @@
 
         #menu-items {
             justify-content: center;
-            width: 80%;
-            max-width: 600px;
-            max-height: 90vh;
+            width: 100%;
+            max-width: 700px;
+            max-height: 80vh;
             overflow-y: auto;
-            padding: 10px;
+            padding: 20px;
             background-color: #3b0047;
             border-radius: 15px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            box-sizing: border-box;
         }
 
         .menu-title {
             text-align: center;
             color: #f9fff2;
-            font-size: 22px;
+            font-size: clamp(18px, 4vw, 22px);
             margin-bottom: 18px;
             text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            font-family: 'Audiowide', sans-serif; /* Apply the font */
-            letter-spacing: 0.05em; /* Optional: adds a slight space between letters for a techy look */
-            text-transform: uppercase; /* Optional: makes text uppercase, common in futuristic UIs */
+            font-family: 'Audiowide', sans-serif;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
         }
 
         .lesson-button {
@@ -169,7 +179,7 @@
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: clamp(14px, 2.5vw, 16px);
             text-align: left;
             position: relative;
             overflow: hidden;
@@ -201,12 +211,11 @@
 		/* New CSS for the header row containing 'Ajuda' and the close button */
 		.menu-header {
 		    display: flex;
-		    justify-content: space-between; /* ✨ REVERTIDO: Para empurrar Ajuda e Fechar para as extremidades */
+		    justify-content: space-between;
 		    align-items: center;
 		    width: 100%;
 		    padding: 10px 20px;
 		    box-sizing: border-box;
-		    /* Remover 'gap' aqui, já que space-between e margens auto vão gerenciar o espaçamento */
 		}
         
 		/* Ajustes para o botão "Ajuda" */
@@ -214,9 +223,9 @@
 		    background: grey;
             color: white;
 		    border-radius: 8px;
-		    padding: 10px;
+		    padding: clamp(8px, 2vw, 10px);
 		    flex-shrink: 0;
-		    /* Remover margin-right: auto; daqui se estiver, não é necessário com justify-content: space-between */
+            font-size: clamp(12px, 2vw, 16px);
 		}
 
         .close-button:hover {
@@ -255,8 +264,8 @@
         }
 
         .spinner {
-            width: 50px;
-            height: 50px;
+            width: clamp(30px, 8vw, 50px);
+            height: clamp(30px, 8vw, 50px);
             border: 5px solid #f3f3f3;
             border-radius: 50%;
             border-top: 5px solid #3498db;
@@ -273,7 +282,7 @@
             text-align: center;
             color: #f9fff2;
             margin-top: 5px;
-            font-size: 16px;
+            font-size: clamp(14px, 3vw, 16px);
             font-weight: bold;
         }
 		
@@ -285,78 +294,84 @@
             background-color: #f9f9f9;
             min-height: 100px;
             text-align: left;
-            font-size: 1.1em;
+            font-size: clamp(14px, 2.5vw, 18px);
             color: #555;
-            transition: opacity 0.5s ease-in-out; /* Transição para o efeito de "sumir" */
+            transition: opacity 0.5s ease-in-out;
             line-height: 1.6;
+            box-sizing: border-box;
         }
 
         #subtitle-content.hidden {
-            opacity: 0; /* Torna o conteúdo invisível */
-            max-height: 0; /* Colapsa o espaço ocupado */
+            opacity: 0;
+            max-height: 0;
             overflow: hidden;
-            padding: 0 25px; /* Remove padding quando oculto */
-            border: none; /* Remove a borda quando oculto */
+            padding: 0 25px;
+            border: none;
         }
         
         /* ==========
         // Containers
         // ========== */
-        .main-container {
+        .game-section {
             background-image: linear-gradient(-135deg, #171627, #111d4a, #171627, #111d4a);
             background-color: #171627;
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.1);
             border: 3px solid rgba(255, 255, 255, 0.2);
             border-radius: 8px;
             text-align: center;
-            width: 90%;
-            max-width: 600px;
-            padding: 10px;
-            display: flex; /* Make main-container a flex container */
-            flex-direction: column; /* Stack children vertically */
-            gap: 5px; /* MUDANÇA: Reduzido de 10px para 5px */
+            padding: clamp(10px, 2vw, 20px);
+            display: flex;
+            flex-direction: column;
+            gap: clamp(5px, 1vw, 10px);
             justify-content: flex-start;
             align-items: center;
             animation: fadeInScale 1s ease-out;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .title-container {
             text-align: center;
         }
 
+        .title-container h2 {
+            font-size: clamp(20px, 4vw, 32px);
+            margin: 0;
+        }
+
         .content-row {
             display: flex;
             flex-direction: row;
             margin-top: 1%;
-            gap: 10px;
-            align-items: center; /* ← MUDANÇA: centraliza verticalmente */
-            justify-content: center; /* ← ADICIONE: centraliza horizontalmente */
-            width: 96%;
+            gap: clamp(10px, 2vw, 20px);
+            align-items: center;
+            justify-content: center;
+            width: 100%;
             flex-wrap: nowrap;
             overflow: hidden;
-            min-height: 180px; /* ← ADICIONE: altura mínima para melhor centralização */
+            min-height: clamp(120px, 25vh, 200px);
         }
         
         /* Ajustes para o container do vídeo */
         .content-row .video-container {
-            flex: 1 1 70%;
+            flex: 1 1 65%;
             min-width: 0;
-            max-width: 80%;
+            max-width: 70%;
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative; /* ADICIONE ISSO: Torna este o contêiner de posicionamento para o filho absoluto */
+            position: relative;
         }
 
         /* O container do vídeo onde o player e a legenda ficam */
         .video-container #custom-video {
-            /* Mantenha suas propriedades de tamanho para o vídeo em si */
-            width: 100%; /* MUDANÇA: Use 100% para preencher o pai */
-            height: auto; /* MUDANÇA: Use auto para manter o aspect ratio original do vídeo */
-            aspect-ratio: 16/9; /* Mantenha isso para garantir a proporção do vídeo */
-            display: block; /* Garante que não haja espaço extra abaixo do vídeo */
+            width: 100%;
+            height: auto;
+            aspect-ratio: 16/9;
+            display: block;
             background-color: #000;
             border: none;
+            border-radius: 8px;
         }
 
 		/* Estilos para o conteúdo da legenda que aparecerá sobre o vídeo */
@@ -366,13 +381,14 @@
             height: auto;
             background-color: rgba(0, 0, 0, 0.7);
             color: white;
-            padding: 10px;
+            padding: clamp(5px, 1.5vw, 10px);
             text-align: center;
-            font-size: 1.0em;
+            font-size: clamp(12px, 2vw, 16px);
             box-sizing: border-box;
             z-index: 10;
-            top: 50%; /* Moves the top edge of the element to the middle of its parent */
-            transform: translateY(-50%); /* Shifts the element up by half of its own height */
+            top: 50%;
+            transform: translateY(-50%);
+            border-radius: 4px;
         }
 		
 		/* Classe para ocultar o conteúdo da legenda */
@@ -382,40 +398,44 @@
         
         /* Ajustes para os botões */
         .content-row #buttons {
-            flex: 1 1 40%;
+            flex: 1 1 35%;
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            align-items: center; /* ← MUDANÇA: centraliza botões horizontalmente */
-            justify-content: center; /* ← ADICIONE: centraliza botões verticalmente */
+            gap: clamp(6px, 1.5vw, 12px);
+            align-items: center;
+            justify-content: center;
             min-width: 0;
-            max-width: 40%;
-            padding: 0; /* ← MUDANÇA: remove padding-top */
+            max-width: 35%;
+            padding: 0;
         }
         
-        /* Opcional: Para garantir que os botões tenham largura consistente */
+        /* Para garantir que os botões tenham largura consistente */
         .content-row #buttons button {
             width: 100%;
-            max-width: 200px; /* ← ADICIONE: largura máxima para os botões */
-            padding: 10px;
+            max-width: clamp(150px, 20vw, 200px);
+            padding: clamp(8px, 2vw, 12px);
             border: none;
             border-radius: 5px;
             color: white;
             font-weight: bold;
             cursor: pointer;
+            font-size: clamp(10px, 1.8vw, 14px);
+            text-align: center;
         }
 
         p {
             margin: 10px 0;
             color: #666;
+            font-size: clamp(12px, 2vw, 16px);
         }
         
         .phrase-container {
-            font-size: 24px;
-            width: 95%;
-            min-height: 60px;
+            font-size: clamp(16px, 3vw, 24px);
+            width: 100%;
+            max-width: 100%;
+            min-height: clamp(40px, 8vh, 60px);
             border: 1px dashed #a5b68f;
-            padding: 10px;
+            padding: clamp(8px, 2vw, 15px);
             border-radius: 5px;
             display: flex;
             flex-wrap: wrap;
@@ -424,70 +444,74 @@
             background-color: #f9fff2;
             color: #333;
             box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+            box-sizing: border-box;
         }
         
-        .palavra-na-frase { /* Added style for words in the displayed phrase */
+        .palavra-na-frase {
             margin-right: 1.2%;
-            color: #0056b3; /* A distinct color for correctly placed words */
+            color: #0056b3;
             border: 1px solid #ccc; 
             border-radius: 4px;
-            font-size: 0.8em;
+            font-size: clamp(12px, 2vw, 18px);
             font-weight: bold;
+            padding: 2px 4px;
+            margin-bottom: 4px;
         }
         
         .word-button-wrapper {
-            width: 100%; /* Ensures the wrapper takes full available width */
-            display: flex; /* Keeping it flex allows for easy centering of its children */
-            flex-direction: column; /* Stack children vertically */
-            align-items: center; /* Center children horizontally */
-            gap: 10px; /* Adjust gap as needed for spacing between word container and button */
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: clamp(8px, 2vw, 15px);
         }
 
         .word-container {
             flex-wrap: wrap;
-            width: 95%;
+            width: 100%;
             border: none;
             display: flex;
             justify-content: center;
             flex-wrap: wrap;
-            padding: 10px;
+            padding: clamp(8px, 2vw, 15px);
+            box-sizing: border-box;
         }
 
         .palavra { 
             background-color: #007bff;
             color: white;
-            padding: 2px 5px; /* Change this line */
-            margin: 5px; /* Added margin for spacing between words */
+            padding: clamp(4px, 1vw, 8px) clamp(6px, 1.5vw, 10px);
+            margin: clamp(3px, 1vw, 5px);
             border-radius: 6px;
             cursor: pointer;
-            font-size: 0.9em;
+            font-size: clamp(12px, 2vw, 16px);
             font-weight: bold;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             transition: transform 0.2s ease, background-color 0.2s ease;
-            user-select: none; /* Impede seleção de texto */
+            user-select: none;
         }
 
         .palavra.selecionada {
-            background: linear-gradient(to bottom, #ffc107, #e0a800); /* Um gradiente laranja para destaque */
-            transform: translateY(-2px); /* Efeito de elevação */
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Sombra mais forte */
+            background: linear-gradient(to bottom, #ffc107, #e0a800);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
         }
 
-        .palavra.errada { /* Corrected class name */
+        .palavra.errada {
             animation: shake 0.4s ease-in-out;
-            background-color: #dc3545; /* Vermelho */
+            background-color: #dc3545;
         }
 
         .palavra.acertada {
-            background-color: #28a745; /* Green for correct words */
-            pointer-events: none; /* Disable clicks on already correct words */
+            background-color: #28a745;
+            pointer-events: none;
         }
 
-	.palavra.no-click {
-	    pointer-events: none; /* Impede que o mouse interaja com o elemento */
-	    opacity: 0.6;        /* Torna um pouco transparente para indicar desativação */
-	    cursor: default;     /* Muda o cursor para indicar que não é clicável */
-	}
+	    .palavra.no-click {
+	        pointer-events: none;
+	        opacity: 0.6;
+	        cursor: default;
+	    }
 
         @keyframes shake {
             0% { transform: translateX(0); }
@@ -501,10 +525,10 @@
             position: relative;
             display: flex;
             justify-content: center;
-            gap: 10px;
-            width: 100%; /* ← MUDANÇA: garante que não exceda o container pai */
-            max-width: 100%; /* ← ADICIONE: força limitação */
-            margin: 0 auto;      /* Center it horizontally */
+            gap: clamp(8px, 2vw, 15px);
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
         }
 
         .player-container {
@@ -518,34 +542,34 @@
 
         .player-container,
         .title-container {
-            flex: 1; /* Ocupa partes iguais */
+            flex: 1;
             display: flex;
             flex-direction: column;
-            align-items: center; /* ← Centraliza horizontalmente */
+            align-items: center;
         }
 
         .player-content {
             position: relative;
-            width: 70px;
-            height: 70px;
+            width: clamp(50px, 10vw, 70px);
+            height: clamp(50px, 10vw, 70px);
             background: linear-gradient(-135deg, #000000, #3b0047, #660000, #000000);
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transform: translateY(calc((85px - 70px) / 2));
+            transform: translateY(calc((clamp(60px, 12vw, 85px) - clamp(50px, 10vw, 70px)) / 2));
         }
 
         .player-content h6 {
-            margin: 0; /* Remove default margins from h6 and p for tighter control */
+            margin: 0;
             margin-bottom: 0.4em;
             padding-top: 0.4em;
-            line-height: 1.6em; /* Adjust line height if needed */
-            font-size: 0.7em; /* Adjust font size if too large */
+            line-height: 1.6em;
+            font-size: clamp(10px, 2vw, 14px);
         }
 
         .clock-face {
             position: absolute;
-            width: 85px;
-            height: 85px;
+            width: clamp(60px, 12vw, 85px);
+            height: clamp(60px, 12vw, 85px);
             background: linear-gradient(135deg, var(--blue-gradient-start), var(--blue-gradient-end));
             border-radius: 15px;
             box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
@@ -554,7 +578,6 @@
             transition: background 0.7s ease-in-out;
         }
 
-        /* Onde a magia do preenchimento circular acontece (sempre cinza) */
         .clock-face::before {
             content: '';
             position: absolute;
@@ -563,7 +586,6 @@
             width: 100%;
             height: 100%;
             border-radius: 8px;
-            /* A cor de preenchimento SEMPRE será cinza */
             background: conic-gradient(
                 var(--grey-gradient-start) calc(var(--progress) * 1%),
                 var(--grey-gradient-end) calc(var(--progress) * 1% + 1%),
@@ -571,16 +593,13 @@
             );
             transform: rotate(-0deg);
             transform-origin: center;
-            transition: background 0.1s linear; /* Transição suave para o preenchimento */
+            transition: background 0.1s linear;
         }
 
-        /* Estilo para quando o tempo estiver nos 30% finais (ativado pelo JavaScript) */
         .clock-face.time-almost-up {
-            /* O fundo do clock-face agora piscará com esta animação */
             animation: blink-red-to-orange 1s infinite alternate;
         }
 
-        /* Animação para o piscar de vermelho degradê para laranja degradê NO FUNDO DO CLOCK-FACE */
         @keyframes blink-red-to-orange {
             0%, 100% {
                 background: linear-gradient(135deg, var(--red-gradient-start), var(--red-gradient-end));
@@ -589,10 +608,95 @@
                 background: linear-gradient(135deg, var(--orange-gradient-start), var(--orange-gradient-end));
             }
         }
+
+        #progresso {
+            margin-top: 10px;
+            font-size: clamp(12px, 2vw, 16px);
+        }
+
+        /* Media Queries para layout mobile */
+        @media (max-width: 768px) {
+            .content-row {
+                flex-direction: column;
+                gap: 15px;
+                min-height: auto;
+            }
+            
+            .content-row .video-container {
+                flex: none;
+                max-width: 100%;
+                width: 100%;
+                order: 1;
+            }
+            
+            .content-row #buttons {
+                flex: none;
+                max-width: 100%;
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                order: 2;
+            }
+            
+            .content-row #buttons button {
+                flex: 1;
+                min-width: 120px;
+                max-width: 150px;
+                margin: 2px;
+            }
+
+            .players-container {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .player-container {
+                min-width: 100px;
+            }
+
+            #menu-items {
+                width: 95%;
+                max-width: none;
+                padding: 15px;
+            }
+
+            .phrase-container {
+                min-height: 50px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+
+            .game-section {
+                padding: 10px;
+            }
+
+            .content-row #buttons {
+                flex-direction: column;
+            }
+
+            .content-row #buttons button {
+                max-width: 100%;
+                width: 100%;
+            }
+
+            .word-container {
+                padding: 10px;
+            }
+
+            .palavra {
+                margin: 2px;
+                padding: 6px 8px;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="main-container">
+<main>
 
         <div id="menu-overlay">
         
@@ -607,6 +711,7 @@
             </div>
             
         </div>
+    <section class="game-section">
 
         <div id="loading">
             <div class="spinner"></div>
@@ -640,7 +745,7 @@
 
         <div class="content-row">
             <div class="video-container">
-                <video id="custom-video" class="hide-controls" preload="auto" crossorigin="anonymous">
+                <video id="custom-video" class="hide-controls" preload="auto">
                 </video>
         
                 <div id="subtitle-content" class="hidden"> 
@@ -672,25 +777,15 @@
         
         <div id="progresso" style="margin-top: 10px; font-size: 0.9em;">Progresso: 0 de 0</div>
 
-    </div>
-
+    </section>
+</main>
 <script>
 // Lições disponíveis (nome do arquivo SRT e URL do vídeo)
 const lessons = [
     {
-        name: "Lady Gaga - Scheiße",
-        srtFile: "Lady_Gaga-Scheiße.srt",
-        videoUrl: "https://files.catbox.moe/noor8m.mp4"
-    },
-    {
-        name: "Melanie Martinez - The Contortionist",
-        srtFile: "Melanie_Martinez-The_Contortionist.srt",
-        videoUrl: "https://files.catbox.moe/vxoldg.mp4"
-    },
-    {
-        name: "New West - Those Eyes",
-        srtFile: "New_West-Those_Eyes.srt",
-        videoUrl: "https://files.catbox.moe/k7xhth.mp4"
+        name: "Chapter 1 - Welcome & Nationalities",
+        srtUrl: "https://f005.backblazeb2.com/file/Trilha/Chapter-1.-Welcome-%26-Nationalities.srt",
+        videoUrl: "https://f005.backblazeb2.com/file/Trilha/Chapter-1.-Welcome-%26-Nationalities.mp4"
     }
     // Adicione mais lições conforme necessário
 ];
@@ -704,6 +799,8 @@ let palavrasEmbaralhadas = [];
 let palavrasClicadas = [];
 let palavraElementos = {};
 let progresso = 0;
+let acertos1 = 0;
+let acertos2 = 0;
 let playerReady = false;
 let monitorTempoId;
 let fraseAcertada = false;
@@ -714,17 +811,82 @@ let player2Clock; // Global variable for player 2's clock
 let mostrarTraducao = false;
 let palavrasDisponiveisElementos = [];
 
-// NOVAS VARIÁVEIS DE JOGO
-let tempoTotalJogador1 = 0;
-let tempoTotalJogador2 = 0;
-let tempoInicioTurno;
-let fraseJaJogada = false;
-let jogadorDaVez = 1;
+// Função para carregar o arquivo SRT de uma URL
+async function loadSrtFromUrl(url) { // A função recebe a URL aqui
+    let srtLoadedSuccessfully = false;
+    try {
+        showLoading(true);
+        // AQUI ESTÁ A CORREÇÃO: Usamos o parâmetro 'url' em vez de 'srtFile'
+        const response = await fetch(url); 
+        if (!response.ok) {
+            throw new Error(`Failed to load SRT: ${response.status}`);
+        }
+        const srtContent = await response.text();
 
-// Função para gerar o URL do CDN do jsDelivr para os arquivos SRT
-function getSrtCdnUrl(filename) {
-    const baseUrl = "https://raw.githubusercontent.com/CrisClei2022/srt/main/";
-    return baseUrl + encodeURIComponent(filename);
+        // Processa o conteúdo do SRT, populando o array 'frases'
+        processSrtContent(srtContent);
+        srtLoadedSuccessfully = true;
+
+        // Esta é a parte crítica: se o player de vídeo não estiver pronto após o carregamento do SRT,
+        // o jogo deve iniciar no modo "apenas legendas".
+        // A variável 'playerReady' é controlada pelo evento 'loadedmetadata' do vídeo.
+        if (!playerReady) {
+            console.warn("Vídeo não está pronto. O jogo continuará usando apenas as legendas.");
+            // Inicializa a interface do jogo sem a necessidade de reproduzir o vídeo.
+            criarPalavras();
+            atualizarFrase();
+            atualizarProgresso();
+            atualizarPlacares();
+            // Garante que o monitor de tempo do vídeo não seja iniciado.
+            pararMonitorTempo();
+        }
+
+    } catch (error) {
+        console.error("Erro ao carregar o arquivo SRT:", error);
+        alert("Erro ao carregar o arquivo de legendas. O jogo continuará sem sincronização de vídeo. Por favor, tente novamente mais tarde.");
+
+        // Fallback robusto: se o SRT falhar, use uma frase genérica para que o jogo não pare.
+        frases = [{
+            tempoInicio: 0,
+            tempoFim: 5,
+            texto: "Aprenda a formar frases com prática diária"
+        }];
+
+        // Re-inicializa o estado do jogo com a frase de fallback.
+        indiceFrase = 0;
+        fraseAtual = frases[indiceFrase];
+        palavrasEmbaralhadas = embaralharPalavras(fraseAtual.texto);
+        palavrasClicadas = [];
+        progresso = 0;
+        acertos1 = 0;
+        acertos2 = 0;
+        fraseAcertada = false;
+
+        criarPalavras();
+        atualizarFrase();
+        atualizarProgresso();
+        atualizarPlacares();
+        document.getElementById('avancar').style.display = 'none';
+
+        // Desativa explicitamente as funcionalidades de vídeo se o SRT falhou.
+        if (videoElement) {
+            videoElement.pause();
+            videoElement.src = '';
+            videoElement.load();
+            playerReady = false;
+        }
+        pararMonitorTempo();
+    } finally {
+        showLoading(false); // Sempre esconde o indicador de carregamento.
+    }
+
+    // Após tentar carregar o SRT, se ele foi bem-sucedido e o player está pronto,
+    // o jogo pode tentar reproduzir o trecho.
+    if (playerReady && fraseAtual && srtLoadedSuccessfully) {
+        reproduzirTrechoAtual();
+    }
+
+    return srtLoadedSuccessfully; // Retorna true se o SRT foi carregado, false caso contrário.
 }
 
 // Função para processar o conteúdo SRT
@@ -745,109 +907,64 @@ function processSrtContent(srt) {
     palavrasEmbaralhadas = embaralharPalavras(fraseAtual.texto);
     palavrasClicadas = [];
     progresso = 0;
+    acertos1 = 0;
+    acertos2 = 0;
     fraseAcertada = false;
 
     criarPalavras();
-    atualizarFrase();
+    atualizarFrase(); // This call will now also update the 'subtitle-content' div
     atualizarProgresso();
     atualizarPlacares();
 }
 
-// Função para carregar o arquivo SRT de uma URL
-async function loadSrtFromUrl(url) {
-    let srtLoadedSuccessfully = false;
-    try {
-        showLoading(true);
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`Failed to load SRT: ${response.status}`);
-        }
-        const srtContent = await response.text();
-        processSrtContent(srtContent);
-        srtLoadedSuccessfully = true;
-        if (!playerReady) {
-            console.warn("Vídeo não está pronto. O jogo continuará usando apenas as legendas.");
-            criarPalavras();
-            atualizarFrase();
-            atualizarProgresso();
-        	atualizarPlacares();
-            pararMonitorTempo();
-        }
-    } catch (error) {
-        console.error("Erro ao carregar o arquivo SRT:", error);
-        alert("Erro ao carregar o arquivo de legendas. O jogo continuará sem sincronização de vídeo. Por favor, tente novamente mais tarde.");
-        frases = [{
-            tempoInicio: 0,
-            tempoFim: 5,
-            texto: "Aprenda a formar frases com prática diária"
-        }];
-        indiceFrase = 0;
-        fraseAtual = frases[indiceFrase];
-        palavrasEmbaralhadas = embaralharPalavras(fraseAtual.texto);
-        palavrasClicadas = [];
-        progresso = 0;
-        fraseAcertada = false;
-        criarPalavras();
-        atualizarFrase();
-        atualizarProgresso();
-        atualizarPlacares();
-        document.getElementById('avancar').style.display = 'none';
-        if (videoElement) {
-            videoElement.pause();
-            videoElement.src = '';
-            videoElement.load();
-            playerReady = false;
-        }
-        pararMonitorTempo();
-    } finally {
-        showLoading(false);
-    }
-    if (playerReady && fraseAtual && srtLoadedSuccessfully) {
-        reproduzirTrechoAtual();
-    }
-    return srtLoadedSuccessfully;
-}
-
-// FUNÇÃO ATUALIZADA: Inicia um relógio aleatório no início do jogo
+// Function to start a random player's clock
 function startRandomPlayerClock() {
+    // Stop both clocks first to ensure only one is running or both are reset
     if (player1Clock) player1Clock.stop();
     if (player2Clock) player2Clock.stop();
 
+    // Randomly choose which player's clock to start
     const randomPlayer = Math.random();
     if (randomPlayer < 0.5) {
         if (player1Clock) player1Clock.start();
-        jogadorDaVez = 1;
         console.log("Player 1's clock started.");
     } else {
         if (player2Clock) player2Clock.start();
-        jogadorDaVez = 2;
         console.log("Player 2's clock started.");
     }
-    tempoInicioTurno = performance.now();
 }
-
+	
 // Função para carregar uma lição
 function loadLesson(lessonIndex) {
     const lesson = lessons[lessonIndex];
     currentLessonName = lesson.name;
+
+    // Atualizar o título da lição atual
     document.getElementById('current-lesson').textContent = currentLessonName;
+
+    // Configurar o vídeo
     videoElement.src = lesson.videoUrl;
     videoElement.load();
-    const srtUrl = getSrtCdnUrl(lesson.srtFile);
-    loadSrtFromUrl(srtUrl).then(success => {
+
+    // Carregar o arquivo SRT
+    const srtFile = lesson.srtUrl; // <--- CORREÇÃO AQUI
+    loadSrtFromUrl(srtFile).then(success => {
         if (success) {
+            // Verificar se há progresso salvo para esta lição
             const progressoSalvo = carregarProgresso();
             if (progressoSalvo && progressoSalvo.lessonName === currentLessonName) {
                 const retomar = confirm(`Deseja continuar da frase onde parou? | Frase ${progressoSalvo.fraseIndex + 1} | ${progressoSalvo.lessonName} |`);
+
                 if (retomar && progressoSalvo.fraseIndex < frases.length) {
                     indiceFrase = progressoSalvo.fraseIndex;
-                    tempoTotalJogador1 = progressoSalvo.tempoTotalJogador1;
-                    tempoTotalJogador2 = progressoSalvo.tempoTotalJogador2;
+                    acertos1 = progressoSalvo.acertos1;
+                    acertos2 = progressoSalvo.acertos2;
                     fraseAtual = frases[indiceFrase];
                     palavrasEmbaralhadas = embaralharPalavras(fraseAtual.texto);
                     palavrasClicadas = [];
                     fraseAcertada = false;
                     progresso = indiceFrase;
+
                     criarPalavras();
                     atualizarFrase();
                     atualizarProgresso();
@@ -855,9 +972,13 @@ function loadLesson(lessonIndex) {
                 }
             }
         }
-    	startRandomPlayerClock();
+	startRandomPlayerClock();
     });
+
+    // Fechar o menu
     toggleMenu();
+
+    // Salvar esta lição como a última acessada
     localStorage.setItem('lastLessonIndex', lessonIndex.toString());
 }
 
@@ -881,6 +1002,7 @@ function converterTempo(tempo) {
 // Evento que ocorre quando o vídeo está pronto
 videoElement.addEventListener('loadedmetadata', function() {
     playerReady = true;
+    // Iniciar o jogo após o vídeo estar pronto
     if (fraseAtual) {
         reproduzirTrechoAtual();
     }
@@ -888,7 +1010,7 @@ videoElement.addEventListener('loadedmetadata', function() {
 
 // Função para monitorar o tempo do vídeo
 function iniciarMonitorTempo() {
-    pararMonitorTempo();
+    pararMonitorTempo(); // Clear any existing interval before starting a new one
     monitorTempoId = setInterval(() => {
         if (playerReady && fraseAtual) {
             let tempoAtual = videoElement.currentTime;
@@ -925,144 +1047,204 @@ function embaralharPalavras(frase) {
 function criarPalavras() {
     let palavrasDiv = document.getElementById('palavras');
     palavrasDiv.innerHTML = '';
-    palavrasDisponiveisElementos = [];
+
+    // Limpa o array global para a nova frase
+    palavrasDisponiveisElementos = []; // <-- ADICIONE ESTA LINHA
+
+    // ATUALIZAÇÃO AQUI: palavraElementos agora armazenará um array de elementos para cada palavra
     palavraElementos = {};
+
     if (!palavrasEmbaralhadas || palavrasEmbaralhadas.length === 0) return;
+
     palavrasEmbaralhadas.forEach(palavra => {
         let palavraDiv = document.createElement('div');
         palavraDiv.classList.add('palavra');
         palavraDiv.innerText = palavra;
         palavraDiv.onclick = () => clicarPalavra(palavra, palavraDiv);
+
+        // Se a palavra ainda não tem um array de elementos, crie um
         if (!palavraElementos[palavra]) {
             palavraElementos[palavra] = [];
         }
+        // Adicione o elemento atual ao array correspondente à palavra
         palavraElementos[palavra].push(palavraDiv);
+
         palavrasDiv.appendChild(palavraDiv);
-        palavrasDisponiveisElementos.push(palavraDiv);
+        palavrasDisponiveisElementos.push(palavraDiv); // <-- ADICIONE ESTA LINHA
     });
 }
 
-// FUNÇÃO ATUALIZADA: Lógica para clicar na palavra
+// A variável global para armazenar TODOS os elementos DOM das palavras disponíveis
+// precisa ser inicializada e populada corretamente em 'criarPalavras'.
+// Exemplo: let palavrasDisponiveisElementos = [];
+// E em 'criarPalavras', para cada palavraDiv criada: palavrasDisponiveisElementos.push(palavraDiv);
+// Certifique-se de que isso está no seu código.
+
+// Certifique-se de que 'palavrasDisponiveisElementos' está sendo populado corretamente
+// na sua função 'criarPalavras()' para lidar com elementos DOM específicos.
 function clicarPalavra(palavra, elemento) {
-    if (!fraseAtual || elemento.classList.contains('acertada')) {
-        return;
+    if (!fraseAtual) return;
+
+    if (elemento.classList.contains('acertada')) {
+        return; // Ignora palavras já acertadas
     }
 
-    if (speechSynthesis.speaking) speechSynthesis.cancel();
-    if (playerReady && !videoElement.paused) videoElement.pause();
-    
     const fraseSplit = fraseAtual.texto.split(' ');
     const proximaPalavraCorreta = fraseSplit[palavrasClicadas.length];
     const comprimentoFraseAtual = palavrasClicadas.length;
+
+    // Cancela qualquer áudio ou vídeo anterior antes de iniciar a pronúncia da palavra clicada
+    if (speechSynthesis.speaking) speechSynthesis.cancel();
+    if (playerReady && !videoElement.paused) videoElement.pause();
     
+    // Inicia a pronúncia da palavra clicada
     const utterance = new SpeechSynthesisUtterance(palavra);
     utterance.lang = detectarIdioma(fraseAtual.texto);
+    let currentUtterance = utterance; // Referência para a utterance atual
     audioPlaying = true;
     
+    // Define o que acontece quando a pronúncia desta palavra terminar
+    currentUtterance.onend = function() {
+        audioPlaying = false; // Sinaliza que o áudio terminou
+        // Por padrão, se nada mais for encadeado, a ação principal é apenas a pronúncia
+        // Outras ações (avançar frase, trocar relógio) serão definidas abaixo se houver encadeamento.
+    };
+
     if (palavra === proximaPalavraCorreta) {
+        // Palavra CORRETA!
         palavrasClicadas.push(palavra);
         elemento.classList.add('acertada');
         elemento.classList.remove('selecionada');
+        
+        const activeClockId = getActiveClockId();
+
+        // Incrementa acertos (exceto a última palavra, se auto-completa)
+        if (comprimentoFraseAtual < fraseSplit.length - 1) {
+            if (activeClockId === 'clock-face1') {
+                acertos1++;
+            } else if (activeClockId === 'clock-face2') {
+                acertos2++;
+            }
+            atualizarPlacares();
+        }
+        
         atualizarFrase();
 
+        // Lógica de Auto-Completação da Última Palavra e avanço da frase
         if (comprimentoFraseAtual === fraseSplit.length - 2 && fraseSplit.length > 1) {
             const ultimaPalavra = fraseSplit[fraseSplit.length - 1];
-            let elementoUltimaPalavraParaAutoEnviar = palavrasDisponiveisElementos.find(el => el.innerText === ultimaPalavra && !el.classList.contains('acertada') && !palavrasClicadas.includes(ultimaPalavra));
+            let elementoUltimaPalavraParaAutoEnviar = null;
+
+            // Encontra e marca o elemento DOM da última palavra
+            if (palavrasDisponiveisElementos && palavrasDisponiveisElementos.length > 0) {
+                 elementoUltimaPalavraParaAutoEnviar = palavrasDisponiveisElementos.find(el => 
+                    el.innerText === ultimaPalavra && !el.classList.contains('acertada') && !palavrasClicadas.includes(ultimaPalavra)
+                );
+            }
+            
             if (elementoUltimaPalavraParaAutoEnviar) {
                 palavrasClicadas.push(ultimaPalavra);
                 elementoUltimaPalavraParaAutoEnviar.classList.add('acertada');
                 elementoUltimaPalavraParaAutoEnviar.classList.remove('selecionada');
                 atualizarFrase();
+
+                // Encadear pronúncia da última palavra após a penúltima
+                currentUtterance.onend = function() {
+                    audioPlaying = false;
+                    // Garante que não há áudios remanescentes antes da última palavra
+                    if (speechSynthesis.speaking) speechSynthesis.cancel(); 
+                    if (playerReady && !videoElement.paused) videoElement.pause();
+
+                    const utteranceUltima = new SpeechSynthesisUtterance(ultimaPalavra);
+                    utteranceUltima.lang = detectarIdioma(fraseAtual.texto);
+                    audioPlaying = true;
+                    utteranceUltima.onend = function() {
+                        audioPlaying = false;
+                        processAndAdvancePhrase(); // Avança a frase após a última palavra
+                    };
+                    speechSynthesis.speak(utteranceUltima);
+                };
+            } else {
+                 // Se não encontrou o elemento para marcar, avança a frase após a pronúncia da palavra clicada
+                currentUtterance.onend = function() {
+                    audioPlaying = false;
+                    processAndAdvancePhrase();
+                };
             }
         }
-    } else {
+        // Se a frase foi completada com o clique manual da última palavra
+        else if (palavrasClicadas.length === fraseSplit.length) {
+            currentUtterance.onend = function() {
+                audioPlaying = false;
+                processAndAdvancePhrase(); // Avança a frase após a pronúncia
+            };
+        }
+
+    } else { // Palavra INCORRETA!
         elemento.classList.add('errada');
-        setTimeout(() => { elemento.classList.remove('errada'); }, 500);
-    }
-    
-    if (palavrasClicadas.length === fraseSplit.length) {
-        utterance.onend = function() {
-            audioPlaying = false;
-            finalizarTurnoComSucesso();
-        };
-    } else {
-        utterance.onend = function() {
+        setTimeout(() => {
+            elemento.classList.remove('errada');
+        }, 500);
+        
+        currentUtterance.onend = function() {
             audioPlaying = false;
         };
     }
-    
-    speechSynthesis.speak(utterance);
+
+    // Inicia a pronúncia da palavra clicada (esta é a "primeira" pronúncia no fluxo)
+    speechSynthesis.speak(currentUtterance); 
 }
 
-// FUNÇÃO ATUALIZADA: Finaliza o turno com sucesso (frase completa)
-function finalizarTurnoComSucesso() {
-    const tempoGasto = performance.now() - tempoInicioTurno;
-    if (jogadorDaVez === 1) {
-        tempoTotalJogador1 += tempoGasto;
-    } else {
-        tempoTotalJogador2 += tempoGasto;
-    }
-
+function processAndAdvancePhrase() {
+    // Stop both players' clocks immediately
     if (player1Clock) player1Clock.stop();
     if (player2Clock) player2Clock.stop();
 
-    if (!fraseJaJogada) {
-        fraseJaJogada = true;
-        jogadorDaVez = 2;
-        resetarFraseParaNovoTurno();
-        reproduzirTrechoAtual();
+    showLoading(true); // Show loading spinner
 
-        // INICIA O CLOCK DO PRÓXIMO JOGADOR IMEDIATAMENTE
-        tempoInicioTurno = performance.now();
-        player2Clock.start();
+    progresso++; // Increment overall lesson progress
+    atualizarProgresso();
+    salvarProgresso(); // Save current game state
 
-    } else {
-        fraseJaJogada = false;
-        jogadorDaVez = 1;
-        processAndAdvancePhrase();
-    }
+    setTimeout(() => {
+        indiceFrase++; // Move to the next phrase
+        if (indiceFrase >= frases.length) {
+            alert("Parabéns! Você completou todas as frases!");
+            indiceFrase = 0; // Reset to first phrase
+            acertos1 = 0; // Reset player scores
+            acertos2 = 0;
+            progresso = 0; // Reset lesson progress
+            salvarProgresso(); // Save reset state
+        }
+        fraseAtual = frases[indiceFrase]; // Get the new current phrase
+        palavrasEmbaralhadas = embaralharPalavras(fraseAtual.texto); // Reshuffle words for new phrase
+        palavrasClicadas = []; // Clear clicked words for new phrase
+        fraseAcertada = false; // Reset phrase status
+        criarPalavras(); // Generate new word elements
+        mostrarTraducao = false; // Hide translation by default for new phrase
+        atualizarFrase(); // Update phrase display (and subtitle)
+        reproduzirTrechoAtual(); // Play the new phrase's video/audio
+        showLoading(false); // Hide loading spinner
+        atualizarPlacares(); // Update player score displays
+
+        // Switch active player's clock for the new phrase, unless lesson is truly finished
+        if (indiceFrase < frases.length) { // Check if there's actually a next phrase to play
+            switchActiveClock();
+        } else {
+            console.log("Lesson completed, no more clocks to switch.");
+        }
+    }, 1500); // 1.5 second delay before loading the next phrase
 }
-
-// Função corrigida para finalizar o turno com penalidade
-function finalizarTurnoComPenalidade() {
-    const penalidadeTempo = 10000;
-    if (jogadorDaVez === 1) {
-        tempoTotalJogador1 += penalidadeTempo;
-    } else {
-        tempoTotalJogador2 += penalidadeTempo;
-    }
-    
-    if (!fraseJaJogada) {
-        fraseJaJogada = true;
-        jogadorDaVez = 2;
-        resetarFraseParaNovoTurno();
-        reproduzirTrechoAtual();
-
-        // INICIA O CLOCK DO PRÓXIMO JOGADOR IMEDIATAMENTE
-        tempoInicioTurno = performance.now();
-        player2Clock.start();
-        
-    } else {
-        fraseJaJogada = false;
-        jogadorDaVez = 1;
-        processAndAdvancePhrase();
-    }
-}
-
-// Essa função já está correta, mas a inclui aqui para contextualizar
-function resetarFraseParaNovoTurno() {
-    palavrasClicadas = [];
-    criarPalavras();
-    atualizarFrase();
-    atualizarPlacares();
-}
-
+	
 // Função para pausar todos os áudios
 function pausarAudios() {
+    // Pausar o sintetizador de voz
     if (speechSynthesis.speaking) {
         speechSynthesis.cancel();
         audioPlaying = false;
     }
+
+    // Pausar o vídeo se estiver tocando
     if (playerReady && !videoElement.paused) {
         videoElement.pause();
     }
@@ -1071,21 +1253,31 @@ function pausarAudios() {
 // Função para detectar o idioma com base no texto
 function detectarIdioma(texto) {
     if (!texto) return 'en-US';
+
+    // Esta é uma detecção simples
     if (texto.includes('Aku') || texto.includes('kamu')) {
-        return 'id-ID';
+        return 'id-ID'; // Indonésio
     } else if (texto.includes('Scheiße')) {
-        return 'de-DE';
+        return 'de-DE'; // Alemão
     }
-    return 'en-US';
+    return 'en-US'; // Por padrão, usamos inglês
 }
 
+/*
+ * API não oficial, sem limite oficial
+ * mas o uso é feito por conta e risco.
+ * Para uso pessoal e leve,
+ * provavelmente não haverá problemas.
+ */
 function translateSrt(text) {
     return new Promise((resolve, reject) => {
         if (text.trim() === '') {
-            resolve('');
+            resolve(''); // Resolve with empty string for empty input
             return;
         }
+
         const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=pt&dt=t&q=${encodeURI(text)}`;
+
         fetch(url)
             .then(response => response.json())
             .then(data => {
@@ -1097,7 +1289,7 @@ function translateSrt(text) {
             })
             .catch(error => {
                 console.error('Erro na tradução:', error);
-                reject(error);
+                reject(error); // Reject the promise on error
             });
     });
 }
@@ -1107,44 +1299,58 @@ function atualizarFrase() {
     let fraseDiv = document.getElementById('frase');
     let subtitleContentDiv = document.getElementById('subtitle-content');
     fraseDiv.innerHTML = '';
+
+    // Adiciona as palavras já clicadas com um espaço entre elas
     palavrasClicadas.forEach((palavra) => {
         const span = document.createElement('span');
         span.textContent = palavra + ' ';
         span.classList.add('palavra-na-frase');
         fraseDiv.appendChild(span);
     });
+
+    // Atualiza a div de conteúdo da legenda com base no estado de 'mostrarTraducao'
     if (fraseAtual && subtitleContentDiv) {
         if (mostrarTraducao) {
+            // Se 'mostrarTraducao' for true, busca e exibe a tradução
             translateSrt(fraseAtual.texto)
                 .then(translatedText => {
                     subtitleContentDiv.textContent = translatedText;
-                    subtitleContentDiv.classList.remove('hidden');
+                    subtitleContentDiv.classList.remove('hidden'); // Certifica-se de que está visível
                 })
                 .catch(error => {
                     console.error('Erro na tradução:', error);
-                    subtitleContentDiv.textContent = fraseAtual.texto;
+                    subtitleContentDiv.textContent = fraseAtual.texto; // Fallback para o original
                     subtitleContentDiv.classList.remove('hidden');
                 });
         } else {
+            // Se não, oculta a legenda
             subtitleContentDiv.classList.add('hidden');
-            subtitleContentDiv.textContent = '';
+            subtitleContentDiv.textContent = ''; // Limpa o conteúdo
         }
     } else if (subtitleContentDiv) {
         subtitleContentDiv.classList.add('hidden');
-        subtitleContentDiv.textContent = '';
+        subtitleContentDiv.textContent = ''; // Limpa o conteúdo
     }
 }
+
+// REMOVIDA: A função verificarFrase() foi removida e sua lógica movida para o botão "avancar".
 
 // Função para ler a frase atual usando o sintetizador de voz
 function lerFraseAtual() {
     if (!fraseAtual) return;
+
+    // Pausar qualquer áudio em reprodução
     pausarAudios();
+
     const utterance = new SpeechSynthesisUtterance(fraseAtual.texto);
     utterance.lang = detectarIdioma(fraseAtual.texto);
+
+    // Configurar flag para controlar áudio
     audioPlaying = true;
     utterance.onend = function() {
         audioPlaying = false;
     };
+
     speechSynthesis.speak(utterance);
 }
 
@@ -1153,23 +1359,27 @@ function atualizarProgresso() {
     document.getElementById('progresso').innerText = `Progresso: ${progresso} de ${frases.length}`;
 }
 
-// FUNÇÃO ATUALIZADA: Mostra o tempo acumulado
+// Nova função para atualizar ambos os placares, ou as funções separadas
 function atualizarPlacares() {
-    const tempo1Segundos = Math.round(tempoTotalJogador1 / 1000);
-    const tempo2Segundos = Math.round(tempoTotalJogador2 / 1000);
-    document.getElementById('placar1').innerText = ` ${tempo1Segundos}s`;
-    document.getElementById('placar2').innerText = ` ${tempo2Segundos}s`;
+    document.getElementById('placar1').innerText = ` ${acertos1}`;
+    document.getElementById('placar2').innerText = ` ${acertos2}`;
 }
 
 // Função para reproduzir o trecho do vídeo atual
 function reproduzirTrechoAtual() {
     if (!fraseAtual) return;
+
+    // Pausar qualquer áudio em reprodução
     pausarAudios();
+
+    // Apenas tente reproduzir o vídeo se o player estiver pronto.
     if (playerReady) {
         videoElement.currentTime = fraseAtual.tempoInicio;
         videoElement.play();
         iniciarMonitorTempo();
     } else {
+        // Se o player não estiver pronto, apenas leia a frase.
+        // Isso é crucial para o modo "apenas legendas".
         console.log("Player não está pronto. Lendo a frase em vez de reproduzir o vídeo.");
         lerFraseAtual();
     }
@@ -1179,6 +1389,7 @@ function reproduzirTrechoAtual() {
 function toggleMenu() {
     const menuButton = document.getElementById('menu-button');
     const menuOverlay = document.getElementById('menu-overlay');
+
     menuButton.classList.toggle('active');
     menuOverlay.classList.toggle('active');
 }
@@ -1186,7 +1397,9 @@ function toggleMenu() {
 // Inicializar botões de menu
 function initializeMenuButtons() {
     const menuItemsContainer = document.getElementById('menu-items');
+    // Clear existing lesson buttons before adding new ones, keep the title
     menuItemsContainer.innerHTML = '<h2 class="menu-title">Lista de Lições</h2>';
+
     lessons.forEach((lesson, index) => {
         const button = document.createElement('button');
         button.textContent = lesson.name;
@@ -1198,37 +1411,113 @@ function initializeMenuButtons() {
 
 // --- Event Listeners ---
 
-// FUNÇÃO ATUALIZADA: Botão "Desistir"
+// --- NOVO: Lógica do botão "Desistir" (Passar) ---
 document.getElementById('desistir').onclick = function() {
     if (!fraseAtual) return;
-    if (speechSynthesis.speaking) speechSynthesis.cancel();
-    if (playerReady && !videoElement.paused) videoElement.pause();
+
     const fraseSplit = fraseAtual.texto.split(' ');
+    // A palavra correta que esperamos na posição atual da frase
     const palavraCorretaAtual = fraseSplit[palavrasClicadas.length];
+
+    // Se não houver mais palavras para revelar (frase já completa de alguma forma), apenas retorne.
     if (!palavraCorretaAtual) {
-        console.warn("Nenhuma palavra para revelar.");
+        console.warn("Nenhuma palavra para revelar. Frase já completa ou não inicializada.");
         return;
     }
-    let elementoCorretoParaAcertar = palavraElementos[palavraCorretaAtual].find(el => !el.classList.contains('acertada'));
+
+    // Remove destaque de qualquer palavra selecionada anteriormente
+    const palavraSelecionadaAnteriormente = document.querySelector('.palavra.selecionada');
+    if (palavraSelecionadaAnteriormente) {
+        palavraSelecionadaAnteriormente.classList.remove('selecionada');
+    }
+
+    let elementoCorretoParaAcertar = null;
+    // Encontra o elemento DOM da palavra a ser revelada
+    if (palavraElementos[palavraCorretaAtual]) {
+        elementoCorretoParaAcertar = palavraElementos[palavraCorretaAtual].find(el => !el.classList.contains('acertada'));
+    }
+
     if (elementoCorretoParaAcertar) {
+        // Adiciona a palavra correta à frase construída
         palavrasClicadas.push(palavraCorretaAtual);
+        // Marca o elemento DOM como acertado
         elementoCorretoParaAcertar.classList.add('acertada');
-        atualizarFrase();
+        elementoCorretoParaAcertar.classList.remove('selecionada'); // Remove qualquer resquício de 'selecionada'
+        
+        atualizarFrase(); // Atualiza a exibição da frase
+
+        progresso++; // Incrementa progresso da lição
+        atualizarProgresso();
+        salvarProgresso(); // Salva o progresso
+
+        // Cancela qualquer áudio ou vídeo anterior antes de pronunciar a palavra revelada
+        if (speechSynthesis.speaking) speechSynthesis.cancel();
+        if (playerReady && !videoElement.paused) videoElement.pause();
+
+        // Inicia a pronúncia da palavra que acabou de ser revelada
         const utteranceRevelada = new SpeechSynthesisUtterance(palavraCorretaAtual);
         utteranceRevelada.lang = detectarIdioma(fraseAtual.texto);
-        audioPlaying = true;
+        audioPlaying = true; // Sinaliza que áudio está tocando
+        
+        // Verifica se a frase está completa APÓS a revelação desta palavra
         const isFraseCompleta = palavrasClicadas.length === fraseSplit.length;
-        if (isFraseCompleta) {
-             utteranceRevelada.onend = function() {
-                audioPlaying = false;
-                finalizarTurnoComSucesso();
+        const isPenultimaPalavra = palavrasClicadas.length === fraseSplit.length - 1 && fraseSplit.length > 1;
+
+        if (isPenultimaPalavra) {
+            const ultimaPalavra = fraseSplit[fraseSplit.length - 1];
+            let elementoUltimaPalavraParaAutoEnviar = null;
+
+            // Encontra e marca o elemento DOM da última palavra
+            if (palavrasDisponiveisElementos && palavrasDisponiveisElementos.length > 0) {
+                 elementoUltimaPalavraParaAutoEnviar = palavrasDisponiveisElementos.find(el => 
+                    el.innerText === ultimaPalavra && !el.classList.contains('acertada') && !palavrasClicadas.includes(ultimaPalavra)
+                );
+            }
+            
+            if (elementoUltimaPalavraParaAutoEnviar) {
+                // Adiciona a última palavra à sequência (auto-completando)
+                palavrasClicadas.push(ultimaPalavra);
+                elementoUltimaPalavraParaAutoEnviar.classList.add('acertada');
+                elementoUltimaPalavraParaAutoEnviar.classList.remove('selecionada');
+                atualizarFrase(); // Atualiza a exibição com a última palavra
+            }
+
+            // Encadear a pronúncia da última palavra após a pronúncia da penúltima revelada
+            utteranceRevelada.onend = function() {
+                audioPlaying = false; // Pronúncia da penúltima terminou
+                // Garante que não há áudios remanescentes antes da última palavra
+                if (speechSynthesis.speaking) speechSynthesis.cancel(); 
+                if (playerReady && !videoElement.paused) videoElement.pause();
+
+                const utteranceUltima = new SpeechSynthesisUtterance(ultimaPalavra);
+                utteranceUltima.lang = detectarIdioma(fraseAtual.texto);
+                audioPlaying = true;
+                utteranceUltima.onend = function() {
+                    audioPlaying = false; // Pronúncia da última terminou
+                    processAndAdvancePhrase(); // Avança a frase
+                };
+                speechSynthesis.speak(utteranceUltima);
+            };
+
+        } else if (isFraseCompleta) {
+            // Se a frase foi completada pela revelação desta palavra (e não era a penúltima)
+            utteranceRevelada.onend = function() {
+                audioPlaying = false; // Pronúncia terminou
+                processAndAdvancePhrase(); // Avança a frase
             };
         } else {
-             utteranceRevelada.onend = function() {
-                audioPlaying = false;
+            // Se a frase NÃO foi completada, apenas troca a vez após a pronúncia
+            utteranceRevelada.onend = function() {
+                audioPlaying = false; // Pronúncia terminou
             };
         }
-        speechSynthesis.speak(utteranceRevelada);
+
+        speechSynthesis.speak(utteranceRevelada); // Dispara a pronúncia da palavra revelada
+    } else {
+        console.warn("Nenhuma ocorrência não acertada da palavra encontrada para 'Passar':", palavraCorretaAtual);
+        // Se, por algum motivo, não encontrou a palavra para revelar,
+        // ainda queremos trocar o relógio para não travar o jogo.
+        switchActiveClock();
     }
 };
 
@@ -1243,52 +1532,73 @@ document.getElementById('lerFrase').onclick = function() {
 document.getElementById('menu-button').onclick = toggleMenu;
 document.querySelector('.close-button').onclick = toggleMenu;
 
+// NOVO LISTENER: Adiciona a funcionalidade para o botão de tradução
 document.getElementById('traduzir-btn').onclick = function() {
+    // Alterna o estado da variável
     mostrarTraducao = !mostrarTraducao;
+    // Atualiza a interface para exibir ou ocultar a legenda
     atualizarFrase();
 };
 
+// Adicionar um listener para o evento de erro do vídeo
 videoElement.addEventListener('error', function(e) {
     console.error("Erro ao carregar o vídeo. O jogo continuará sem sincronização com o vídeo.", e);
-    playerReady = false;
+    playerReady = false; // Garante que a flag seja false em caso de erro
+    // Você pode mostrar uma mensagem para o usuário aqui
     alert("Ocorreu um erro ao carregar o vídeo. O jogo continuará no modo texto.");
     pararMonitorTempo();
 });
 
-// FUNÇÃO ATUALIZADA: Criação do relógio
+
+// Função para criar o Clock
 function createClock(clockFaceId) {
     const clockFace = document.getElementById(clockFaceId);
     let currentProgress = 0;
-    const totalTimeMs = 10000;
+    const totalTimeMs = 10000; // 10 segundos
     const updateIntervalMs = 16;
     const steps = totalTimeMs / updateIntervalMs;
     const progressPerStep = 100 / steps;
+
+    // Define o ponto percentual onde os cliques serão desabilitados
+    const disableClickThreshold = 90; // Desabilita quando 80% do tempo se foi (20% restantes)
+
     let intervalId;
     let _isActive = false;
 
     function updateClock() {
         if (currentProgress <= 100) {
             clockFace.style.setProperty('--progress', currentProgress);
+
             const percentageRemaining = 100 - currentProgress;
+
+            // Lógica para piscar o clock (já existente)
             if (percentageRemaining <= 40 && percentageRemaining > 0) {
                 clockFace.classList.add('time-almost-up');
             } else {
                 clockFace.classList.remove('time-almost-up');
             }
-            if (currentProgress >= 90 && _isActive) {
+
+            // Lógica para desabilitar cliques nas palavras
+            if (currentProgress >= disableClickThreshold && _isActive) {
+                // Adiciona a classe 'no-click' a todas as palavras se o tempo estiver acabando
                 document.querySelectorAll('.palavra').forEach(p => p.classList.add('no-click'));
             } else {
+                // Garante que a classe seja removida se o tempo voltou ao normal (ex: turno de outro jogador)
                 document.querySelectorAll('.palavra').forEach(p => p.classList.remove('no-click'));
             }
+
             currentProgress += progressPerStep;
         } else {
+            // Clock completou, para e chama o switch automaticamente
             stopClock(true);
+            console.log(`Clock '${clockFaceId}' fill complete!`);
         }
     }
 
     function startClock() {
         currentProgress = 0;
         clockFace.classList.remove('time-almost-up');
+        // NOVO: Habilita os cliques nas palavras ao iniciar o turno
         document.querySelectorAll('.palavra').forEach(p => p.classList.remove('no-click'));
         intervalId = setInterval(updateClock, updateIntervalMs);
         _isActive = true;
@@ -1297,11 +1607,23 @@ function createClock(clockFaceId) {
     function stopClock(autoSwitch = false) {
         clearInterval(intervalId);
         clockFace.classList.remove('time-almost-up');
+        // Garante que os cliques sejam reativados quando o clock para (importante se o jogo pausa ou muda de fase)
+        // No entanto, se o próximo clock for iniciar, ele vai reativar.
+        // A lógica principal de desabilitar/reabilitar está no updateClock e startClock.
+        // Opcional: document.querySelectorAll('.palavra').forEach(p => p.classList.remove('no-click'));
+        
+        // Se não foi por conclusão (parada manual), reseta o progresso visualmente
+        if (!autoSwitch) {
+            currentProgress = 0;
+            clockFace.style.setProperty('--progress', currentProgress);
+        }
+        
         _isActive = false;
-        currentProgress = 0;
-        clockFace.style.setProperty('--progress', currentProgress);
+        
         if (autoSwitch) {
-            finalizarTurnoComPenalidade();
+            setTimeout(() => {
+                switchStoppedClock(clockFaceId);
+            }, 100);
         }
     }
 
@@ -1315,6 +1637,16 @@ function createClock(clockFaceId) {
         isActive: isActive
     };
 }
+	
+function switchStoppedClock(currentClockId) {
+    if (currentClockId === 'clock-face1') {
+        player2Clock.start();
+        console.log('Clock 1 finished, starting Clock 2');
+    } else if (currentClockId === 'clock-face2') {
+        player1Clock.start();
+        console.log('Clock 2 finished, starting Clock 1');
+    }
+}
 
 function getActiveClockId() {
     if (player1Clock && player1Clock.isActive()) {
@@ -1326,73 +1658,63 @@ function getActiveClockId() {
     return null;
 }
 
-// Função corrigida para avançar a frase
-function processAndAdvancePhrase() {
-    if (player1Clock) player1Clock.stop();
-    if (player2Clock) player2Clock.stop();
-    showLoading(true);
-    setTimeout(() => {
-        indiceFrase++;
-        if (indiceFrase >= frases.length) {
-            if (tempoTotalJogador1 < tempoTotalJogador2) {
-                alert(`Parabéns, Jogador 1! Você venceu com um tempo total de ${Math.round(tempoTotalJogador1 / 1000)}s contra ${Math.round(tempoTotalJogador2 / 1000)}s do Jogador 2.`);
-            } else if (tempoTotalJogador2 < tempoTotalJogador1) {
-                alert(`Parabéns, Jogador 2! Você venceu com um tempo total de ${Math.round(tempoTotalJogador2 / 1000)}s contra ${Math.round(tempoTotalJogador1 / 1000)}s do Jogador 1.`);
-            } else {
-                alert(`Empate! Ambos os jogadores terminaram a lição no mesmo tempo de ${Math.round(tempoTotalJogador1 / 1000)}s.`);
-            }
-            indiceFrase = 0;
-            tempoTotalJogador1 = 0;
-            tempoTotalJogador2 = 0;
-        }
-        
-        fraseAtual = frases[indiceFrase];
-        palavrasEmbaralhadas = embaralharPalavras(fraseAtual.texto);
-        palavrasClicadas = [];
-        fraseAcertada = false;
-        mostrarTraducao = false;
-        
-        criarPalavras();
-        atualizarFrase();
-        atualizarPlacares();
-        
-        jogadorDaVez = (Math.random() < 0.5) ? 1 : 2;
-        console.log(`Iniciando a próxima rodada. Jogador ${jogadorDaVez} começa.`);
-        
-        reproduzirTrechoAtual();
-        showLoading(false);
-        
-        tempoInicioTurno = performance.now();
-        if (jogadorDaVez === 1) {
-            player1Clock.start();
-        } else {
-            player2Clock.start();
-        }
-    }, 1500);
+function switchActiveClock() {
+    const activeClockId = getActiveClockId();
+
+    if (activeClockId === 'clock-face1') {
+        player1Clock.stop();
+        player2Clock.start();
+        console.log('Switched from Player 1 clock to Player 2 clock.');
+    } else if (activeClockId === 'clock-face2') {
+        player2Clock.stop();
+        player1Clock.start();
+        console.log('Switched from Player 2 clock to Player 1 clock.');
+    } else {
+        player1Clock.start();
+        console.log('No active clock found, starting Player 1 clock.');
+    }
 }
 
-// FUNÇÃO ATUALIZADA: Inicializar a aplicação
+// *** Inicializar a aplicação *** //
 function init() {
     initializeMenuButtons();
+
+    // Initialize clocks
     player1Clock = createClock('clock-face1');
     player2Clock = createClock('clock-face2');
+    // Example: start one of the clocks, or none, based on your game's start state
+    // player1Clock.start(); // Start if game begins automatically
+
+    // Mostrar inicialmente a mensagem para selecionar uma lição
     document.getElementById('current-lesson').textContent = "Nome da Lição";
+
+    // Verificar se há algum parâmetro na URL para carregar uma lição específica
     const urlParams = new URLSearchParams(window.location.search);
     const lessonParam = urlParams.get('lesson');
+
     if (lessonParam !== null && !isNaN(lessonParam) && lessons[parseInt(lessonParam)]) {
+        // Carregar a lição especificada pelo parâmetro da URL
         loadLesson(parseInt(lessonParam));
     } else {
+        // Se não houver parâmetro, abrir o menu automaticamente
         setTimeout(() => {
             toggleMenu();
         }, 500);
     }
+
+    // REMOVIDA: A lógica para o switch de legendas e o localStorage 'subtitlesOn' foi removida.
+
+    // Adicionar listener para teclas de atalho
     document.addEventListener('keydown', function(event) {
+        // Tecla ESC para fechar ou abrir o menu
         if (event.key === 'Escape') {
             const menuOverlay = document.getElementById('menu-overlay');
             if (menuOverlay.classList.contains('active')) {
                 toggleMenu();
             }
         }
+
+        // Tecla ESPAÇO para reproduzir/pausar o trecho atual
         if (event.code === 'Space' && !event.target.matches('input, textarea')) {
             event.preventDefault();
             if (playerReady && videoElement.paused) {
@@ -1402,6 +1724,8 @@ function init() {
                 pararMonitorTempo();
             }
         }
+
+        // Tecla ENTER para avançar quando disponível
         if (event.key === 'Enter') {
             const avancarBtn = document.getElementById('avancar');
             if (avancarBtn.style.display !== 'none') {
@@ -1409,11 +1733,16 @@ function init() {
             }
         }
     });
+
+    // Adicionar evento para restaurar a interface quando o vídeo terminar
     videoElement.addEventListener('ended', function() {
         pararMonitorTempo();
     });
+
+    // Verificar se há uma última lição acessada
     const lastLessonIndex = localStorage.getItem('lastLessonIndex');
     if (lastLessonIndex !== null && !isNaN(lastLessonIndex) && lessons[parseInt(lastLessonIndex)]) {
+        // Perguntar ao usuário se deseja carregar a última lição
         setTimeout(() => {
             const carregarUltimaLicao = confirm(`Deseja carregar a última lição acessada? (${lessons[parseInt(lastLessonIndex)].name})`);
             if (carregarUltimaLicao) {
@@ -1426,13 +1755,15 @@ function init() {
 // Função para salvar o progresso do usuário no localStorage
 function salvarProgresso() {
     if (!currentLessonName) return;
+
     const progressoData = {
         lessonName: currentLessonName,
         fraseIndex: indiceFrase,
-        tempoTotalJogador1: tempoTotalJogador1,
-        tempoTotalJogador2: tempoTotalJogador2,
+        acertos1: acertos1,
+        acertos2: acertos2,
         timestamp: new Date().getTime()
     };
+
     localStorage.setItem('listeningProProgresso', JSON.stringify(progressoData));
 }
 
@@ -1440,6 +1771,7 @@ function salvarProgresso() {
 function carregarProgresso() {
     const progressoSalvo = localStorage.getItem('listeningProProgresso');
     if (!progressoSalvo) return null;
+
     try {
         return JSON.parse(progressoSalvo);
     } catch (e) {
@@ -1452,9 +1784,12 @@ function carregarProgresso() {
 function verificarProgressoLicao(lessonName) {
     const progresso = carregarProgresso();
     if (!progresso || progresso.lessonName !== lessonName) return false;
+
+    // Verificar se o progresso é recente (menos de 7 dias)
     const agora = new Date().getTime();
     const diferenca = agora - progresso.timestamp;
     const diasDiferenca = diferenca / (1000 * 60 * 60 * 24);
+
     return diasDiferenca < 7;
 }
 
