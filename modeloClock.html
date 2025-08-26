@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhraseCraft</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto+Mono:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Audiowide&display:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@17.0.0"></script>
+
+    <style>
+        :root {
+            /* Cores de Fundo e Sombra */
+            --background-color: #f0f0f0;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+
+            /* Novos Degradês */
+            --blue-gradient-start: #007bff; /* Azul vibrante */
+            --blue-gradient-end: #0056b3;    /* Azul mais escuro */
+
+            --grey-gradient-start: #d0d0d0; /* Agora o 'escuro' (que era o fim) */
+            --grey-gradient-end: #e0e0e0;    /* Agora o 'claro' (que era o início) */
+
+            --red-gradient-start: #dc3545; /* Vermelho vibrante */
+            --red-gradient-end: #a71d2a;    /* Vermelho mais escuro */
+
+            --orange-gradient-start: #ffc107; /* Laranja vibrante */
+            --orange-gradient-end: #e0a800;    /* Laranja mais escuro */
+
+            /* Variáveis para o progresso do JavaScript (mantidas) */
+            --progress: 0; /* 0 a 100 - Controla o preenchimento pelo JS */
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            justify-content: center;
+            align-items: flex-start;
+            background: linear-gradient(-135deg, #000000, #3b0047, #660000, #000000);
+            margin: 0;
+            padding: 1.2% 2% 2%;
+            font-family: 'Orbitron', sans-serif;
+            color: #00ccff;
+            text-shadow:
+                0 0 15px rgba(0, 204, 255, 0.7), /* Tom da cor base mais claro */
+                0 0 25px rgba(0, 220, 255, 0.5), /* Um pouco mais claro e difuso */
+                0 0 35px rgba(0, 235, 255, 0.3); /* Mais claro e ainda mais difuso */
+            letter-spacing: 1.5px;
+            overflow-x: hidden;
+        }
+
+        button {
+            padding: 10px 15px;
+            background: linear-gradient(to bottom, #5cbc5c 0%, #4CAF50 50%, #45a049 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+            text-shadow: 0 1px 1px rgba(0,0,0,0.1);
+            transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+            font-size: clamp(12px, 2vw, 16px);
+        }
+
+        button:hover {
+            background: linear-gradient(to bottom, #6ad26a 0%, #5cbc5c 50%, #4CAF50 100%);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            background: linear-gradient(to bottom, #45a049 0%, #4CAF50 50%, #5cbc5c 100%);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            transform: translateY(1px);
+        }
+		
+        main {
+            width: 100%;
+            max-width: 1080px;
+            margin: 0 auto;
+            
+            background-image: linear-gradient(-135deg, #171627, #111d4a, #171627, #111d4a);
+            background-color: #171627;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.1);
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            text-align: center;
+            padding: clamp(10px, 2vw, 20px);
+            display: flex;
+            flex-direction: column;
+            gap: clamp(5px, 1vw, 10px);
+            justify-content: flex-start;
+            align-items: center;
+            animation: fadeInScale 1s ease-out;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+	    /* Menu Button - mantém o estilo original */
+
+        
+        /* ==========
+        // Containers
+        // ========== */
+        .game-section {
+            text-align: center;
+            padding: clamp(10px, 2vw, 20px);
+            display: flex;
+            flex-direction: column;
+            gap: clamp(5px, 1vw, 10px);
+            justify-content: flex-start;
+            align-items: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .title-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centraliza horizontalmente */
+            justify-content: center; /* Centraliza verticalmente, se houver espaço */
+            gap: 15px; /* Adiciona um espaço de 10px entre o título e o botão */
+        }
+
+        .title-container h2 {
+            font-size: clamp(20px, 4vw, 32px);
+            margin: 0;
+        }
+
+        .content-row {
+            display: flex;
+            flex-direction: row;
+            margin-top: 1%;
+            gap: clamp(10px, 2vw, 20px);
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            flex-wrap: nowrap;
+            overflow: hidden;
+            min-height: clamp(120px, 25vh, 200px);
+        }
+        
+        /* Ajustes para o container do vídeo */
+        .content-row .video-container {
+            flex: 1 1 65%;
+            min-width: 0;
+            max-width: 70%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* O container do vídeo onde o player e a legenda ficam */
+        .video-container #custom-video {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 16/9;
+            display: block;
+            background-color: #000;
+            border: none;
+            border-radius: 8px;
+        }
+
+		/* Estilos para o conteúdo da legenda que aparecerá sobre o vídeo */
+		#subtitle-content {
+            position: absolute;
+            width: 95%;
+            height: auto;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: clamp(5px, 1.5vw, 10px);
+            text-align: center;
+            font-size: clamp(12px, 2vw, 16px);
+            box-sizing: border-box;
+            z-index: 10;
+            top: 50%;
+            transform: translateY(-50%);
+            border-radius: 4px;
+        }
+		
+		/* Classe para ocultar o conteúdo da legenda */
+		#subtitle-content.hidden {
+		    display: none;
+		}
+        
+        /* Ajustes para os botões */
+        .content-row #buttons {
+            flex: 1 1 35%;
+            display: flex;
+            flex-direction: column;
+            gap: clamp(6px, 1.5vw, 12px);
+            align-items: center;
+            justify-content: center;
+            min-width: 0;
+            max-width: 35%;
+            padding: 0;
+        }
+        
+        /* Para garantir que os botões tenham largura consistente */
+        .content-row #buttons button {
+            width: 100%;
+            max-width: clamp(150px, 20vw, 200px);
+            padding: clamp(8px, 2vw, 12px);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: clamp(10px, 1.8vw, 14px);
+            text-align: center;
+        }
+
+        p {
+            margin: 10px 0;
+            color: #666;
+            font-size: clamp(12px, 2vw, 16px);
+        }
+        
+        .phrase-container {
+            font-size: clamp(16px, 3vw, 24px);
+            width: 100%;
+            max-width: 100%;
+            min-height: clamp(40px, 8vh, 60px);
+            border: 1px dashed #a5b68f;
+            padding: clamp(8px, 2vw, 15px);
+            border-radius: 5px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            word-break: break-word;
+            background-color: #f9fff2;
+            color: #333;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+        }
+        
+        .palavra-na-frase {
+            margin-right: 1.2%;
+            color: #0056b3;
+            border: 1px solid #ccc; 
+            border-radius: 4px;
+            font-size: clamp(12px, 2vw, 18px);
+            font-weight: bold;
+            padding: 2px 4px;
+            margin-bottom: 4px;
+        }
+        
+        .word-button-wrapper {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: clamp(8px, 2vw, 15px);
+        }
+
+        .word-container {
+            flex-wrap: wrap;
+            width: 100%;
+            border: none;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: clamp(8px, 2vw, 15px);
+            box-sizing: border-box;
+        }
+
+        .palavra { 
+            background-color: #007bff;
+            color: white;
+            padding: clamp(4px, 1vw, 8px) clamp(6px, 1.5vw, 10px);
+            margin: clamp(3px, 1vw, 5px);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: clamp(12px, 2vw, 16px);
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease, background-color 0.2s ease;
+            user-select: none;
+        }
+
+        .palavra.selecionada {
+            background: linear-gradient(to bottom, #ffc107, #e0a800);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .palavra.errada {
+            animation: shake 0.4s ease-in-out;
+            background-color: #dc3545;
+        }
+
+        .palavra.acertada {
+            background-color: #28a745;
+            pointer-events: none;
+        }
+
+	    .palavra.no-click {
+	        pointer-events: none;
+	        opacity: 0.6;
+	        cursor: default;
+	    }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        
+		
+		.game-info-container {
+		    display: flex;
+		    justify-content: space-between;
+		    align-items: center;           
+		    text-align: center;
+		    margin-bottom: 25px;
+		    padding: 10px;
+		    background: rgba(255, 255, 255, 0.03);
+		    border-radius: 15px;
+		    border: 1px solid rgba(255, 255, 255, 0.1);
+		}
+		
+		.player-info {
+		    display: flex;
+		    flex-direction: column;
+		    align-items: center;
+		    gap: 10px;
+            margin: 0 20px 0 20px;
+		}
+		
+		.player-label {
+		    font-size: 1.1em;
+		    font-weight: 600;
+		    color: #ffffff;
+		    margin-bottom: 5px;
+		}
+		
+		.placar {
+		    font-size: 1.8em;
+		    font-weight: 700;
+		    background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+		    background-clip: text;
+		    -webkit-background-clip: text;
+		    -webkit-text-fill-color: transparent;
+		    padding: 0 20px;
+		    background-color: rgba(255, 255, 255, 0.1);
+		}
+		
+		.clock-face {
+		    min-width: 60px;
+		    min-height: 60px;
+            margin: 20px 0 20px 0;
+		    border: 3px solid rgba(255, 255, 255, 0.3);
+		    border-radius: 50%;
+		    position: relative;
+		    background: rgba(255, 255, 255, 0.1);
+		    backdrop-filter: blur(10px);
+		}
+		
+		.clock-face::before {
+		    content: '';
+		    position: absolute;
+		    top: 50%;
+		    left: 50%;
+		    width: 2px;
+		    height: 20px;
+		    background: #4ecdc4;
+		    transform-origin: bottom;
+		    transform: translate(-50%, -100%) rotate(0deg);
+		    transition: transform 0.3s ease;
+		}
+        .clock-face.time-almost-up {
+            animation: blink-red-to-orange 1s infinite alternate;
+        }
+
+        @keyframes blink-red-to-orange {
+            0%, 100% {
+                background: linear-gradient(135deg, var(--red-gradient-start), var(--red-gradient-end));
+            }
+            50% {
+                background: linear-gradient(135deg, var(--orange-gradient-start), var(--orange-gradient-end));
+            }
+        }
+
+        #progresso {
+            margin-top: 10px;
+            font-size: clamp(12px, 2vw, 16px);
+        }
+
+        /* Media Queries para layout mobile */
+        @media (max-width: 768px) {
+            .content-row {
+                flex-direction: column;
+                gap: 15px;
+                min-height: auto;
+            }
+            
+            .content-row .video-container {
+                flex: none;
+                max-width: 100%;
+                width: 100%;
+                order: 1;
+            }
+            
+            .content-row #buttons {
+                flex: none;
+                max-width: 100%;
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                order: 2;
+            }
+            
+            .content-row #buttons button {
+                flex: 1;
+                min-width: 120px;
+                max-width: 150px;
+                margin: 2px;
+            }
+
+            .players-container {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .player-container {
+                min-width: 100px;
+            }
+
+            #menu-items {
+                width: 95%;
+                max-width: none;
+                padding: 15px;
+            }
+
+            .phrase-container {
+                min-height: 50px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+
+            .game-section {
+                padding: 10px;
+            }
+
+            .content-row #buttons {
+                flex-direction: column;
+            }
+
+            .content-row #buttons button {
+                max-width: 100%;
+                width: 100%;
+            }
+
+            .word-container {
+                padding: 10px;
+            }
+
+            .palavra {
+                margin: 2px;
+                padding: 6px 8px;
+            }
+        }
+        
+        /* Mode Selection Styles */
+
+    </style>
+</head>
+<body>
+<main>
+		<div class="title-container">
+            <h2>SpeedPhrase</h2>
+        </div>
+
+        
+        <section class="game-section">        
+            <div class="game-info-container">
+                <div class="player-info">
+                    <span class="player-label">Jogador 1:</span>
+                    <span id="placar1" class="placar">0s</span>
+                </div>
+                
+                <div class="player-info">
+                    <div id="clock-face" class="clock-face"></div>
+                    <button id="menu-button">Menu</button>
+                </div>
+                
+                <div class="player-info">
+                    <span class="player-label">Jogador 2:</span>
+                    <span id="placar2" class="placar">0s</span>
+                </div>
+            </div>
+
+        	<div id="current-lesson"></div>
+
+            <div class="content-row">
+                <div class="video-container">
+                    <video id="custom-video" class="hide-controls" preload="auto">
+                    </video>
+
+                    <div id="subtitle-content" class="hidden"> 
+                        <!- As legendas aparecem aqui: -->
+                    </div>
+                </div>
+
+                <div id="buttons">
+                    <button id="repetir" style="background: linear-gradient(to bottom, #b34dd6 0%, #9C27B0 50%, #7c1f8e 100%);">Tocar Trecho</button>
+                    <button id="lerFrase" style="background: linear-gradient(to bottom, #78c0ff 0%, #5babf0 50%, #4d98e5 100%);">Tocar Lento</button>
+                    <button id="traduzir-btn" class="control-button" style="background: linear-gradient(to bottom, #ffc078 0%, #ffa94d 50%, #e59442 100%);">Traduzir</button>
+                    <button id="desistir" style="background: linear-gradient(to bottom, #66bb6a 0%, #43a047 50%, #2e7d32 100%);">Passar: palavra</button>
+
+                    <button id="desistir" style="background: linear-gradient(to bottom, #ff5e91 0%, #E91E63 50%, #c41858 100%);">Desistir: frase</button>
+                 </div>
+            </div>
+
+            <div class="phrase-container" id="frase"></div>
+
+            <div class="word-button-wrapper">
+                <div class="word-container" id="palavras"></div>
+            </div>
+
+            <div id="progresso" style="margin-top: 10px; font-size: 0.9em;">Progresso: 0 de 0</div>
+    </section>
+</main>
+
+<script>
+        const lessons = [
+            {
+                name: "I'm Gonna Be - 500 Miles.mp4",
+                srtUrl: "https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.srt",
+            }
+        ];
+
+        // Função assíncrona para buscar e exibir a legenda
+        async function displaySrt(url) {
+            const subtitlesElement = document.getElementById('subtitles');
+            const loadingMessage = document.getElementById('loadingMessage');
+
+            // Exibe mensagem de carregamento
+            loadingMessage.style.display = 'block';
+            subtitlesElement.textContent = ''; // Limpa o conteúdo anterior
+
+            try {
+                // Faz a requisição para o URL do arquivo SRT
+                const response = await fetch(url);
+                
+                // Verifica se a resposta foi bem-sucedida
+                if (!response.ok) {
+                    throw new Error(`Erro ao buscar a legenda: ${response.statusText}`);
+                }
+
+                // Obtém o texto da resposta
+                const srtText = await response.text();
+
+                // Exibe o texto da legenda no elemento <pre>
+                subtitlesElement.textContent = srtText;
+                
+            } catch (error) {
+                console.error("Falha ao carregar a legenda:", error);
+                subtitlesElement.textContent = "Não foi possível carregar a legenda. Verifique o link e tente novamente.";
+            } finally {
+                // Esconde a mensagem de carregamento
+                loadingMessage.style.display = 'none';
+            }
+        }
+
+        // Chama a função para exibir a legenda do primeiro item do array
+        if (lessons.length > 0) {
+            displaySrt(lessons[0].srtUrl);
+        }
+    </script>
+</body>
+</html>
