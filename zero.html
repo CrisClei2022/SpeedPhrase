@@ -216,21 +216,48 @@
       const timeLimit = getTimeLimitForSentence(sub.text);
       startCountdown(timeLimit);
       startTimer(); // começa a contar tempo real
+      playCurrentSubtitle();
     }
 
 
     //=============================
-    // Função: Toca vídeo no trecho da legenda
+    // Função: Inicia o vídeo no tempo especificado e começa a tocar
+    //=============================
+    function startVideoAtTime(video, startTime) {
+      video.currentTime = startTime;
+      video.play();
+    }
+
+    //=============================
+    // Função: Monitora o vídeo para pausar no tempo final usando requestVideoFrameCallback
+    //=============================
+    function monitorVideoEnd(video, endTime) {
+      function checkFrame() {
+        if (video.currentTime >= endTime) {
+          video.pause();
+        } else {
+          if (typeof video.requestVideoFrameCallback === 'function') {
+            video.requestVideoFrameCallback(checkFrame);
+          } else {
+            setTimeout(checkFrame, 50);
+          }
+        }
+      }
+      checkFrame();
+    }
+
+    //=============================
+    // Função principal que usa as duas acima
     //=============================
     function playCurrentSubtitle() {
       const video = document.getElementById('video');
       const sub = subtitles[currentIndex];
-      video.currentTime = sub.start;
-      video.play();
+      if (!video || !sub) return;
 
-      const duration = sub.end - sub.start;
-      setTimeout(() => video.pause(), duration * 1000);
+      startVideoAtTime(video, sub.start);
+      monitorVideoEnd(video, sub.end);
     }
+
     
     //=============================
     // Bloco de Timer
