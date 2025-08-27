@@ -12,6 +12,32 @@
     .word.incorrect { background-color: #f7c5c5; }
     .formed-sentence { font-weight: bold; margin-top: 10px; }
     button { margin-top: 10px; padding: 10px 20px; }
+    .video-grid-container {
+  padding: 20px;
+}
+
+    .video-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    .video-card {
+      background: #fff;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      width: 200px;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+    }
+
+    .video-card:hover {
+      transform: scale(1.03);
+    }
+
   </style>
 </head>
 <body>
@@ -21,6 +47,15 @@
   <header>
     <h1>SpeedPhrase</h1>
   </header>
+  
+  <section id="avulsas-section" class="video-grid-container">
+    <div id="avulsas-grid" class="video-grid"></div>
+  </section>
+
+  <section id="trilha-section" class="video-grid-container hidden">
+    <div id="trilha-grid" class="video-grid"></div>
+  </section>
+
 
   <!-- Seção do timer, separado do header -->
   <section id="timerSection" style="margin-top: 10px; font-weight: bold;">
@@ -69,8 +104,6 @@
   </nav>
 </footer>
 
-
-
   <script>
     //=============================
     // Estado da Aplicação
@@ -85,7 +118,25 @@
     let startTime = 0;
     let totalElapsedTime = 0;
     let timerInterval = null;
+    
+    //=============================
+    // Lessons
+    //=============================
+    const avulsasLessons = [
+      {
+        name: "I'm Gonna Be - 500 Miles.mp4",
+        srtUrl: "https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.srt",
+        videoUrl: "https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.mp4"
+      }
+    ];
 
+    const trilhaLessons = [
+      {
+        name: "Chapter 1 - Welcome & Nationalities",
+        srtUrl: "https://f005.backblazeb2.com/file/Trilha/Chapter-1.-Welcome-%26-Nationalities.srt",
+        videoUrl: "https://f005.backblazeb2.com/file/Trilha/Chapter-1.-Welcome-%26-Nationalities.mp4"
+      }
+    ];
 
     //=============================
     // Função: Carrega e Processa o SRT
@@ -355,18 +406,24 @@
     //=============================
     // ---------------
     //=============================
-    function goToSearch() {
-      hideGameSectionsById();
-    }
-
     function goToAvulsas() {
       hideGameSectionsById();
+      hideLessonSections();
+      showOnlySection('avulsas-section');
+      generateVideoCards(avulsasLessons, 'avulsas-grid', handleLessonClick);
     }
 
     function goToTrilha() {
       hideGameSectionsById();
+      hideLessonSections();
+      showOnlySection('trilha-section');
+      generateVideoCards(trilhaLessons, 'trilha-grid', handleLessonClick);
     }
 
+    function showOnlySection(sectionId) {
+      const el = document.getElementById(sectionId);
+      if (el) el.style.display = '';
+    }
 
 	//=============================
     // Bloco Ocultar/Mostrar sections
@@ -405,12 +462,144 @@
     }
 
     //=============================
+    // Oculta as seções de seleção
+    //=============================
+    function hideAvulsasSections() {
+      const idsToHide = [
+        'avulsas-section'
+      ];
+
+      idsToHide.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
+    }
+    
+    function hideTrilhaSections() {
+      const idsToHide = [
+        'trilha-section'
+      ];
+
+      idsToHide.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
+    }
+    
+    function hideLessonSections() {
+      hideAvulsasSections();
+      hideTrilhaSections();
+    }
+
+    //=============================
+    // Mostra as seções de seleção
+    //=============================
+    function showAvulsasSections() {
+      const idsToShow = [
+        'avulsas-section'
+      ];
+
+      idsToHide.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = '';
+      });
+    }
+    
+    function showTrilhaSections() {
+      const idsToShow = [
+        'trilha-section'
+      ];
+
+      idsToHide.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = '';
+      });
+    }
+    
+    function showLessonSections() {
+      showAvulsasSections();
+      showTrilhaSections();
+    }
+    
+    
+    //=========================
+    // Bloco lessons cards
+    //=========================
+    // Cria um card individual
+    //=========================
+    function createVideoCard(lesson, onClick) {
+      const card = document.createElement('div');
+      card.className = 'video-card';
+      card.textContent = lesson.name;
+      card.onclick = () => onClick(lesson);
+      return card;
+    }
+    
+    //==========================================
+    // Gera grid de cards dentro do container
+    //==========================================
+    function generateVideoCards(lessons, containerId, onClick) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
+      container.innerHTML = ''; // limpa antes de inserir
+
+      lessons.forEach(lesson => {
+        const card = createVideoCard(lesson, onClick);
+        container.appendChild(card);
+      });
+    }
+
+    
+    //==========================================
+    // Carrega lições nas seções correspondentes
+    //==========================================
+    function loadAllLessons() {
+      generateVideoCards(avulsasLessons, 'avulsas-grid', handleLessonClick);
+      generateVideoCards(trilhaLessons, 'trilha-grid', handleLessonClick);
+    }
+
+    //=============================
+    // Clique no card de lição
+    //=============================
+    function handleLessonClick(lesson) {
+      console.log('Lição selecionada:', lesson);
+
+      // Aqui você pode:
+      // - ocultar seções de seleção
+      // - mostrar o game
+      // - carregar o vídeo e a legenda
+      // - etc.
+
+      loadVideoAndSrt(lesson);
+      showGameSectionsById();
+      showGameSectionsById();
+    }
+    
+    //=============================
+    // Clique no card de lição
+    //=============================
+    async function loadVideoAndSrt(lesson) {
+      const video = document.getElementById('video');
+      video.src = lesson.videoUrl;
+      subtitles = await loadSrt(lesson.srtUrl);
+      currentIndex = 0;
+      prepareCurrentSubtitle();
+    }
+
+    //=============================
     // Inicialização
     //=============================
     (async () => {
       subtitles = await loadSrt("https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.srt");
       prepareCurrentSubtitle();
     })();
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      hideGameSectionsById();
+      loadAllLessons();
+    });
+
 
   </script>
 
