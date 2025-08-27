@@ -307,13 +307,23 @@
       playCurrentSubtitle();
     }
 
-
-    //=============================
-    // Função: Inicia o vídeo no tempo especificado e começa a tocar
-    //=============================
+    //==============================================================
+    // Inicia o vídeo no tempo especificado e começa a tocar
+    //==============================================================
     function startVideoAtTime(video, startTime) {
       video.currentTime = startTime;
       video.play();
+    }
+    
+    //=============================
+    // Pausa vídeo
+    //=============================
+    function pauseVideo() {
+      const video = document.getElementById('video');
+      if (video) {
+        video.pause();
+        video.currentTime = 0; // opcional: reseta para o início
+      }
     }
 
     //=============================
@@ -442,6 +452,8 @@
         const el = document.getElementById(id);
         if (el) el.style.display = 'none';
       });
+
+        pauseVideo();
     }
     
     //=============================
@@ -569,9 +581,10 @@
       // - mostrar o game
       // - carregar o vídeo e a legenda
       // - etc.
-
+      
+      console.log('Lição selecionada:', lesson);
       loadVideoAndSrt(lesson);
-      showGameSectionsById();
+      hideLessonSections();
       showGameSectionsById();
     }
     
