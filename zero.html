@@ -13,17 +13,21 @@
     .formed-sentence { font-weight: bold; margin-top: 10px; }
     button { margin-top: 10px; padding: 10px 20px; }
     .video-grid-container {
-  padding: 20px;
-}
+      padding: 20px;
+    }
+    
+    .hidden {
+      display: none;
+    }
 
-    .video-grid, .mode-container {
+    .video-grid {
       display: flex;
       flex-wrap: wrap;
       gap: 15px;
       justify-content: center;
     }
 
-    .video-card, .mode-button {
+    .video-card {
       background: #fff;
       padding: 10px;
       border: 1px solid #ccc;
@@ -34,10 +38,9 @@
       transition: transform 0.2s;
     }
 
-    .video-card:hover, .mode-button:hover {
+    .video-card:hover {
       transform: scale(1.03);
     }
-
   </style>
 </head>
 <body>
@@ -45,27 +48,22 @@
 <main style="padding-bottom: 80px;">
   <!-- Header da página com título -->
   <header>
-    <div id="breadcrumb"></div>
+    <h1>SpeedPhrase</h1>
   </header>
   
   <section id="avulsas-section" class="video-grid-container">
     <div id="avulsas-grid" class="video-grid"></div>
   </section>
 
-  <section id="trilha-section" class="video-grid-container hidden">
+  <section id="trilha-section" class="video-grid-container">
     <div id="trilha-grid" class="video-grid"></div>
   </section>
-  
-  <section id="mode-section" class="mode-container">
-	<button class="mode-button" onclick="selectPlayerMode('solo')">🎯 Solo</button>
-	<button class="mode-button" onclick="selectPlayerMode('multi')">👥 Multiplayer</button>
-  </section>
+
 
   <!-- Seção do timer, separado do header -->
   <section id="timerSection" style="margin-top: 10px; font-weight: bold;">
-    <div id="totalTime">⏱️ Tempo total: 0.00s</div>
-    <div id="liveTotalTime">🕒 Tempo total ao vivo: 0.00s</div>
-    <div id="timer">⏳ 0s</div>
+    <div id="timer"></div>
+    <div id="totalTime" style="margin-top: 5px;"></div>
   </section>
 
   <!-- Seção do vídeo e controles -->
@@ -91,7 +89,7 @@
   </section>
 </main>
 
-<footer id="lessons-footer" style="
+<footer style="
   position: fixed;
   bottom: 0;
   left: 0;
@@ -104,10 +102,12 @@
 ">
   <nav>
     <button onclick="goToSearch()">🔍 Pesquisar</button>
-    <button onclick="goToAvulsasLessons()">📂 Avulsas</button>
-    <button onclick="goToTrackLessons()">🛤️ Trilha</button>
+    <button onclick="goToAvulsas()">📂 Avulsas</button>
+    <button onclick="goToTrilha()">🛤️ Trilha</button>
   </nav>
 </footer>
+
+
 
   <script>
     //=============================
@@ -120,22 +120,14 @@
     //=============================
     // Estado de Timer
     //=============================
-    let timerInterval = null;
-    let liveTimerInterval = null;
     let startTime = 0;
     let totalElapsedTime = 0;
-    
-    //=============================================
-    // Variável global para o estado atual da lição
-    //=============================================
-    let currentLessonContext = null; // 'trilha' ou 'avulsas'
-	let currentLessonName = ''; // Nome da lição atual
-
+    let timerInterval = null;
     
     //=============================
     // Lessons
     //=============================
-    const avulsasLessons = [
+	const avulsasLessons = [
       {
         name: "I'm Gonna Be - 500 Miles.mp4",
         srtUrl: "https://files.catbox.moe/wt145j.srt",
@@ -150,72 +142,6 @@
         videoUrl: "https://files.catbox.moe/8pzqza.mp4"
       }
     ];
-    
-    //=============================
-    // Breadcrumb
-    //=============================    
-function updateBreadcrumb() {
-  const breadcrumb = document.getElementById('breadcrumb');
-  if (!breadcrumb) return;
-
-  const trail = [];
-
-  // Home
-  trail.push(`<a href="#" onclick="showHome()">🎮 SpeedPhrase</a>`);
-
-  const trilhaVisible = isSectionVisible('trilha-section');
-  const avulsasVisible = isSectionVisible('avulsas-section');
-  const gameVisible = isSectionVisible('videoSection');
-
-  const sectionTrail = new Set();
-
-  if (trilhaVisible && avulsasVisible) {
-    sectionTrail.add('Avulsas & Trilha');
-    trail.push(`<a href="#" onclick="showLessonSections()">Avulsas & Trilha</a>`);
-  } else if (trilhaVisible) {
-    sectionTrail.add('Trilha');
-    trail.push(`<a href="#" onclick="showTrilhaSections()">Trilha</a>`);
-  } else if (avulsasVisible) {
-    sectionTrail.add('Avulsas');
-    trail.push(`<a href="#" onclick="showAvulsasSections()">Avulsas</a>`);
-  }
-
-  if (gameVisible && currentLessonName) {
-    const label = currentLessonContext === 'trilha' ? 'Trilha' : 'Avulsas';
-    if (!sectionTrail.has(label)) {
-      trail.push(`<a href="#" onclick="navigateTo('${label.toLowerCase()}')">${label}</a>`);
-    }
-    trail.push(`<span>${currentLessonName}</span>`);
-  }
-
-  breadcrumb.innerHTML = trail.join(' › ');
-}
-
-    function isSectionVisible(id) {
-      const el = document.getElementById(id);
-      return el && el.style.display !== 'none';
-    }
-
-    // Helper: verifica se elemento está visível
-    function isElementVisible(id) {
-      const el = document.getElementById(id);
-      return el && el.style.display !== 'none';
-    }
-
-    // Helper: verifica se seções do game estão visíveis
-    function areGameSectionsVisible() {
-      const ids = ['timerSection', 'videoSection', 'shuffledWordsSection'];
-      return ids.every(id => isElementVisible(id));
-    }
-
-    // Helper: extrai nome da lição do src do vídeo
-    function getLessonNameFromSrc(src) {
-      if (!src) return null;
-      const parts = decodeURIComponent(src).split('/');
-      const filename = parts[parts.length - 1];
-      const name = filename.replace(/\.(mp4|webm)$/i, '').replace(/[_-]/g, ' ');
-      return name;
-    }
 
     //=============================
     // Função: Carrega e Processa o SRT
@@ -264,21 +190,20 @@ function updateBreadcrumb() {
       return words;
     }
 
-    //=========================================
-    // Aplica CSS e exibe palavras embaralhadas
-    //=========================================
+    //=============================
+    // Função: Exibe palavras embaralhadas
+    //=============================
     function displayShuffledWords(words, original) {
       const container = document.getElementById('shuffledWords');
       container.innerHTML = '';
       formedWords = [];
 
       words.forEach(word => {
-        const btn = document.createElement('button');
-        btn.className = 'word';
-        btn.textContent = word;
-        btn.type = 'button'; // evita comportamento padrão de submit
-        btn.onclick = () => handleWordClick(word, btn, original);
-        container.appendChild(btn);
+        const span = document.createElement('span');
+        span.className = 'word';
+        span.textContent = word;
+        span.onclick = () => handleWordClick(word, span, original);
+        container.appendChild(span);
       });
 
       updateFormedSentence();
@@ -387,28 +312,18 @@ function updateBreadcrumb() {
       playCurrentSubtitle();
     }
 
-    //==============================================================
-    // Inicia o vídeo no tempo especificado e começa a tocar
-    //==============================================================
+
+    //=============================
+    // Função: Inicia o vídeo no tempo especificado e começa a tocar
+    //=============================
     function startVideoAtTime(video, startTime) {
       video.currentTime = startTime;
       video.play();
     }
-    
-    //=============================
-    // Pausa vídeo
-    //=============================
-    function pauseVideo() {
-      const video = document.getElementById('video');
-      if (video) {
-        video.pause();
-        video.currentTime = 0; // opcional: reseta para o início
-      }
-    }
 
-    //=============================================================
-    // Pausa víedo no tempo final usando requestVideoFrameCallback
-    //=============================================================
+    //=============================
+    // Função: Monitora o vídeo para pausar no tempo final usando requestVideoFrameCallback
+    //=============================
     function monitorVideoEnd(video, endTime) {
       function checkFrame() {
         if (video.currentTime >= endTime) {
@@ -445,29 +360,20 @@ function updateBreadcrumb() {
       const wordCount = sentence.trim().split(/\s+/).length;
       return Math.ceil(wordCount * 3);
     }
-    
-    // Função para formatar tempo em minutos e segundos
-    function formatTime(seconds) {
-      if (seconds < 60) {
-        return seconds.toFixed(2) + 's';
-      } else {
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = (seconds % 60).toFixed(2);
-        return `${minutes}m ${remainingSeconds}s`;
-      }
-    }
 
-    // Atualiza contagem regressiva
+    //=============================
+    // Inicia cronômetro regressivo na tela
+    //=============================
     function startCountdown(seconds) {
       const display = document.getElementById('timer');
       let remaining = seconds;
 
-      clearInterval(timerInterval);
+      clearInterval(timerInterval); // limpa cronômetros anteriores
       display.textContent = `⏳ ${remaining}s`;
 
       timerInterval = setInterval(() => {
         remaining--;
-        display.textContent = `💣 ${remaining}s`;
+        display.textContent = `⏳ ${remaining}s`;
         if (remaining <= 0) {
           clearInterval(timerInterval);
           display.textContent = '⏰ Tempo estimado esgotado!';
@@ -475,49 +381,29 @@ function updateBreadcrumb() {
       }, 1000);
     }
 
-    // Inicia temporizador do tempo ao vivo total
-    function startLiveTotalTimeUpdate() {
-      const liveDisplay = document.getElementById('liveTotalTime');
-
-      if (liveTimerInterval) clearInterval(liveTimerInterval);
-
-      liveTimerInterval = setInterval(() => {
-        const now = performance.now();
-        const currentElapsed = (now - startTime) / 1000;
-        const liveTotal = totalElapsedTime + currentElapsed;
-
-        liveDisplay.textContent = `⏳ Tempo total ao vivo: ${formatTime(liveTotal)}`;
-      }, 200);
-    }
-
-    // Para temporizador ao vivo (ex: ao finalizar frase)
-    function stopLiveTotalTimeUpdate() {
-      if (liveTimerInterval) {
-        clearInterval(liveTimerInterval);
-        liveTimerInterval = null;
-      }
-    }
-
-    // Exibe o tempo total fixo acumulado
-    function displayTotalTime() {
-      const totalTimeElement = document.getElementById('totalTime');
-      totalTimeElement.textContent = `⏱️ Tempo total: ${formatTime(totalElapsedTime)}`;
-    }
-
-    // Ao iniciar a frase
+    //=============================
+    // Inicia contagem de tempo real do usuário
+    //=============================
     function startTimer() {
-      startTime = performance.now();
-      startLiveTotalTimeUpdate();
+      startTime = performance.now(); // mais preciso que Date.now()
     }
 
-    // Ao finalizar frase
+    //=============================
+    // Calcula tempo gasto em segundos
+    //=============================
     function stopTimerAndGetElapsed() {
       const endTime = performance.now();
-      const elapsed = (endTime - startTime) / 1000;
+      const elapsed = (endTime - startTime) / 1000; // em segundos
       totalElapsedTime += elapsed;
-      stopLiveTotalTimeUpdate();
-      displayTotalTime();
       return elapsed.toFixed(2);
+    }
+
+    //=============================
+    // Exibe o tempo total acumulado
+    //=============================
+    function displayTotalTime() {
+      const totalTimeElement = document.getElementById('totalTime');
+      totalTimeElement.textContent = `⏱️ Tempo total: ${totalElapsedTime.toFixed(2)}s`;
     }
     
     //=============================
@@ -525,171 +411,38 @@ function updateBreadcrumb() {
     //=============================
     // ---------------
     //=============================
-    function goToAvulsasLessons() {
-      hideGameSectionsById();
-      hideLessonSections();
-      showOnlySection('avulsas-section', 'lessons-footer');
+    function goToAvulsas() {
+      hideAllSections();
+      document.getElementById('avulsas-section').style.display = '';
+      // Se a grade de avulsas precisa ser gerada novamente, chame a função
       generateVideoCards(avulsasLessons, 'avulsas-grid', handleLessonClick);
-      updateBreadcrumb()
     }
 
-    function goToTrackLessons() {
-      hideGameSectionsById();
-      hideLessonSections();
-      showOnlySection('trilha-section', 'lessons-footer');
+    function goToTrilha() {
+      hideAllSections();
+      document.getElementById('trilha-section').style.display = '';
+      // Se a grade de trilha precisa ser gerada novamente, chame a função
       generateVideoCards(trilhaLessons, 'trilha-grid', handleLessonClick);
-      updateBreadcrumb()
-    }
-
-    function showOnlySection(...sectionIds) {
-      sectionIds.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = '';
-      });
     }
 
 	//=============================
-    // Bloco Ocultar/Mostrar sections
+    // Bloco de Ocultar/Mostrar seções
     //=============================
-    // Oculta game sections pelo ID
-    //=============================
-    function hideGameSectionsById() {
-      const idsToHide = [
+
+    function hideAllSections() {
+      const sectionsToHide = [
+        'avulsas-section',
+        'trilha-section',
         'timerSection',
         'videoSection',
         'formedSentenceSection',
         'shuffledWordsSection'
       ];
 
-      idsToHide.forEach(id => {
+      sectionsToHide.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = 'none';
       });
-
-        pauseVideo();
-    }
-    
-    //=============================
-    // Mostra game sections pelo ID
-    //=============================
-    function showGameSectionsById() {
-      const idsToShow = [
-        'timerSection',
-        'videoSection',
-        'formedSentenceSection',
-        'shuffledWordsSection'
-      ];
-
-      idsToShow.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = '';
-      });
-    }
-
-    //=============================
-    // Oculta as seções de seleção
-    //=============================
-    function hideAvulsasSections() {
-      const idsToHide = [
-        'avulsas-section',
-        'lessons-footer'
-      ];
-
-      idsToHide.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = 'none';
-      });
-    }
-    
-    function hideTrilhaSections() {
-      const idsToHide = [
-        'trilha-section',
-        'lessons-footer'
-      ];
-
-      idsToHide.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = 'none';
-      });
-    }
-    
-    function hideLessonSections() {
-      hideAvulsasSections();
-      hideTrilhaSections();
-    }
-
-    //=============================
-    // Mostra as seções de seleção
-    //=============================
-    function showAvulsasSections() {
-      const idsToShow = [
-        'avulsas-section',
-        'lessons-footer'
-      ];
-
-      idsToShow.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = '';
-      });
-    }
-    
-    function showTrilhaSections() {
-      const idsToShow = [
-        'trilha-section',
-        'lessons-footer'
-      ];
-
-      idsToShow.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = '';
-      });
-    }
-    
-    function showLessonSections() {
-      showAvulsasSections();
-      showTrilhaSections();
-      hideModeSectionById()
-    }    
-    
-    //=============================
-    // Oculta mode section pelo ID
-    //=============================
-    function hideModeSectionById() {
-      const idsToHide = [
-        'mode-section'
-      ];
-
-      idsToHide.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = 'none';
-      });
-
-        pauseVideo();
-    }   
-    
-    //=============================
-    // Mostra mode section pelo ID
-    //=============================
-    function showModeSectionById() {
-      const idsToHide = [
-        'mode-section'
-      ];
-
-      idsToShow.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = '';
-      });
-
-        pauseVideo();
-    }  
-       
-    //=============================
-    // Mostra Home
-    //=============================
-    function showHome() {
-      showModeSectionById()
-      hideGameSectionsById();
-      hideLessonSections();
     }
     
     //=========================
@@ -732,27 +485,19 @@ function updateBreadcrumb() {
     //=============================
     // Clique no card de lição
     //=============================
-    function handleLessonClick(lesson) {
+    async function handleLessonClick(lesson) {
       console.log('Lição selecionada:', lesson);
+      hideAllSections();
+      document.getElementById('videoSection').style.display = '';
+      document.getElementById('timerSection').style.display = '';
+      document.getElementById('formedSentenceSection').style.display = '';
+      document.getElementById('shuffledWordsSection').style.display = '';
 
-      // Determina se a lição é da trilha ou avulsas com base nas listas
-      if (trilhaLessons.includes(lesson)) {
-        currentLessonContext = 'trilha';
-      } else if (avulsasLessons.includes(lesson)) {
-        currentLessonContext = 'avulsas';
-      }
-
-      currentLessonName = lesson.name;
-
-      // Aqui você pode:
-      // - ocultar seções de seleção
-      // - mostrar o game
-      // - carregar o vídeo e a legenda
-      
-      loadVideoAndSrt(lesson);
-      hideLessonSections();
-      showGameSectionsById();
-      updateBreadcrumb()
+      const video = document.getElementById('video');
+      video.src = lesson.videoUrl;
+      subtitles = await loadSrt(lesson.srtUrl);
+      currentIndex = 0;
+      prepareCurrentSubtitle();
     }
     
     //=============================
@@ -761,53 +506,19 @@ function updateBreadcrumb() {
     async function loadVideoAndSrt(lesson) {
       const video = document.getElementById('video');
       video.src = lesson.videoUrl;
-
       subtitles = await loadSrt(lesson.srtUrl);
       currentIndex = 0;
-
-      // Espera o vídeo carregar os metadados (duração, etc)
-      await new Promise(resolve => {
-        if (video.readyState >= 1) {
-          // Já carregado
-          resolve();
-        } else {
-          video.addEventListener('loadedmetadata', () => {
-            resolve();
-          }, { once: true });
-        }
-      });
-
       prepareCurrentSubtitle();
-    }    
-
-    //=============================
-    // Bloco Multiplayer
-    //=============================
-    // Seleciona o Modo
-    //=============================
-    function selectPlayerMode(mode) {
-        if (mode === 'solo') {
-        	showLessonSelection()
-        } else if (mode === 'multi') {
-            joinOrCreateMatch();
-        }
-    }
-	
-    function showLessonSelection() {
-      showLessonSections();
-      updateBreadcrumb();
-      hideModeSectionById()
     }
 
     //=============================
     // Inicialização
-    //=============================    
+    //=============================
     document.addEventListener('DOMContentLoaded', () => {
-      updateBreadcrumb();
-      hideGameSectionsById();
-      hideLessonSections();
       loadAllLessons();
+      goToAvulsas();
     });
+
 
   </script>
 
