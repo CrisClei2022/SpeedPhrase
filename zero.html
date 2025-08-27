@@ -56,11 +56,11 @@
     <div id="trilha-grid" class="video-grid"></div>
   </section>
 
-
   <!-- Seção do timer, separado do header -->
   <section id="timerSection" style="margin-top: 10px; font-weight: bold;">
-    <div id="timer"></div>
-    <div id="totalTime" style="margin-top: 5px;"></div>
+    <div id="totalTime">⏱️ Tempo total: 0.00s</div>
+    <div id="liveTotalTime">🕒 Tempo total ao vivo: 0.00s</div>
+    <div id="timer">⏳ 0s</div>
   </section>
 
   <!-- Seção do vídeo e controles -->
@@ -115,9 +115,17 @@
     //=============================
     // Estado de Timer
     //=============================
+    let timerInterval = null;
+    let liveTimerInterval = null;
     let startTime = 0;
     let totalElapsedTime = 0;
-    let timerInterval = null;
+    
+    //=============================================
+    // Variável global para o estado atual da lição
+    //=============================================
+    let currentLessonContext = null; // 'trilha' ou 'avulsas'
+	let currentLessonName = ''; // Nome da lição atual
+
     
     //=============================
     // Lessons
@@ -142,37 +150,36 @@
     // Breadcrumb
     //=============================    
     function updateBreadcrumb() {
-      const breadcrumbEl = document.getElementById('breadcrumb');
-      if (!breadcrumbEl) return;
+      const breadcrumb = document.getElementById('breadcrumb');
+      if (!breadcrumb) return;
 
-      const levels = ['SpeedPhrase'];
+      let trail = ['SpeedPhrase'];
 
-      const isTrilha = isElementVisible('trilha-section');
-      const isAvulsas = isElementVisible('avulsas-section');
-      const isGame = areGameSectionsVisible();
+      const trilhaVisible = isSectionVisible('trilha-section');
+      const avulsasVisible = isSectionVisible('avulsas-section');
+      const gameVisible = isSectionVisible('videoSection');
 
-      // Página inicial: Trilha + Avulsas visíveis
-      if (isTrilha && isAvulsas) {
-        levels.push('Avulsas & Trilha');
-      } else if (isTrilha) {
-        levels.push('Trilha');
-      } else if (isAvulsas) {
-        levels.push('Avulsas');
+      if (trilhaVisible) {
+        trail.push('Trilha');
+      } else if (avulsasVisible) {
+        trail.push('Avulsas');
       }
 
-      if (isGame) {
-        const video = document.getElementById('video');
-        if (video?.src) {
-          const lessonName = getLessonNameFromSrc(video.src);
-          if (lessonName) levels.push(lessonName);
+      if (gameVisible && currentLessonName) {
+        if (currentLessonContext === 'trilha') {
+          trail.push('Trilha');
+        } else if (currentLessonContext === 'avulsas') {
+          trail.push('Avulsas');
         }
+        trail.push(currentLessonName);
       }
 
-      breadcrumbEl.innerHTML = levels
-        .map((level, index) => {
-          return `<span class="breadcrumb-level">${level}</span>${index < levels.length - 1 ? ' › ' : ''}`;
-        })
-        .join('');
+      breadcrumb.textContent = trail.join(' › ');
+    }
+
+    function isSectionVisible(id) {
+      const el = document.getElementById(id);
+      return el && el.style.display !== 'none';
     }
 
     // Helper: verifica se elemento está visível
@@ -424,19 +431,17 @@
       return Math.ceil(wordCount * 3);
     }
 
-    //=============================
-    // Inicia cronômetro regressivo na tela
-    //=============================
+    // Atualiza contagem regressiva
     function startCountdown(seconds) {
       const display = document.getElementById('timer');
       let remaining = seconds;
 
-      clearInterval(timerInterval); // limpa cronômetros anteriores
+      clearInterval(timerInterval);
       display.textContent = `⏳ ${remaining}s`;
 
       timerInterval = setInterval(() => {
         remaining--;
-        display.textContent = `⏳ ${remaining}s`;
+        display.textContent = `💣 ${remaining}s`;
         if (remaining <= 0) {
           clearInterval(timerInterval);
           display.textContent = '⏰ Tempo estimado esgotado!';
@@ -444,29 +449,49 @@
       }, 1000);
     }
 
-    //=============================
-    // Inicia contagem de tempo real do usuário
-    //=============================
-    function startTimer() {
-      startTime = performance.now(); // mais preciso que Date.now()
+    // Inicia temporizador do tempo ao vivo total
+    function startLiveTotalTimeUpdate() {
+      const liveDisplay = document.getElementById('liveTotalTime');
+
+      if (liveTimerInterval) clearInterval(liveTimerInterval);
+
+      liveTimerInterval = setInterval(() => {
+        const now = performance.now();
+        const currentElapsed = (now - startTime) / 1000;
+        const liveTotal = totalElapsedTime + currentElapsed;
+
+        liveDisplay.textContent = `⏳ Tempo total ao vivo: ${liveTotal.toFixed(2)}s`;
+      }, 200);
     }
 
-    //=============================
-    // Calcula tempo gasto em segundos
-    //=============================
-    function stopTimerAndGetElapsed() {
-      const endTime = performance.now();
-      const elapsed = (endTime - startTime) / 1000; // em segundos
-      totalElapsedTime += elapsed;
-      return elapsed.toFixed(2);
+    // Para temporizador ao vivo (ex: ao finalizar frase)
+    function stopLiveTotalTimeUpdate() {
+      if (liveTimerInterval) {
+        clearInterval(liveTimerInterval);
+        liveTimerInterval = null;
+      }
     }
 
-    //=============================
-    // Exibe o tempo total acumulado
-    //=============================
+    // Exibe o tempo total fixo acumulado
     function displayTotalTime() {
       const totalTimeElement = document.getElementById('totalTime');
       totalTimeElement.textContent = `⏱️ Tempo total: ${totalElapsedTime.toFixed(2)}s`;
+    }
+
+    // Ao iniciar a frase
+    function startTimer() {
+      startTime = performance.now();
+      startLiveTotalTimeUpdate();
+    }
+
+    // Ao finalizar frase
+    function stopTimerAndGetElapsed() {
+      const endTime = performance.now();
+      const elapsed = (endTime - startTime) / 1000;
+      totalElapsedTime += elapsed;
+      stopLiveTotalTimeUpdate();
+      displayTotalTime();
+      return elapsed.toFixed(2);
     }
     
     //=============================
@@ -479,6 +504,7 @@
       hideLessonSections();
       showOnlySection('avulsas-section');
       generateVideoCards(avulsasLessons, 'avulsas-grid', handleLessonClick);
+      updateBreadcrumb()
     }
 
     function goToTrilha() {
@@ -486,6 +512,7 @@
       hideLessonSections();
       showOnlySection('trilha-section');
       generateVideoCards(trilhaLessons, 'trilha-grid', handleLessonClick);
+      updateBreadcrumb()
     }
 
     function showOnlySection(sectionId) {
@@ -634,16 +661,24 @@
     function handleLessonClick(lesson) {
       console.log('Lição selecionada:', lesson);
 
+      // Determina se a lição é da trilha ou avulsas com base nas listas
+      if (trilhaLessons.includes(lesson)) {
+        currentLessonContext = 'trilha';
+      } else if (avulsasLessons.includes(lesson)) {
+        currentLessonContext = 'avulsas';
+      }
+
+      currentLessonName = lesson.name;
+
       // Aqui você pode:
       // - ocultar seções de seleção
       // - mostrar o game
       // - carregar o vídeo e a legenda
-      // - etc.
       
-      console.log('Lição selecionada:', lesson);
       loadVideoAndSrt(lesson);
       hideLessonSections();
       showGameSectionsById();
+      updateBreadcrumb()
     }
     
     //=============================
