@@ -159,7 +159,9 @@
       const avulsasVisible = isSectionVisible('avulsas-section');
       const gameVisible = isSectionVisible('videoSection');
 
-      if (trilhaVisible) {
+      if (trilhaVisible && avulsasVisible) {
+        trail.push('Avulsas & Trilha');
+      } else if (trilhaVisible) {
         trail.push('Trilha');
       } else if (avulsasVisible) {
         trail.push('Avulsas');
@@ -699,19 +701,28 @@
     async function loadVideoAndSrt(lesson) {
       const video = document.getElementById('video');
       video.src = lesson.videoUrl;
+
       subtitles = await loadSrt(lesson.srtUrl);
       currentIndex = 0;
+
+      // Espera o vídeo carregar os metadados (duração, etc)
+      await new Promise(resolve => {
+        if (video.readyState >= 1) {
+          // Já carregado
+          resolve();
+        } else {
+          video.addEventListener('loadedmetadata', () => {
+            resolve();
+          }, { once: true });
+        }
+      });
+
       prepareCurrentSubtitle();
     }
 
     //=============================
     // Inicialização
-    //=============================
-    (async () => {
-      subtitles = await loadSrt("https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.srt");
-      prepareCurrentSubtitle();
-    })();
-    
+    //=============================    
     document.addEventListener('DOMContentLoaded', () => {
       updateBreadcrumb();
       hideGameSectionsById();
