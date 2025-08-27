@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Treino com Legendas</title>
+  <title>SpeedPhrase</title>
   <style>
     body { font-family: Arial, sans-serif; background: #f9f9f9; padding: 20px; }
     .video-container, .words-container, .formed-sentence, .controls { margin-top: 20px; }
@@ -16,23 +16,36 @@
 </head>
 <body>
 
-  <h1>Exercício com Legendas</h1>
-  
-  <div id="timer" style="margin-top: 10px; font-weight: bold;"></div>
-  <div id="totalTime" style="margin-top: 5px; font-weight: bold;"></div>
+  <main>
+    <!-- Seção do título e timers -->
+    <section id="header">
+      <h1>SpeedPhrase</h1>
+      <div id="timer" style="margin-top: 10px; font-weight: bold;"></div>
+      <div id="totalTime" style="margin-top: 5px; font-weight: bold;"></div>
+    </section>
 
-  <div class="video-container">
-    <video id="video" width="70%" height="340" controls>
-      <source src="https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.mp4" type="video/mp4">
-    </video>
-  </div>
+    <!-- Seção do vídeo e controles -->
+    <section id="videoSection">
+      <div class="video-container">
+        <video id="video" width="70%" height="340" controls>
+          <source src="https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.mp4" type="video/mp4" />
+        </video>
+      </div>
+      <div class="controls" style="margin-top: 10px;">
+        <button onclick="playCurrentSubtitle()">▶️ Tocar trecho</button>
+      </div>
+    </section>
 
-  <div class="controls">
-    <button onclick="playCurrentSubtitle()">▶️ Tocar trecho</button>
-  </div>
+    <!-- Seção da frase formada -->
+    <section id="formedSentenceSection" style="margin-top: 20px;">
+      <div class="formed-sentence" id="formedSentence"></div>
+    </section>
 
-  <div class="formed-sentence" id="formedSentence"></div>
-  <div class="words-container" id="shuffledWords"></div>
+    <!-- Seção das palavras embaralhadas -->
+    <section id="shuffledWordsSection" style="margin-top: 20px;">
+      <div class="words-container" id="shuffledWords"></div>
+    </section>
+  </main>
 
   <script>
     //=============================
