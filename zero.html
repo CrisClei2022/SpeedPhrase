@@ -499,7 +499,7 @@
         'avulsas-section'
       ];
 
-      idsToHide.forEach(id => {
+      idsToShow.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = '';
       });
@@ -510,7 +510,7 @@
         'trilha-section'
       ];
 
-      idsToHide.forEach(id => {
+      idsToShow.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = '';
       });
@@ -519,8 +519,7 @@
     function showLessonSections() {
       showAvulsasSections();
       showTrilhaSections();
-    }
-    
+    }    
     
     //=========================
     // Bloco lessons cards
