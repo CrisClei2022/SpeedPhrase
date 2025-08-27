@@ -1,2449 +1,576 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PhraseCraft</title>
-
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto+Mono:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Audiowide&display:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpeedPhrase</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f9f9f9; padding: 20px; }
+    .video-container, .words-container, .formed-sentence, .controls { margin-top: 20px; }
+    .word { display: inline-block; margin: 5px; padding: 10px 15px; background: #eee; border-radius: 5px; cursor: pointer; }
+    .word.correct { background-color: #c8f7c5; }
+    .word.incorrect { background-color: #f7c5c5; }
+    .formed-sentence { font-weight: bold; margin-top: 10px; }
+    button { margin-top: 10px; padding: 10px 20px; }
+    .video-grid-container {
+      padding: 20px;
+    }
     
-    <script src="https://cdn.jsdelivr.net/npm/appwrite@17.0.0"></script>
-
-    <style>
-        :root {
-            /* Cores de Fundo e Sombra */
-            --background-color: #f0f0f0;
-            --shadow-color: rgba(0, 0, 0, 0.3);
-
-            /* Novos Degradês */
-            --blue-gradient-start: #007bff; /* Azul vibrante */
-            --blue-gradient-end: #0056b3;    /* Azul mais escuro */
-
-            --grey-gradient-start: #d0d0d0; /* Agora o 'escuro' (que era o fim) */
-            --grey-gradient-end: #e0e0e0;    /* Agora o 'claro' (que era o início) */
-
-            --red-gradient-start: #dc3545; /* Vermelho vibrante */
-            --red-gradient-end: #a71d2a;    /* Vermelho mais escuro */
-
-            --orange-gradient-start: #ffc107; /* Laranja vibrante */
-            --orange-gradient-end: #e0a800;    /* Laranja mais escuro */
-
-            /* Variáveis para o progresso do JavaScript (mantidas) */
-            --progress: 0; /* 0 a 100 - Controla o preenchimento pelo JS */
-        }
-
-        body {
-            display: flex;
-            min-height: 100vh;
-            justify-content: center;
-            align-items: flex-start;
-            background: linear-gradient(-135deg, #000000, #3b0047, #660000, #000000);
-            margin: 0;
-            padding: 1.2% 2% 2%;
-            font-family: 'Orbitron', sans-serif;
-            color: #00ccff;
-            text-shadow:
-                0 0 15px rgba(0, 204, 255, 0.7), /* Tom da cor base mais claro */
-                0 0 25px rgba(0, 220, 255, 0.5), /* Um pouco mais claro e difuso */
-                0 0 35px rgba(0, 235, 255, 0.3); /* Mais claro e ainda mais difuso */
-            letter-spacing: 1.5px;
-            overflow-x: hidden;
-        }
-
-        button {
-            padding: 10px 15px;
-            background: linear-gradient(to bottom, #5cbc5c 0%, #4CAF50 50%, #45a049 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-            text-shadow: 0 1px 1px rgba(0,0,0,0.1);
-            transition: all 0.3s cubic-bezier(.25,.8,.25,1);
-            font-size: clamp(12px, 2vw, 16px);
-        }
-
-        button:hover {
-            background: linear-gradient(to bottom, #6ad26a 0%, #5cbc5c 50%, #4CAF50 100%);
-            box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
-            transform: translateY(-1px);
-        }
-
-        button:active {
-            background: linear-gradient(to bottom, #45a049 0%, #4CAF50 50%, #5cbc5c 100%);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-            transform: translateY(1px);
-        }
-		
-        main {
-            width: 100%;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-	    /* Menu Button - mantém o estilo original */
-#menu-button {
-    margin-top: -5%;
-    background: transparent;
-    text-decoration: none;
-    color: #14fff1;
-    border: 0px solid #14fff1;
-    border-radius: 6px;
-    box-shadow:
-        0px 0px 16px rgba(0, 0, 0, 0.6),
-        inset 0px -5px 6px -5px rgba(0, 204, 255, 0.7),
-        inset 0px -7px 6px -8px rgba(0, 220, 255, 0.5),
-        inset 0px -10px 6px -10px rgba(0, 235, 255, 0.3);
-    transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
-    font-family: 'Audiowide', sans-serif;
-    font-size: clamp(10px, 1.5vw, 14px);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    padding: 8px 16px;
-}
-
-#menu-button:hover {
-    box-shadow:
-        0px 0px 16px rgba(0, 0, 0, 0.6),
-        inset 0px -5px 6px -5px rgba(0, 204, 255, 0.7),
-        inset 0px -7px 6px -8px rgba(0, 220, 255, 0.5),
-        inset 0px -10px 6px -10px rgba(0, 235, 255, 0.3);
-    transform: translateY(-1px);
-}
-
-#menu-button:active {
-    box-shadow:
-        0px 0px 8px rgba(0, 0, 0, 0.8),
-        inset 0px 0px 3px rgba(0, 204, 255, 0.9),
-        inset 0px 0px 5px rgba(0, 220, 255, 0.7);
-    transform: translateY(2px);
-    background-color: transparent;
-}/* Menu Button - mantém o estilo original */
-#menu-button {
-    margin-top: -5%;
-    background: transparent;
-    text-decoration: none;
-    color: #14fff1;
-    border: 0px solid #14fff1;
-    border-radius: 6px;
-    box-shadow:
-        0px 0px 16px rgba(0, 0, 0, 0.6),
-        inset 0px -5px 6px -5px rgba(0, 204, 255, 0.7),
-        inset 0px -7px 6px -8px rgba(0, 220, 255, 0.5),
-        inset 0px -10px 6px -10px rgba(0, 235, 255, 0.3);
-    transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
-    font-family: 'Audiowide', sans-serif;
-    font-size: clamp(10px, 1.5vw, 14px);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    padding: 8px 16px;
-}
-
-#menu-button:hover {
-    box-shadow:
-        0px 0px 16px rgba(0, 0, 0, 0.6),
-        inset 0px -5px 6px -5px rgba(0, 204, 255, 0.7),
-        inset 0px -7px 6px -8px rgba(0, 220, 255, 0.5),
-        inset 0px -10px 6px -10px rgba(0, 235, 255, 0.3);
-    transform: translateY(-1px);
-}
-
-#menu-button:active {
-    box-shadow:
-        0px 0px 8px rgba(0, 0, 0, 0.8),
-        inset 0px 0px 3px rgba(0, 204, 255, 0.9),
-        inset 0px 0px 5px rgba(0, 220, 255, 0.7);
-    transform: translateY(2px);
-    background-color: transparent;
-}
-
-/* Menu Overlay - aplicando estilo similar ao mode selection */
-#menu-overlay {
-    position: fixed;
-    top: 0;
-    right: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.8);
-    font-family: 'Orbitron', sans-serif;
-    z-index: 999;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s, visibility 0.3s;
-    backdrop-filter: blur(8px);
-    padding: 2% 4%;
-    box-sizing: border-box;
-}
-
-#menu-overlay.active {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* Container principal do menu - estilo mode selection */
-#menu-items {
-    background-image: linear-gradient(-135deg, #171627, #111d4a, #171627, #111d4a);
-    background-color: #171627;
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.1);
-    border: 3px solid rgba(255, 255, 255, 0.2);
-    border-radius: 12px;
-    padding: clamp(20px, 4vw, 40px);
-    width: 100%;
-    max-width: 800px;
-    max-height: 80vh;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: clamp(15px, 3vw, 25px);
-    animation: fadeInScale 1s ease-out;
-    box-sizing: border-box;
-}
-
-/* Header do menu integrado */
-header {
-    width: 100%;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: clamp(15px, 3vw, 20px);
-    margin-bottom: clamp(15px, 3vw, 25px);
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    box-sizing: border-box;
-}
-
-.header-content {
-    display: flex;
-    flex-direction: column;
-    gap: clamp(15px, 3vw, 20px);
-    align-items: center;
-}
-
-.user-buttons {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    gap: 10px;
-}
-
-.nav-buttons {
-    display: flex;
-    align-items: center;  
-    gap: clamp(8px, 2vw, 15px);
-    flex-wrap: wrap;
-    justify-content: center;
-    width: 100%;
-}
-
-.nav-buttons button {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #ffffff;
-    padding: clamp(10px, 2vw, 15px) clamp(15px, 3vw, 20px);
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: clamp(12px, 2vw, 14px);
-    font-family: 'Orbitron', sans-serif;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    flex: 1;
-    min-width: clamp(80px, 20vw, 100px);
-    max-width: 150px;
-    text-align: center;
-}
-
-.nav-buttons button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s;
-}
-
-.nav-buttons button:hover::before {
-    left: 100%;
-}
-
-.nav-buttons button:hover {
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-    background: linear-gradient(135deg, #7c8ef0 0%, #8a5cb8 100%);
-}
-
-.nav-buttons button.active {
-    background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
-    border-color: transparent;
-    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
-    transform: scale(1.05);
-}
-
-.nav-buttons button.active:hover {
-    background: linear-gradient(135deg, #ff7979 0%, #55efc4 100%);
-    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
-}
-
-/* Título do menu com estilo mode selection */
-.menu-title {
-    text-align: center;
-    color: #00ccff;
-    font-size: clamp(20px, 4vw, 28px);
-    margin: 0;
-    font-family: 'Orbitron', sans-serif;
-    letter-spacing: 1.5px;
-    text-shadow:
-        0 0 15px rgba(0, 204, 255, 0.7),
-        0 0 25px rgba(0, 220, 255, 0.5),
-        0 0 35px rgba(0, 235, 255, 0.3);
-    flex-grow: 1;
-}
-
-/* Botões de Ajuda e Fechar com estilo atualizado */
-.close-button, #info {
-    background: linear-gradient(to bottom, #666 0%, #555 50%, #444 100%);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 16px);
-    cursor: pointer;
-    font-size: clamp(12px, 2vw, 16px);
-    font-weight: bold;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-    text-shadow: 0 1px 1px rgba(0,0,0,0.1);
-    transition: all 0.3s cubic-bezier(.25,.8,.25,1);
-    font-family: 'Orbitron', sans-serif;
-    flex-shrink: 0;
-}
-
-.close-button:hover, #info:hover {
-    background: linear-gradient(to bottom, #777 0%, #666 50%, #555 100%);
-    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
-    transform: translateY(-1px);
-}
-
-.close-button:hover {
-    transform: translateY(-1px) rotate(90deg);
-}
-
-.close-button:active, #info:active {
-    background: linear-gradient(to bottom, #444 0%, #555 50%, #666 100%);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-    transform: translateY(1px);
-}
-
-/* Container dos botões de lição */
-.lessons-container {
-    display: flex;
-    flex-direction: column;
-    gap: clamp(10px, 2vw, 15px);
-    width: 100%;
-}
-
-/* Botões de lição com estilo mode selection */
-.lesson-button {
-    width: 100%;
-    padding: clamp(15px, 3vw, 25px) clamp(15px, 3vw, 20px);
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    font-size: clamp(14px, 2.5vw, 18px);
-    font-weight: bold;
-    text-align: left;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s ease;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    font-family: 'Orbitron', sans-serif;
-    letter-spacing: 0.5px;
-    display: block;
-}
-
-.lesson-button:hover {
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
-    background: linear-gradient(135deg, #7c8ef0 0%, #8a5cb8 100%);
-}
-
-.lesson-button:active {
-    transform: translateY(-1px) scale(0.98);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.lesson-button:after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
-    transform: translateX(-100%);
-    transition: all 0.6s ease;
-}
-
-.lesson-button:hover:after {
-    transform: translateX(100%);
-}
-
-/* Animação para fade in scale */
-@keyframes fadeInScale {
-    0% {
-        opacity: 0;
-        transform: scale(0.9);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    #menu-items {
-        padding: clamp(15px, 3vw, 30px);
-        gap: clamp(10px, 2vw, 20px);
-        max-height: 85vh;
+    .hidden {
+      display: none;
     }
 
-    .header-content {
-        gap: clamp(10px, 2vw, 15px);
+    .video-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
     }
 
-    .nav-buttons {
-        gap: clamp(6px, 1.5vw, 10px);
+    .video-card {
+      background: #fff;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      width: 200px;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
     }
 
-    .nav-buttons button {
-        padding: 8px 12px;
-        font-size: 12px;
-        min-width: 70px;
+    .video-card:hover {
+      transform: scale(1.03);
     }
-
-    .lessons-container {
-        gap: clamp(8px, 1.5vw, 12px);
-    }
-}
-
-@media (max-width: 480px) {
-    #menu-overlay {
-        padding: 10px;
-    }
-
-    #menu-items {
-        padding: 15px;
-        gap: 15px;
-        max-height: 90vh;
-    }
-
-    .header-content {
-        gap: 12px;
-    }
-
-    .nav-buttons {
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .nav-buttons button {
-        width: 100%;
-        max-width: none;
-        padding: 12px;
-        font-size: 13px;
-    }
-
-    .user-buttons {
-        gap: 8px;
-    }
-
-    .lesson-button {
-        padding: 15px;
-        font-size: 14px;
-    }
-
-    .menu-title {
-        font-size: 18px;
-    }
-}
-        /* Loading Indicator */
-        #loading {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            visibility: hidden;
-            opacity: 0;
-            transition: opacity 0.3s, visibility 0.3s;
-        }
-
-        #loading.active {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        .spinner {
-            width: clamp(30px, 8vw, 50px);
-            height: clamp(30px, 8vw, 50px);
-            border: 5px solid #f3f3f3;
-            border-radius: 50%;
-            border-top: 5px solid #3498db;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Current lesson info */
-        #current-lesson {
-            text-align: center;
-            color: #f9fff2;
-            margin-top: 5px;
-            font-size: clamp(14px, 3vw, 16px);
-            font-weight: bold;
-        }
-		
-        #subtitle-content {
-            margin-top: 20px;
-            padding: 25px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            background-color: #f9f9f9;
-            min-height: 100px;
-            text-align: left;
-            font-size: clamp(14px, 2.5vw, 18px);
-            color: #555;
-            transition: opacity 0.5s ease-in-out;
-            line-height: 1.6;
-            box-sizing: border-box;
-        }
-
-        #subtitle-content.hidden {
-            opacity: 0;
-            max-height: 0;
-            overflow: hidden;
-            padding: 0 25px;
-            border: none;
-        }
-        
-        /* ==========
-        // Containers
-        // ========== */
-        .game-section {
-            background-image: linear-gradient(-135deg, #171627, #111d4a, #171627, #111d4a);
-            background-color: #171627;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.1);
-            border: 3px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            text-align: center;
-            padding: clamp(10px, 2vw, 20px);
-            display: flex;
-            flex-direction: column;
-            gap: clamp(5px, 1vw, 10px);
-            justify-content: flex-start;
-            align-items: center;
-            animation: fadeInScale 1s ease-out;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        .title-container {
-            text-align: center;
-        }
-
-        .title-container h2 {
-            font-size: clamp(20px, 4vw, 32px);
-            margin: 0;
-        }
-
-        .content-row {
-            display: flex;
-            flex-direction: row;
-            margin-top: 1%;
-            gap: clamp(10px, 2vw, 20px);
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            flex-wrap: nowrap;
-            overflow: hidden;
-            min-height: clamp(120px, 25vh, 200px);
-        }
-        
-        /* Ajustes para o container do vídeo */
-        .content-row .video-container {
-            flex: 1 1 65%;
-            min-width: 0;
-            max-width: 70%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        /* O container do vídeo onde o player e a legenda ficam */
-        .video-container #custom-video {
-            width: 100%;
-            height: auto;
-            aspect-ratio: 16/9;
-            display: block;
-            background-color: #000;
-            border: none;
-            border-radius: 8px;
-        }
-
-		/* Estilos para o conteúdo da legenda que aparecerá sobre o vídeo */
-		#subtitle-content {
-            position: absolute;
-            width: 95%;
-            height: auto;
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: clamp(5px, 1.5vw, 10px);
-            text-align: center;
-            font-size: clamp(12px, 2vw, 16px);
-            box-sizing: border-box;
-            z-index: 10;
-            top: 50%;
-            transform: translateY(-50%);
-            border-radius: 4px;
-        }
-		
-		/* Classe para ocultar o conteúdo da legenda */
-		#subtitle-content.hidden {
-		    display: none;
-		}
-        
-        /* Ajustes para os botões */
-        .content-row #buttons {
-            flex: 1 1 35%;
-            display: flex;
-            flex-direction: column;
-            gap: clamp(6px, 1.5vw, 12px);
-            align-items: center;
-            justify-content: center;
-            min-width: 0;
-            max-width: 35%;
-            padding: 0;
-        }
-        
-        /* Para garantir que os botões tenham largura consistente */
-        .content-row #buttons button {
-            width: 100%;
-            max-width: clamp(150px, 20vw, 200px);
-            padding: clamp(8px, 2vw, 12px);
-            border: none;
-            border-radius: 5px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: clamp(10px, 1.8vw, 14px);
-            text-align: center;
-        }
-
-        p {
-            margin: 10px 0;
-            color: #666;
-            font-size: clamp(12px, 2vw, 16px);
-        }
-        
-        .phrase-container {
-            font-size: clamp(16px, 3vw, 24px);
-            width: 100%;
-            max-width: 100%;
-            min-height: clamp(40px, 8vh, 60px);
-            border: 1px dashed #a5b68f;
-            padding: clamp(8px, 2vw, 15px);
-            border-radius: 5px;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            word-break: break-word;
-            background-color: #f9fff2;
-            color: #333;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
-            box-sizing: border-box;
-        }
-        
-        .palavra-na-frase {
-            margin-right: 1.2%;
-            color: #0056b3;
-            border: 1px solid #ccc; 
-            border-radius: 4px;
-            font-size: clamp(12px, 2vw, 18px);
-            font-weight: bold;
-            padding: 2px 4px;
-            margin-bottom: 4px;
-        }
-        
-        .word-button-wrapper {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: clamp(8px, 2vw, 15px);
-        }
-
-        .word-container {
-            flex-wrap: wrap;
-            width: 100%;
-            border: none;
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            padding: clamp(8px, 2vw, 15px);
-            box-sizing: border-box;
-        }
-
-        .palavra { 
-            background-color: #007bff;
-            color: white;
-            padding: clamp(4px, 1vw, 8px) clamp(6px, 1.5vw, 10px);
-            margin: clamp(3px, 1vw, 5px);
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: clamp(12px, 2vw, 16px);
-            font-weight: bold;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            transition: transform 0.2s ease, background-color 0.2s ease;
-            user-select: none;
-        }
-
-        .palavra.selecionada {
-            background: linear-gradient(to bottom, #ffc107, #e0a800);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-        }
-
-        .palavra.errada {
-            animation: shake 0.4s ease-in-out;
-            background-color: #dc3545;
-        }
-
-        .palavra.acertada {
-            background-color: #28a745;
-            pointer-events: none;
-        }
-
-	    .palavra.no-click {
-	        pointer-events: none;
-	        opacity: 0.6;
-	        cursor: default;
-	    }
-
-        @keyframes shake {
-            0% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            50% { transform: translateX(5px); }
-            75% { transform: translateX(-5px); }
-            100% { transform: translateX(0); }
-        }
-
-        .players-container {
-            position: relative;
-            display: flex;
-            justify-content: center;
-            gap: clamp(8px, 2vw, 15px);
-            width: 100%;
-            max-width: 100%;
-            margin: 0 auto;
-        }
-
-        .player-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            max-width: 100%;
-            margin: 0 auto;
-        }
-
-        .player-container,
-        .title-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .player-content {
-            position: relative;
-            width: clamp(50px, 10vw, 70px);
-            height: clamp(50px, 10vw, 70px);
-            background: linear-gradient(-135deg, #000000, #3b0047, #660000, #000000);
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transform: translateY(calc((clamp(60px, 12vw, 85px) - clamp(50px, 10vw, 70px)) / 2));
-        }
-
-        .player-content h6 {
-            margin: 0;
-            margin-bottom: 0.4em;
-            padding-top: 0.4em;
-            line-height: 1.6em;
-            font-size: clamp(10px, 2vw, 14px);
-        }
-
-        .clock-face {
-            position: absolute;
-            width: clamp(60px, 12vw, 85px);
-            height: clamp(60px, 12vw, 85px);
-            background: linear-gradient(135deg, var(--blue-gradient-start), var(--blue-gradient-end));
-            border-radius: 15px;
-            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
-            align-items: flex-start;
-            transition: background 0.7s ease-in-out;
-        }
-
-        .clock-face::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border-radius: 8px;
-            background: conic-gradient(
-                var(--grey-gradient-start) calc(var(--progress) * 1%),
-                var(--grey-gradient-end) calc(var(--progress) * 1% + 1%),
-                transparent calc(var(--progress) * 1% + 1%)
-            );
-            transform: rotate(-0deg);
-            transform-origin: center;
-            transition: background 0.1s linear;
-        }
-
-        .clock-face.time-almost-up {
-            animation: blink-red-to-orange 1s infinite alternate;
-        }
-
-        @keyframes blink-red-to-orange {
-            0%, 100% {
-                background: linear-gradient(135deg, var(--red-gradient-start), var(--red-gradient-end));
-            }
-            50% {
-                background: linear-gradient(135deg, var(--orange-gradient-start), var(--orange-gradient-end));
-            }
-        }
-
-        #progresso {
-            margin-top: 10px;
-            font-size: clamp(12px, 2vw, 16px);
-        }
-
-        /* Media Queries para layout mobile */
-        @media (max-width: 768px) {
-            .content-row {
-                flex-direction: column;
-                gap: 15px;
-                min-height: auto;
-            }
-            
-            .content-row .video-container {
-                flex: none;
-                max-width: 100%;
-                width: 100%;
-                order: 1;
-            }
-            
-            .content-row #buttons {
-                flex: none;
-                max-width: 100%;
-                width: 100%;
-                flex-direction: row;
-                flex-wrap: wrap;
-                justify-content: center;
-                order: 2;
-            }
-            
-            .content-row #buttons button {
-                flex: 1;
-                min-width: 120px;
-                max-width: 150px;
-                margin: 2px;
-            }
-
-            .players-container {
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-
-            .player-container {
-                min-width: 100px;
-            }
-
-            #menu-items {
-                width: 95%;
-                max-width: none;
-                padding: 15px;
-            }
-
-            .phrase-container {
-                min-height: 50px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            body {
-                padding: 5px;
-            }
-
-            .game-section {
-                padding: 10px;
-            }
-
-            .content-row #buttons {
-                flex-direction: column;
-            }
-
-            .content-row #buttons button {
-                max-width: 100%;
-                width: 100%;
-            }
-
-            .word-container {
-                padding: 10px;
-            }
-
-            .palavra {
-                margin: 2px;
-                padding: 6px 8px;
-            }
-        }
-        
-        /* Mode Selection Styles */
-        #mode-selection {
-            background-image: linear-gradient(-135deg, #171627, #111d4a, #171627, #111d4a);
-            background-color: #171627;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.1);
-            border: 3px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            text-align: center;
-            padding: clamp(20px, 4vw, 40px);
-            display: flex;
-            flex-direction: column;
-            gap: clamp(15px, 3vw, 25px);
-            justify-content: flex-start;
-            align-items: center;
-            animation: fadeInScale 1s ease-out;
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
-            box-sizing: border-box;
-            color: #00ccff;
-            text-shadow:
-                0 0 15px rgba(0, 204, 255, 0.7),
-                0 0 25px rgba(0, 220, 255, 0.5),
-                0 0 35px rgba(0, 235, 255, 0.3);
-        }
-
-        #mode-selection.hidden {
-            display: none;
-        }
-
-        #mode-selection h2 {
-            font-size: clamp(20px, 4vw, 28px);
-            margin: 0;
-            color: #00ccff;
-            font-family: 'Orbitron', sans-serif;
-            letter-spacing: 1.5px;
-        }
-
-        #mode-selection p {
-            font-size: clamp(14px, 2.5vw, 18px);
-            color: #f9fff2;
-            margin: 0;
-            font-family: 'Orbitron', sans-serif;
-        }
-
-        #mode-selection #selected-video-title {
-            color: #14fff1;
-            font-weight: bold;
-            text-shadow: 0 0 10px rgba(20, 255, 241, 0.5);
-        }
-
-        .back-button {
-            align-self: flex-start;
-            background: linear-gradient(to bottom, #666 0%, #555 50%, #444 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 20px);
-            cursor: pointer;
-            font-size: clamp(12px, 2vw, 16px);
-            font-weight: bold;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-            text-shadow: 0 1px 1px rgba(0,0,0,0.1);
-            transition: all 0.3s cubic-bezier(.25,.8,.25,1);
-            font-family: 'Orbitron', sans-serif;
-        }
-
-        .back-button:hover {
-            background: linear-gradient(to bottom, #777 0%, #666 50%, #555 100%);
-            box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
-            transform: translateY(-1px);
-        }
-
-        .back-button:active {
-            background: linear-gradient(to bottom, #444 0%, #555 50%, #666 100%);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-            transform: translateY(1px);
-        }
-
-        .mode-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: clamp(10px, 2vw, 20px);
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            max-width: 600px;
-        }
-
-        .mode-button {
-            flex: 1;
-            min-width: clamp(120px, 25vw, 180px);
-            max-width: 200px;
-            padding: clamp(15px, 3vw, 25px) clamp(10px, 2vw, 20px);
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: clamp(14px, 2.5vw, 18px);
-            font-weight: bold;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            font-family: 'Orbitron', sans-serif;
-            letter-spacing: 0.5px;
-        }
-
-        .mode-button:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
-            background: linear-gradient(135deg, #7c8ef0 0%, #8a5cb8 100%);
-        }
-
-        .mode-button:active {
-            transform: translateY(-1px) scale(0.98);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        .mode-button:after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
-            transform: translateX(-100%);
-            transition: all 0.6s ease;
-        }
-
-        .mode-button:hover:after {
-            transform: translateX(100%);
-        }
-
-        #time-mode-container {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: clamp(15px, 3vw, 20px);
-            align-items: center;
-            margin-top: clamp(10px, 2vw, 20px);
-        }
-
-        #time-mode-container.hidden {
-            display: none;
-        }
-
-        #time-mode-container h2 {
-            font-size: clamp(18px, 3.5vw, 24px);
-            margin: 0;
-            color: #00ccff;
-            font-family: 'Orbitron', sans-serif;
-            letter-spacing: 1.5px;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .mode-buttons {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .mode-button {
-                width: 100%;
-                max-width: 300px;
-                min-width: auto;
-            }
-        }
-
-        @media (max-width: 480px) {
-            #mode-selection {
-                padding: 15px;
-            }
-
-            .mode-buttons {
-                gap: 10px;
-            }
-
-            .mode-button {
-                padding: 15px 10px;
-                max-width: 100%;
-            }
-        }
-
-        /* Animation for fade in scale */
-        @keyframes fadeInScale {
-            0% {
-                opacity: 0;
-                transform: scale(0.9);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-    </style>
+  </style>
 </head>
 <body>
-<main>
 
-        <section id="menu-overlay">
-        
-        <header>
-            <div class="header-content">
-                <div class="user-buttons">
-                    <button id="info">Ajuda</button>
-                    <button class="close-button">⛌</button>
-                </div>
-                <div class="nav-buttons">
-                    <button id="btnBuscar">🔍 Buscar</button>
-                    <button id="btnAvulsas" class="active">📹 Avulsas</button>
-                    <button id="btnTrilha">🛤️ Trilha</button>
-                </div>
-            </div>
-        </header>
-            
-            <div id="menu-items">
-                <h2 class="menu-title">Lista de Lições</h2>
-            </div>
-            
-        </section>
-        
-        <section id="mode-selection" class="mode-selection hidden">
-            <button class="back-button" onclick="goBack()">← Voltar</button>
-            <h2>Escolha o modo de jogo</h2>
-            <p>Videoaula selecionada: <span id="selected-video-title"></span></p>
-            <div id="player-mode-buttons" class="mode-buttons">
-                <button class="mode-button" onclick="selectPlayerMode('solo')">🎯 Solo</button>
-                <button class="mode-button" onclick="selectPlayerMode('multi')">👥 Multiplayer</button>
-                <button class="mode-button" onclick="selectPlayerMode('computer')">🤖 vs Computador</button>
-            </div>
-            <br>
-            <br>
-            <div id="time-mode-container" class="hidden">
-                <h2>Tempo ligado ou desligado?</h2>
-                <div id="time-mode-buttons" class="mode-buttons">
-                    <button class="mode-button" onclick="selectTimeMode('study')">📖 Modo de Estudo</button>
-                    <button class="mode-button" onclick="selectTimeMode('challenge')">⏱️ Modo de Desafio</button>
-                </div>
-            </div>
-        </section>
-        
-    <section class="game-section">
+<main style="padding-bottom: 80px;">
+  <!-- Header da página com título -->
+  <header>
+    <h1>SpeedPhrase <span id="timer"></span></h1>
+  </header>
+  
+  <section id="avulsas-section" class="video-grid-container">
+    <div id="avulsas-grid" class="video-grid"></div>
+  </section>
 
-        <div id="loading">
-            <div class="spinner"></div>
-        </div>
+  <section id="trilha-section" class="video-grid-container">
+    <div id="trilha-grid" class="video-grid"></div>
+  </section>
 
-        <div class="players-container">
+  <!-- Seção do timer, separado do header -->
+  <section id="timerSection" style="margin-top: 10px; font-weight: bold;">
+    
+    <div id="totalTime" style="margin-top: 5px;"></div>
+  </section>
 
-            <div class="player-container">
-                <div class="clock-face" id="clock-face1"></div>
-                <div class="player-content">
-                    <h6 class="score" id="placar1">0</h6>
-                    <h6>Jogador 1</h6>
-                </div>
-            </div>
+  <!-- Seção do vídeo e controles -->
+  <section id="videoSection" style="margin-top: 20px;">
+    <div class="video-container">
+      <video id="video" width="70%" height="340" controls>
+        <source src="https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.mp4" type="video/mp4" />
+      </video>
+    </div>
+    <div class="controls" style="margin-top: 10px;">
+      <button onclick="playCurrentSubtitle()">▶️ Tocar trecho</button>
+    </div>
+  </section>
 
-            <div class="title-container">
-                <h2>SpeedPhrase</h2>
-                <button id="menu-button">Jogar</button>
-            </div>
+  <!-- Seção da frase formada -->
+  <section id="formedSentenceSection" style="margin-top: 20px;">
+    <div class="formed-sentence" id="formedSentence"></div>
+  </section>
 
-            <div class="player-container">
-                <div class="clock-face" id="clock-face2"></div>
-                <div class="player-content">
-                    <h6 class="score" id="placar2">0</h6>
-                    <h6>Jogador 2</h6>
-                </div>
-            </div>
-        </div>
-
-        <div id="current-lesson"></div>
-
-        <div class="content-row">
-            <div class="video-container">
-                <video id="custom-video" class="hide-controls" preload="auto">
-                </video>
-        
-                <div id="subtitle-content" class="hidden"> 
-                	<!- As legendas aparecem aqui: -->
-                </div>
-                
-            </div>
-
-            <div id="buttons">
-                <button id="repetir" style="background: linear-gradient(to bottom, #b34dd6 0%, #9C27B0 50%, #7c1f8e 100%);">Tocar Trecho</button>
-                <button id="lerFrase" style="background: linear-gradient(to bottom, #78c0ff 0%, #5babf0 50%, #4d98e5 100%);">Tocar Lento</button>
-                <button id="traduzir-btn" class="control-button" style="background: linear-gradient(to bottom, #ffc078 0%, #ffa94d 50%, #e59442 100%);">Traduzir</button>
-				<button id="desistir" style="background: linear-gradient(to bottom, #66bb6a 0%, #43a047 50%, #2e7d32 100%);">Passar: palavra</button>
-
-                <button id="desistir" style="background: linear-gradient(to bottom, #ff5e91 0%, #E91E63 50%, #c41858 100%);">Desistir: frase</button>
-                
-             </div>
-            
-        </div>
-
-        <div class="phrase-container" id="frase">
-        </div>
-
-        <div class="word-button-wrapper">
-        
-            <div class="word-container" id="palavras"></div>
-            
-        </div>
-        
-        <div id="progresso" style="margin-top: 10px; font-size: 0.9em;">Progresso: 0 de 0</div>
-
-    </section>
+  <!-- Seção das palavras embaralhadas -->
+  <section id="shuffledWordsSection" style="margin-top: 20px;">
+    <div class="words-container" id="shuffledWords"></div>
+  </section>
 </main>
 
-<script>
-// Lições disponíveis (nome do arquivo SRT e URL do vídeo)
-const lessons = [
-    {
-        name: "I'm Gonna Be - 500 Miles.mp4",
-        srtUrl: "https://avulsas.s3.us-east-005.backblazeb2.com/I'm_Gonna_Be_-_500_Miles.srt",
-        videoUrl: "https://f005.backblazeb2.com/file/Avulsas/I'm_Gonna_Be_-_500_Miles.mp4"
-    },
-    {
-        name: "Chapter 1 - Welcome & Nationalities",
-        srtUrl: "https://f005.backblazeb2.com/file/Trilha/Chapter-1.-Welcome-%26-Nationalities.srt",
-        videoUrl: "https://f005.backblazeb2.com/file/Trilha/Chapter-1.-Welcome-%26-Nationalities.mp4"
-	}
-    // Adicione mais lições conforme necessário
-];
+<footer style="
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #eee;
+  padding: 10px;
+  text-align: center;
+  border-top: 1px solid #ccc;
+  z-index: 1000;
+">
+  <nav>
+    <button onclick="goToSearch()">🔍 Pesquisar</button>
+    <button onclick="goToAvulsas()">📂 Avulsas</button>
+    <button onclick="goToTrilha()">🛤️ Trilha</button>
+  </nav>
+</footer>
 
-// Variáveis globais
-let videoElement = document.getElementById('custom-video');
-let frases = [];
-let indiceFrase = 0;
-let fraseAtual = null;
-let palavrasEmbaralhadas = [];
-let palavrasClicadas = [];
-let palavraElementos = {};
-let progresso = 0;
-let acertos1 = 0;
-let acertos2 = 0;
-let monitorTempoId;
-let fraseAcertada = false;
-let audioPlaying = false;
-let currentLessonName = "";
-let player1Clock; // Global variable for player 1's clock
-let player2Clock; // Global variable for player 2's clock
-let mostrarTraducao = false;
-let palavrasDisponiveisElementos = [];
-	
-// Variáveis globais para controlar o estado de carregamento
-let playerReady = false;
-let srtLoaded = false;
-let lessonData = null; // Armazenará os dados da lição
 
-// Modifique a função loadSrtFromUrl para salvar os dados
-async function loadSrtFromUrl(url) {
-    try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`Failed to load SRT: ${response.status}`);
-        }
-        const srtContent = await response.text();
-        
-        // Salva os dados processados e sinaliza que o SRT está carregado
-        lessonData = processSrtContent(srtContent);
-        srtLoaded = true;
 
-        // Tenta iniciar o jogo após o SRT carregar
-        checkAndStartLesson();
-        return true;
-    } catch (error) {
-        console.error("Erro ao carregar o arquivo SRT:", error);
-        alert("Erro ao carregar o arquivo de legendas. O jogo continuará sem sincronização de vídeo. Por favor, tente novamente mais tarde.");
-        
-        showLoading(false);
-        pararMonitorTempo();
-        return false;
+  <script>
+    //=============================
+// Estado da Aplicação
+//=============================
+let subtitles = [];
+let currentIndex = 0;
+let formedWords = [];
+
+//=============================
+// Estado de Timer
+//=============================
+let startTime = 0;
+let totalElapsedTime = 0;
+let totalEstimatedTime = 0;
+let timerInterval = null;
+
+//=============================
+// Lessons
+//=============================
+const avulsasLessons = [{
+    name: "I'm Gonna Be - 500 Miles.mp4",
+    srtUrl: "https://files.catbox.moe/wt145j.srt",
+    videoUrl: "https://files.catbox.moe/8pzqza.mp4"
+}];
+
+const trilhaLessons = [{
+    name: "Chapter 1 - Welcome & Nationalities",
+    srtUrl: "https://files.catbox.moe/wt145j.srt",
+    videoUrl: "https://files.catbox.moe/8pzqza.mp4"
+}];
+
+//=============================
+// Função: Carrega e Processa o SRT
+//=============================
+async function loadSrt(url) {
+    const res = await fetch(url);
+    const text = await res.text();
+    return parseSRT(text);
+}
+
+//=============================
+// Função: Parser SRT simples
+//=============================
+function parseSRT(srt) {
+    const regex = /(\d+)\s+(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\s+([\s\S]*?)(?=\n{2,}|$)/g;
+    let result = [];
+    let match;
+    while ((match = regex.exec(srt)) !== null) {
+        result.push({
+            index: Number(match[1]),
+            start: timeToSeconds(match[2]),
+            end: timeToSeconds(match[3]),
+            text: match[4].replace(/\n/g, ' ').trim()
+        });
     }
+    return result;
 }
 
-// Função para processar o conteúdo SRT
-function processSrtContent(srt) {
-    frases = srt.split('\n\n').map(bloco => {
-        let linhas = bloco.split('\n');
-        if (linhas.length < 3) return null;
-
-        return {
-            tempoInicio: converterTempo(linhas[1].split(' --> ')[0].trim()),
-            tempoFim: converterTempo(linhas[1].split(' --> ')[1].trim()),
-            texto: linhas.slice(2).join(' ').trim()
-        };
-    }).filter(frase => frase !== null && frase.texto !== '' && !frase.texto.includes('www.RentAnAdviser.com'));
-
-    indiceFrase = 0;
-    fraseAtual = frases[indiceFrase];
-    palavrasEmbaralhadas = embaralharPalavras(fraseAtual.texto);
-    palavrasClicadas = [];
-    progresso = 0;
-    acertos1 = 0;
-    acertos2 = 0;
-    fraseAcertada = false;
-
-    criarPalavras();
-    atualizarFrase(); // This call will now also update the 'subtitle-content' div
-    atualizarProgresso();
-    atualizarPlacares();
+//=============================
+// Função: Converte tempo SRT para segundos
+//=============================
+function timeToSeconds(time) {
+    const [h, m, s] = time.replace(',', '.').split(':');
+    return parseFloat(h) * 3600 + parseFloat(m) * 60 + parseFloat(s);
 }
 
-// Function to start a random player's clock
-function startRandomPlayerClock() {
-    // Stop both clocks first to ensure only one is running or both are reset
-    if (player1Clock) player1Clock.stop();
-    if (player2Clock) player2Clock.stop();
-
-    // Randomly choose which player's clock to start
-    const randomPlayer = Math.random();
-    if (randomPlayer < 0.5) {
-        if (player1Clock) player1Clock.start();
-        console.log("Player 1's clock started.");
-    } else {
-        if (player2Clock) player2Clock.start();
-        console.log("Player 2's clock started.");
+//=============================
+// Função: Embaralha palavras
+//=============================
+function shuffleWords(text) {
+    const words = text.split(' ');
+    for (let i = words.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [words[i], words[j]] = [words[j], words[i]];
     }
-}
-	
-// Refatore a função loadLesson
-function loadLesson(lessonIndex) {
-    const lesson = lessons[lessonIndex];
-    currentLessonName = lesson.name;
-
-    showLoading(true);
-
-    // Reinicia as variáveis de estado de carregamento
-    playerReady = false;
-    srtLoaded = false;
-    lessonData = null;
-
-    // Configura o vídeo
-    videoElement.src = lesson.videoUrl;
-    videoElement.load();
-
-    // Carrega o arquivo SRT
-    loadSrtFromUrl(lesson.srtUrl).then(success => {
-        if (!success) {
-            // Se o SRT falhar, inicializa o jogo no modo de fallback
-            frases = [{
-                tempoInicio: 0,
-                tempoFim: 5,
-                texto: "Aprenda a formar frases com prática diária"
-            }];
-            lessonData = frases; // Usa a frase de fallback
-            srtLoaded = true;
-            checkAndStartLesson(); // Tenta iniciar, mesmo sem o vídeo (se o evento 'error' do vídeo for disparado)
-        }
-    });
+    return words;
 }
 
-// Função para iniciar o jogo quando ambos os recursos estiverem prontos
-function checkAndStartLesson() {
-    // A função só continua se ambos, o vídeo e o SRT, estiverem carregados.
-    if (playerReady && srtLoaded && lessonData) {
-        // Inicializa o jogo com os dados da lição
-        fraseAtual = lessonData[indiceFrase];
-        palavrasEmbaralhadas = embaralharPalavras(fraseAtual.texto);
-        palavrasClicadas = [];
-        fraseAcertada = false;
+//=============================
+// Função: Exibe palavras embaralhadas
+//=============================
+function displayShuffledWords(words, original) {
+    const container = document.getElementById('shuffledWords');
+    container.innerHTML = '';
+    formedWords = [];
 
-        criarPalavras();
-        atualizarFrase();
-        atualizarProgresso();
-        atualizarPlacares();
-
-        reproduzirTrechoAtual(); // Agora a reprodução pode ser iniciada com segurança
-        showLoading(false);
-        startRandomPlayerClock();
-    }
-}
-
-// Função para mostrar/esconder o indicador de carregamento
-function showLoading(show) {
-    const loadingElement = document.getElementById('loading');
-    if (show) {
-        loadingElement.classList.add('active');
-    } else {
-        loadingElement.classList.remove('active');
-    }
-}
-
-// Função para converter tempo de legenda para segundos
-function converterTempo(tempo) {
-    let partes = tempo.split(',');
-    let segundos = partes[0].split(':');
-    return parseInt(segundos[0]) * 3600 + parseInt(segundos[1]) * 60 + parseInt(segundos[2]) + parseInt(partes[1]) / 1000;
-}
-
-// Evento que ocorre quando o vídeo está pronto
-videoElement.addEventListener('loadedmetadata', function() {
-    playerReady = true;
-    // Iniciar o jogo após o vídeo estar pronto
-    if (fraseAtual) {
-        reproduzirTrechoAtual();
-    }
-});
-
-// Função para monitorar o tempo do vídeo
-function iniciarMonitorTempo() {
-    pararMonitorTempo(); // Clear any existing interval before starting a new one
-    monitorTempoId = setInterval(() => {
-        if (playerReady && fraseAtual) {
-            let tempoAtual = videoElement.currentTime;
-            if (tempoAtual >= fraseAtual.tempoFim) {
-                videoElement.pause();
-                pararMonitorTempo();
-            }
-        }
-    }, 100);
-}
-
-// Função para parar o monitor de tempo
-function pararMonitorTempo() {
-    if (monitorTempoId) {
-        clearInterval(monitorTempoId);
-        monitorTempoId = null;
-    }
-}
-
-// Função para embaralhar palavras
-function embaralharPalavras(frase) {
-    if (!frase) return [];
-    let palavras = frase.split(' ');
-    for (let i = palavras.length - 1; i > 0; i--) {
-        let j = Math.floor(Math.random() * (i + 1));
-        let temp = palavras[i];
-        palavras[i] = palavras[j];
-        palavras[j] = temp;
-    }
-    return palavras;
-}
-
-// Função para criar elementos de palavras
-function criarPalavras() {
-    let palavrasDiv = document.getElementById('palavras');
-    palavrasDiv.innerHTML = '';
-
-    // Limpa o array global para a nova frase
-    palavrasDisponiveisElementos = []; // <-- ADICIONE ESTA LINHA
-
-    // ATUALIZAÇÃO AQUI: palavraElementos agora armazenará um array de elementos para cada palavra
-    palavraElementos = {};
-
-    if (!palavrasEmbaralhadas || palavrasEmbaralhadas.length === 0) return;
-
-    palavrasEmbaralhadas.forEach(palavra => {
-        let palavraDiv = document.createElement('div');
-        palavraDiv.classList.add('palavra');
-        palavraDiv.innerText = palavra;
-        palavraDiv.onclick = () => clicarPalavra(palavra, palavraDiv);
-
-        // Se a palavra ainda não tem um array de elementos, crie um
-        if (!palavraElementos[palavra]) {
-            palavraElementos[palavra] = [];
-        }
-        // Adicione o elemento atual ao array correspondente à palavra
-        palavraElementos[palavra].push(palavraDiv);
-
-        palavrasDiv.appendChild(palavraDiv);
-        palavrasDisponiveisElementos.push(palavraDiv); // <-- ADICIONE ESTA LINHA
-    });
-}
-
-// A variável global para armazenar TODOS os elementos DOM das palavras disponíveis
-// precisa ser inicializada e populada corretamente em 'criarPalavras'.
-// Exemplo: let palavrasDisponiveisElementos = [];
-// E em 'criarPalavras', para cada palavraDiv criada: palavrasDisponiveisElementos.push(palavraDiv);
-// Certifique-se de que isso está no seu código.
-
-// Certifique-se de que 'palavrasDisponiveisElementos' está sendo populado corretamente
-// na sua função 'criarPalavras()' para lidar com elementos DOM específicos.
-function clicarPalavra(palavra, elemento) {
-    if (!fraseAtual) return;
-
-    if (elemento.classList.contains('acertada')) {
-        return; // Ignora palavras já acertadas
-    }
-
-    const fraseSplit = fraseAtual.texto.split(' ');
-    const proximaPalavraCorreta = fraseSplit[palavrasClicadas.length];
-    const comprimentoFraseAtual = palavrasClicadas.length;
-
-    // Cancela qualquer áudio ou vídeo anterior antes de iniciar a pronúncia da palavra clicada
-    if (speechSynthesis.speaking) speechSynthesis.cancel();
-    if (playerReady && !videoElement.paused) videoElement.pause();
-    
-    // Inicia a pronúncia da palavra clicada
-    const utterance = new SpeechSynthesisUtterance(palavra);
-    utterance.lang = detectarIdioma(fraseAtual.texto);
-    let currentUtterance = utterance; // Referência para a utterance atual
-    audioPlaying = true;
-    
-    // Define o que acontece quando a pronúncia desta palavra terminar
-    currentUtterance.onend = function() {
-        audioPlaying = false; // Sinaliza que o áudio terminou
-        // Por padrão, se nada mais for encadeado, a ação principal é apenas a pronúncia
-        // Outras ações (avançar frase, trocar relógio) serão definidas abaixo se houver encadeamento.
-    };
-
-    if (palavra === proximaPalavraCorreta) {
-        // Palavra CORRETA!
-        palavrasClicadas.push(palavra);
-        elemento.classList.add('acertada');
-        elemento.classList.remove('selecionada');
-        
-        const activeClockId = getActiveClockId();
-
-        // Incrementa acertos (exceto a última palavra, se auto-completa)
-        if (comprimentoFraseAtual < fraseSplit.length - 1) {
-            if (activeClockId === 'clock-face1') {
-                acertos1++;
-            } else if (activeClockId === 'clock-face2') {
-                acertos2++;
-            }
-            atualizarPlacares();
-        }
-        
-        atualizarFrase();
-
-        // Lógica de Auto-Completação da Última Palavra e avanço da frase
-        if (comprimentoFraseAtual === fraseSplit.length - 2 && fraseSplit.length > 1) {
-            const ultimaPalavra = fraseSplit[fraseSplit.length - 1];
-            let elementoUltimaPalavraParaAutoEnviar = null;
-
-            // Encontra e marca o elemento DOM da última palavra
-            if (palavrasDisponiveisElementos && palavrasDisponiveisElementos.length > 0) {
-                 elementoUltimaPalavraParaAutoEnviar = palavrasDisponiveisElementos.find(el => 
-                    el.innerText === ultimaPalavra && !el.classList.contains('acertada') && !palavrasClicadas.includes(ultimaPalavra)
-                );
-            }
-            
-            if (elementoUltimaPalavraParaAutoEnviar) {
-                palavrasClicadas.push(ultimaPalavra);
-                elementoUltimaPalavraParaAutoEnviar.classList.add('acertada');
-                elementoUltimaPalavraParaAutoEnviar.classList.remove('selecionada');
-                atualizarFrase();
-
-                // Encadear pronúncia da última palavra após a penúltima
-                currentUtterance.onend = function() {
-                    audioPlaying = false;
-                    // Garante que não há áudios remanescentes antes da última palavra
-                    if (speechSynthesis.speaking) speechSynthesis.cancel(); 
-                    if (playerReady && !videoElement.paused) videoElement.pause();
-
-                    const utteranceUltima = new SpeechSynthesisUtterance(ultimaPalavra);
-                    utteranceUltima.lang = detectarIdioma(fraseAtual.texto);
-                    audioPlaying = true;
-                    utteranceUltima.onend = function() {
-                        audioPlaying = false;
-                        processAndAdvancePhrase(); // Avança a frase após a última palavra
-                    };
-                    speechSynthesis.speak(utteranceUltima);
-                };
-            } else {
-                 // Se não encontrou o elemento para marcar, avança a frase após a pronúncia da palavra clicada
-                currentUtterance.onend = function() {
-                    audioPlaying = false;
-                    processAndAdvancePhrase();
-                };
-            }
-        }
-        // Se a frase foi completada com o clique manual da última palavra
-        else if (palavrasClicadas.length === fraseSplit.length) {
-            currentUtterance.onend = function() {
-                audioPlaying = false;
-                processAndAdvancePhrase(); // Avança a frase após a pronúncia
-            };
-        }
-
-    } else { // Palavra INCORRETA!
-        elemento.classList.add('errada');
-        setTimeout(() => {
-            elemento.classList.remove('errada');
-        }, 500);
-        
-        currentUtterance.onend = function() {
-            audioPlaying = false;
-        };
-    }
-
-    // Inicia a pronúncia da palavra clicada (esta é a "primeira" pronúncia no fluxo)
-    speechSynthesis.speak(currentUtterance); 
-}
-
-function processAndAdvancePhrase() {
-    // Stop both players' clocks immediately
-    if (player1Clock) player1Clock.stop();
-    if (player2Clock) player2Clock.stop();
-
-    showLoading(true); // Show loading spinner
-
-    progresso++; // Increment overall lesson progress
-    atualizarProgresso();
-    salvarProgresso(); // Save current game state
-
-    setTimeout(() => {
-        indiceFrase++; // Move to the next phrase
-        if (indiceFrase >= frases.length) {
-            alert("Parabéns! Você completou todas as frases!");
-            indiceFrase = 0; // Reset to first phrase
-            acertos1 = 0; // Reset player scores
-            acertos2 = 0;
-            progresso = 0; // Reset lesson progress
-            salvarProgresso(); // Save reset state
-        }
-        fraseAtual = frases[indiceFrase]; // Get the new current phrase
-        palavrasEmbaralhadas = embaralharPalavras(fraseAtual.texto); // Reshuffle words for new phrase
-        palavrasClicadas = []; // Clear clicked words for new phrase
-        fraseAcertada = false; // Reset phrase status
-        criarPalavras(); // Generate new word elements
-        mostrarTraducao = false; // Hide translation by default for new phrase
-        atualizarFrase(); // Update phrase display (and subtitle)
-        reproduzirTrechoAtual(); // Play the new phrase's video/audio
-        showLoading(false); // Hide loading spinner
-        atualizarPlacares(); // Update player score displays
-
-        // Switch active player's clock for the new phrase, unless lesson is truly finished
-        if (indiceFrase < frases.length) { // Check if there's actually a next phrase to play
-            switchActiveClock();
-        } else {
-            console.log("Lesson completed, no more clocks to switch.");
-        }
-    }, 1500); // 1.5 second delay before loading the next phrase
-}
-	
-// Função para pausar todos os áudios
-function pausarAudios() {
-    // Pausar o sintetizador de voz
-    if (speechSynthesis.speaking) {
-        speechSynthesis.cancel();
-        audioPlaying = false;
-    }
-
-    // Pausar o vídeo se estiver tocando
-    if (playerReady && !videoElement.paused) {
-        videoElement.pause();
-    }
-}
-
-// Função para detectar o idioma com base no texto
-function detectarIdioma(texto) {
-    if (!texto) return 'en-US';
-
-    // Esta é uma detecção simples
-    if (texto.includes('Aku') || texto.includes('kamu')) {
-        return 'id-ID'; // Indonésio
-    } else if (texto.includes('Scheiße')) {
-        return 'de-DE'; // Alemão
-    }
-    return 'en-US'; // Por padrão, usamos inglês
-}
-
-/*
- * API não oficial, sem limite oficial
- * mas o uso é feito por conta e risco.
- * Para uso pessoal e leve,
- * provavelmente não haverá problemas.
- */
-function translateSrt(text) {
-    return new Promise((resolve, reject) => {
-        if (text.trim() === '') {
-            resolve(''); // Resolve with empty string for empty input
-            return;
-        }
-
-        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=pt&dt=t&q=${encodeURI(text)}`;
-
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                let translation = '';
-                data[0].forEach(item => {
-                    translation += item[0];
-                });
-                resolve(translation);
-            })
-            .catch(error => {
-                console.error('Erro na tradução:', error);
-                reject(error); // Reject the promise on error
-            });
-    });
-}
-
-// Função para atualizar a frase exibida
-function atualizarFrase() {
-    let fraseDiv = document.getElementById('frase');
-    let subtitleContentDiv = document.getElementById('subtitle-content');
-    fraseDiv.innerHTML = '';
-
-    // Adiciona as palavras já clicadas com um espaço entre elas
-    palavrasClicadas.forEach((palavra) => {
+    words.forEach(word => {
         const span = document.createElement('span');
-        span.textContent = palavra + ' ';
-        span.classList.add('palavra-na-frase');
-        fraseDiv.appendChild(span);
+        span.className = 'word';
+        span.textContent = word;
+        span.onclick = () => handleWordClick(word, span, original);
+        container.appendChild(span);
     });
 
-    // Atualiza a div de conteúdo da legenda com base no estado de 'mostrarTraducao'
-    if (fraseAtual && subtitleContentDiv) {
-        if (mostrarTraducao) {
-            // Se 'mostrarTraducao' for true, busca e exibe a tradução
-            translateSrt(fraseAtual.texto)
-                .then(translatedText => {
-                    subtitleContentDiv.textContent = translatedText;
-                    subtitleContentDiv.classList.remove('hidden'); // Certifica-se de que está visível
-                })
-                .catch(error => {
-                    console.error('Erro na tradução:', error);
-                    subtitleContentDiv.textContent = fraseAtual.texto; // Fallback para o original
-                    subtitleContentDiv.classList.remove('hidden');
-                });
-        } else {
-            // Se não, oculta a legenda
-            subtitleContentDiv.classList.add('hidden');
-            subtitleContentDiv.textContent = ''; // Limpa o conteúdo
-        }
-    } else if (subtitleContentDiv) {
-        subtitleContentDiv.classList.add('hidden');
-        subtitleContentDiv.textContent = ''; // Limpa o conteúdo
-    }
+    updateFormedSentence();
 }
 
-// REMOVIDA: A função verificarFrase() foi removida e sua lógica movida para o botão "avancar".
-
-// Função para ler a frase atual usando o sintetizador de voz
-function lerFraseAtual() {
-    if (!fraseAtual) return;
-
-    // Pausar qualquer áudio em reprodução
-    pausarAudios();
-
-    const utterance = new SpeechSynthesisUtterance(fraseAtual.texto);
-    utterance.lang = detectarIdioma(fraseAtual.texto);
-
-    // Configurar flag para controlar áudio
-    audioPlaying = true;
-    utterance.onend = function() {
-        audioPlaying = false;
-    };
-
-    speechSynthesis.speak(utterance);
-}
-
-// Função para atualizar o progresso
-function atualizarProgresso() {
-    document.getElementById('progresso').innerText = `Progresso: ${progresso} de ${frases.length}`;
-}
-
-// Nova função para atualizar ambos os placares, ou as funções separadas
-function atualizarPlacares() {
-    document.getElementById('placar1').innerText = ` ${acertos1}`;
-    document.getElementById('placar2').innerText = ` ${acertos2}`;
-}
-
-// Função para reproduzir o trecho do vídeo atual
-function reproduzirTrechoAtual() {
-    if (!fraseAtual) return;
-
-    // Pausar qualquer áudio em reprodução
-    pausarAudios();
-
-    // Apenas tente reproduzir o vídeo se o player estiver pronto.
-    if (playerReady) {
-        videoElement.currentTime = fraseAtual.tempoInicio;
-        videoElement.play();
-        iniciarMonitorTempo();
+//=============================
+// Função principal de clique
+//=============================
+function handleWordClick(word, element, original) {
+    if (isCorrectWord(word, original)) {
+        processCorrectWord(word, element);
+        clearIncorrectWords();
+        updateDisplay(); // Atualiza após adicionar palavra correta
     } else {
-        // Se o player não estiver pronto, apenas leia a frase.
-        // Isso é crucial para o modo "apenas legendas".
-        console.log("Player não está pronto. Lendo a frase em vez de reproduzir o vídeo.");
-        lerFraseAtual();
+        markWordAsIncorrect(element);
     }
+
+    updateFormedSentence();
+    checkIfSentenceIsComplete(original);
 }
 
-// Função para alternar a exibição do menu
-function toggleMenu() {
-    const menuButton = document.getElementById('menu-button');
-    const menuOverlay = document.getElementById('menu-overlay');
-
-    menuButton.classList.toggle('active');
-    menuOverlay.classList.toggle('active');
+//=============================
+// Verifica se palavra está correta
+//=============================
+function isCorrectWord(word, original) {
+    const expectedWords = original.split(' ');
+    const currentIndex = formedWords.length;
+    return word === expectedWords[currentIndex];
 }
 
-// Inicializar botões de menu
-function initializeMenuButtons() {
-    const menuItemsContainer = document.getElementById('menu-items');
-    // Clear existing lesson buttons before adding new ones, keep the title
-    menuItemsContainer.innerHTML = '<h2 class="menu-title">Lista de Lições</h2>';
+//=============================
+// Processa palavra correta
+//=============================
+function processCorrectWord(word, element) {
+    formedWords.push(word);
+    element.classList.add('correct');
+    element.onclick = null;
+}
 
-    lessons.forEach((lesson, index) => {
-        const button = document.createElement('button');
-        button.textContent = lesson.name;
-        button.classList.add('lesson-button');
-        button.onclick = () => loadLesson(index);
-        menuItemsContainer.appendChild(button);
+//=============================
+// Marca palavra incorreta (não adiciona à frase)
+//=============================
+function markWordAsIncorrect(element) {
+    element.classList.add('incorrect');
+}
+
+//=============================
+// Limpa marcações incorretas
+//=============================
+function clearIncorrectWords() {
+    const incorrectElements = document.querySelectorAll('.word.incorrect');
+    incorrectElements.forEach(el => {
+        el.classList.remove('incorrect');
     });
 }
 
-// --- Event Listeners ---
-
-// --- NOVO: Lógica do botão "Desistir" (Passar) ---
-document.getElementById('desistir').onclick = function() {
-    if (!fraseAtual) return;
-
-    const fraseSplit = fraseAtual.texto.split(' ');
-    // A palavra correta que esperamos na posição atual da frase
-    const palavraCorretaAtual = fraseSplit[palavrasClicadas.length];
-
-    // Se não houver mais palavras para revelar (frase já completa de alguma forma), apenas retorne.
-    if (!palavraCorretaAtual) {
-        console.warn("Nenhuma palavra para revelar. Frase já completa ou não inicializada.");
-        return;
-    }
-
-    // Remove destaque de qualquer palavra selecionada anteriormente
-    const palavraSelecionadaAnteriormente = document.querySelector('.palavra.selecionada');
-    if (palavraSelecionadaAnteriormente) {
-        palavraSelecionadaAnteriormente.classList.remove('selecionada');
-    }
-
-    let elementoCorretoParaAcertar = null;
-    // Encontra o elemento DOM da palavra a ser revelada
-    if (palavraElementos[palavraCorretaAtual]) {
-        elementoCorretoParaAcertar = palavraElementos[palavraCorretaAtual].find(el => !el.classList.contains('acertada'));
-    }
-
-    if (elementoCorretoParaAcertar) {
-        // Adiciona a palavra correta à frase construída
-        palavrasClicadas.push(palavraCorretaAtual);
-        // Marca o elemento DOM como acertado
-        elementoCorretoParaAcertar.classList.add('acertada');
-        elementoCorretoParaAcertar.classList.remove('selecionada'); // Remove qualquer resquício de 'selecionada'
+//=============================
+// Verifica se frase está completa e correta
+//=============================
+async function checkIfSentenceIsComplete(original) {
+    if (formedWords.join(' ') === original) {
+        clearInterval(timerInterval);
         
-        atualizarFrase(); // Atualiza a exibição da frase
+        const timeUsed = stopTimerAndGetElapsed();
+        console.log(`⏱️ Tempo para essa frase: ${timeUsed.toFixed(2)}s`);
 
-        progresso++; // Incrementa progresso da lição
-        atualizarProgresso();
-        salvarProgresso(); // Salva o progresso
-
-        // Cancela qualquer áudio ou vídeo anterior antes de pronunciar a palavra revelada
-        if (speechSynthesis.speaking) speechSynthesis.cancel();
-        if (playerReady && !videoElement.paused) videoElement.pause();
-
-        // Inicia a pronúncia da palavra que acabou de ser revelada
-        const utteranceRevelada = new SpeechSynthesisUtterance(palavraCorretaAtual);
-        utteranceRevelada.lang = detectarIdioma(fraseAtual.texto);
-        audioPlaying = true; // Sinaliza que áudio está tocando
+        // Toca o vídeo e aguarda terminar
+        console.log('🎬 Reproduzindo trecho da frase completada...');
+        await playCurrentSubtitleAndWait();
         
-        // Verifica se a frase está completa APÓS a revelação desta palavra
-        const isFraseCompleta = palavrasClicadas.length === fraseSplit.length;
-        const isPenultimaPalavra = palavrasClicadas.length === fraseSplit.length - 1 && fraseSplit.length > 1;
-
-        if (isPenultimaPalavra) {
-            const ultimaPalavra = fraseSplit[fraseSplit.length - 1];
-            let elementoUltimaPalavraParaAutoEnviar = null;
-
-            // Encontra e marca o elemento DOM da última palavra
-            if (palavrasDisponiveisElementos && palavrasDisponiveisElementos.length > 0) {
-                 elementoUltimaPalavraParaAutoEnviar = palavrasDisponiveisElementos.find(el => 
-                    el.innerText === ultimaPalavra && !el.classList.contains('acertada') && !palavrasClicadas.includes(ultimaPalavra)
-                );
-            }
-            
-            if (elementoUltimaPalavraParaAutoEnviar) {
-                // Adiciona a última palavra à sequência (auto-completando)
-                palavrasClicadas.push(ultimaPalavra);
-                elementoUltimaPalavraParaAutoEnviar.classList.add('acertada');
-                elementoUltimaPalavraParaAutoEnviar.classList.remove('selecionada');
-                atualizarFrase(); // Atualiza a exibição com a última palavra
-            }
-
-            // Encadear a pronúncia da última palavra após a pronúncia da penúltima revelada
-            utteranceRevelada.onend = function() {
-                audioPlaying = false; // Pronúncia da penúltima terminou
-                // Garante que não há áudios remanescentes antes da última palavra
-                if (speechSynthesis.speaking) speechSynthesis.cancel(); 
-                if (playerReady && !videoElement.paused) videoElement.pause();
-
-                const utteranceUltima = new SpeechSynthesisUtterance(ultimaPalavra);
-                utteranceUltima.lang = detectarIdioma(fraseAtual.texto);
-                audioPlaying = true;
-                utteranceUltima.onend = function() {
-                    audioPlaying = false; // Pronúncia da última terminou
-                    processAndAdvancePhrase(); // Avança a frase
-                };
-                speechSynthesis.speak(utteranceUltima);
-            };
-
-        } else if (isFraseCompleta) {
-            // Se a frase foi completada pela revelação desta palavra (e não era a penúltima)
-            utteranceRevelada.onend = function() {
-                audioPlaying = false; // Pronúncia terminou
-                processAndAdvancePhrase(); // Avança a frase
-            };
+        // Só depois que o vídeo terminou, avança
+        if (currentIndex < subtitles.length - 1) {
+            nextPhrase();
         } else {
-            // Se a frase NÃO foi completada, apenas troca a vez após a pronúncia
-            utteranceRevelada.onend = function() {
-                audioPlaying = false; // Pronúncia terminou
-            };
+            alert('🎉 Todas as frases completas! Lição finalizada.');
+            displayTotalTime();
         }
-
-        speechSynthesis.speak(utteranceRevelada); // Dispara a pronúncia da palavra revelada
-    } else {
-        console.warn("Nenhuma ocorrência não acertada da palavra encontrada para 'Passar':", palavraCorretaAtual);
-        // Se, por algum motivo, não encontrou a palavra para revelar,
-        // ainda queremos trocar o relógio para não travar o jogo.
-        switchActiveClock();
     }
-};
+}
 
-document.getElementById('repetir').onclick = function() {
-    reproduzirTrechoAtual();
-};
+//=============================
+// Função: Atualiza frase formada
+//=============================
+function updateFormedSentence() {
+    document.getElementById('formedSentence').textContent = formedWords.join(' ');
+}
 
-document.getElementById('lerFrase').onclick = function() {
-    lerFraseAtual();
-};
+//=============================
+// Função: Avança para próxima frase
+//=============================
+function nextPhrase() {
+    currentIndex++;
+    console.log(`📝 Avançando para frase ${currentIndex + 1}/${subtitles.length}`);
+    
+    if (currentIndex < subtitles.length) {
+        prepareCurrentSubtitle();
+    } else {
+        alert("✅ Fim das legendas!");
+        displayTotalTime();
+    }
+}
 
-document.getElementById('menu-button').onclick = toggleMenu;
-document.querySelector('.close-button').onclick = toggleMenu;
+//=============================
+// Função: Prepara legenda atual
+//=============================
+function prepareCurrentSubtitle() {
+    const sub = subtitles[currentIndex];
+    console.log(`🎬 Preparando frase ${currentIndex + 1}: "${sub.text}"`);
+    
+    // Limpar estado anterior
+    formedWords = [];
+    clearInterval(timerInterval);
+    
+    const shuffled = shuffleWords(sub.text);
+    displayShuffledWords(shuffled, sub.text);
 
-// NOVO LISTENER: Adiciona a funcionalidade para o botão de tradução
-document.getElementById('traduzir-btn').onclick = function() {
-    // Alterna o estado da variável
-    mostrarTraducao = !mostrarTraducao;
-    // Atualiza a interface para exibir ou ocultar a legenda
-    atualizarFrase();
-};
+    startTimer();
+    startPerformanceUpdate();
+    
+    // Toca o trecho inicial (sem aguardar)
+    playCurrentSubtitle();
+}
 
-// Adicionar um listener para o evento de erro do vídeo
-videoElement.addEventListener('error', function(e) {
-    console.error("Erro ao carregar o vídeo. O jogo continuará sem sincronização com o vídeo.", e);
-    playerReady = false; // Garante que a flag seja false em caso de erro
-    // Você pode mostrar uma mensagem para o usuário aqui
-    alert("Ocorreu um erro ao carregar o vídeo. O jogo continuará no modo texto.");
-    pararMonitorTempo();
+//=============================
+// Inicia a contagem de tempo real e a atualização da performance
+//=============================
+function startPerformanceUpdate() {
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        updateDisplay();
+    }, 1000);
+}
+
+//=============================
+// Função para atualizar o display da performance (Chamada por setInterval e click)
+//=============================
+function updateDisplay() {
+    const display = document.getElementById('timer');
+    const sub = subtitles[currentIndex];
+    const sentenceEstimatedTime = getTimeLimitForSentence(sub.text);
+    const elapsed = (performance.now() - startTime) / 1000;
+    
+    // Calcula a projeção: tempo já gasto + tempo restante baseado na performance atual
+    const wordsCompleted = formedWords.length;
+    const totalWords = sub.text.split(' ').length;
+    
+    let projectedTotalTime;
+    if (wordsCompleted > 0) {
+        const timePerCompletedWord = elapsed / wordsCompleted;
+        const remainingWords = totalWords - wordsCompleted;
+        projectedTotalTime = elapsed + (remainingWords * timePerCompletedWord);
+    } else {
+        // Se ainda não completou nenhuma palavra, usa o tempo atual como base
+        projectedTotalTime = elapsed * (totalWords / Math.max(1, wordsCompleted || 0.1));
+    }
+    
+    // Calcula a performance: quanto melhor que o estimado
+    let performanceValue = (sentenceEstimatedTime / projectedTotalTime) * 100;
+    
+    // Garante que não seja infinito ou NaN
+    if (!isFinite(performanceValue) || performanceValue > 1000) {
+        performanceValue = 100;
+    }
+
+    let emoji = '👍';
+    if (performanceValue < 75) {
+        emoji = '🐢';
+    } else if (performanceValue < 100) {
+        emoji = '🤔';
+    } else if (performanceValue > 125) {
+        emoji = '🚀';
+    }
+
+    display.innerHTML = `<span style="font-weight: bold; color: ${performanceValue >= 100 ? 'green' : 'red'};">${performanceValue.toFixed(2)}%</span> ${emoji}`;
+}
+
+//=============================
+// Nova função que reproduz o vídeo e retorna uma Promise
+//=============================
+function playCurrentSubtitleAndWait() {
+    const video = document.getElementById('video');
+    const sub = subtitles[currentIndex];
+    
+    if (!video || !sub) {
+        console.error('❌ Vídeo ou legenda não encontrados');
+        return Promise.resolve();
+    }
+
+    return new Promise((resolve) => {
+        console.log(`▶️ Reproduzindo trecho: ${sub.start.toFixed(2)}s - ${sub.end.toFixed(2)}s`);
+        
+        // Para o vídeo antes de reposicionar
+        video.pause();
+        video.currentTime = sub.start;
+        
+        // Função para monitorar o fim do trecho
+        function checkVideoEnd() {
+            if (video.currentTime >= sub.end) {
+                video.pause();
+                console.log(`⏸️ Vídeo pausado em ${sub.end.toFixed(2)}s - Prosseguindo...`);
+                resolve();
+            } else if (!video.paused) {
+                if (typeof video.requestVideoFrameCallback === 'function') {
+                    video.requestVideoFrameCallback(checkVideoEnd);
+                } else {
+                    requestAnimationFrame(checkVideoEnd);
+                }
+            }
+        }
+        
+        // Inicia reprodução
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                console.log(`✅ Vídeo iniciado em ${sub.start.toFixed(2)}s`);
+                checkVideoEnd();
+            }).catch(error => {
+                console.error('❌ Erro ao reproduzir vídeo:', error);
+                resolve(); // Resolve mesmo com erro para não travar
+            });
+        } else {
+            checkVideoEnd();
+        }
+    });
+}
+
+//=============================
+// Função principal que toca o vídeo (usada pelo botão)
+//=============================
+function playCurrentSubtitle() {
+    playCurrentSubtitleAndWait(); // Não precisa aguardar quando chamado pelo botão
+}
+
+//=============================
+// Bloco de Timer (Revisado)
+//=============================
+function getTimeLimitForSentence(sentence) {
+    const characterCount = sentence.trim().replace(/\s/g, '').length;
+    const timePerCharacter = 0.2;
+    return characterCount * timePerCharacter;
+}
+
+//=============================
+// Inicia contagem de tempo real do usuário
+//=============================
+function startTimer() {
+    startTime = performance.now();
+}
+
+//=============================
+// Calcula tempo gasto em segundos
+//=============================
+function stopTimerAndGetElapsed() {
+    const endTime = performance.now();
+    const elapsed = (endTime - startTime) / 1000;
+    totalElapsedTime += elapsed;
+    return elapsed;
+}
+
+//=============================
+// Exibe o tempo total acumulado
+//=============================
+function displayTotalTime() {
+    const totalPerformance = (totalEstimatedTime / totalElapsedTime) * 100;
+    alert(`Lição completa! 🏁
+Tempo total: ${totalElapsedTime.toFixed(2)}s
+Desempenho geral: ${totalPerformance.toFixed(2)}%`);
+}
+
+//=============================
+// Bloco de Footer
+//=============================
+function goToSearch() {
+    // Função para futuro desenvolvimento
+    alert('🔍 Função de pesquisa em desenvolvimento');
+}
+
+function goToAvulsas() {
+    hideAllSections();
+    document.getElementById('avulsas-section').style.display = '';
+    generateVideoCards(avulsasLessons, 'avulsas-grid', handleLessonClick);
+}
+
+function goToTrilha() {
+    hideAllSections();
+    document.getElementById('trilha-section').style.display = '';
+    generateVideoCards(trilhaLessons, 'trilha-grid', handleLessonClick);
+}
+
+//=============================
+// Bloco de Ocultar/Mostrar seções
+//=============================
+function hideAllSections() {
+    const sectionsToHide = [
+        'avulsas-section',
+        'trilha-section',
+        'videoSection',
+        'formedSentenceSection',
+        'shuffledWordsSection'
+    ];
+
+    sectionsToHide.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+}
+
+//=========================
+// Bloco lessons cards
+//=========================
+function createVideoCard(lesson, onClick) {
+    const card = document.createElement('div');
+    card.className = 'video-card';
+    card.textContent = lesson.name;
+    card.onclick = () => onClick(lesson);
+    return card;
+}
+
+//==========================================
+// Gera grid de cards dentro do container
+//==========================================
+function generateVideoCards(lessons, containerId, onClick) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    container.innerHTML = '';
+    lessons.forEach(lesson => {
+        const card = createVideoCard(lesson, onClick);
+        container.appendChild(card);
+    });
+}
+
+//==========================================
+// Carrega lições nas seções correspondentes
+//==========================================
+function loadAllLessons() {
+    generateVideoCards(avulsasLessons, 'avulsas-grid', handleLessonClick);
+    generateVideoCards(trilhaLessons, 'trilha-grid', handleLessonClick);
+}
+
+//=============================
+// Clique no card de lição
+//=============================
+async function handleLessonClick(lesson) {
+    console.log('Lição selecionada:', lesson);
+    hideAllSections();
+    document.getElementById('videoSection').style.display = '';
+    document.getElementById('formedSentenceSection').style.display = '';
+    document.getElementById('shuffledWordsSection').style.display = '';
+
+    const video = document.getElementById('video');
+    video.src = lesson.videoUrl;
+    subtitles = await loadSrt(lesson.srtUrl);
+
+    totalEstimatedTime = subtitles.reduce((sum, sub) => {
+        return sum + getTimeLimitForSentence(sub.text);
+    }, 0);
+
+    totalElapsedTime = 0;
+    console.log(`⏱️ Tempo total estimado para a lição: ${totalEstimatedTime.toFixed(2)}s`);
+    currentIndex = 0;
+    prepareCurrentSubtitle();
+}
+
+//=============================
+// Inicialização
+//=============================
+document.addEventListener('DOMContentLoaded', () => {
+    loadAllLessons();
+    goToAvulsas();
 });
-
-
-// Função para criar o Clock
-function createClock(clockFaceId) {
-    const clockFace = document.getElementById(clockFaceId);
-    let currentProgress = 0;
-    const totalTimeMs = 10000; // 10 segundos
-    const updateIntervalMs = 16;
-    const steps = totalTimeMs / updateIntervalMs;
-    const progressPerStep = 100 / steps;
-
-    // Define o ponto percentual onde os cliques serão desabilitados
-    const disableClickThreshold = 90; // Desabilita quando 80% do tempo se foi (20% restantes)
-
-    let intervalId;
-    let _isActive = false;
-
-    function updateClock() {
-        if (currentProgress <= 100) {
-            clockFace.style.setProperty('--progress', currentProgress);
-
-            const percentageRemaining = 100 - currentProgress;
-
-            // Lógica para piscar o clock (já existente)
-            if (percentageRemaining <= 40 && percentageRemaining > 0) {
-                clockFace.classList.add('time-almost-up');
-            } else {
-                clockFace.classList.remove('time-almost-up');
-            }
-
-            // Lógica para desabilitar cliques nas palavras
-            if (currentProgress >= disableClickThreshold && _isActive) {
-                // Adiciona a classe 'no-click' a todas as palavras se o tempo estiver acabando
-                document.querySelectorAll('.palavra').forEach(p => p.classList.add('no-click'));
-            } else {
-                // Garante que a classe seja removida se o tempo voltou ao normal (ex: turno de outro jogador)
-                document.querySelectorAll('.palavra').forEach(p => p.classList.remove('no-click'));
-            }
-
-            currentProgress += progressPerStep;
-        } else {
-            // Clock completou, para e chama o switch automaticamente
-            stopClock(true);
-            console.log(`Clock '${clockFaceId}' fill complete!`);
-        }
-    }
-
-    function startClock() {
-        currentProgress = 0;
-        clockFace.classList.remove('time-almost-up');
-        // NOVO: Habilita os cliques nas palavras ao iniciar o turno
-        document.querySelectorAll('.palavra').forEach(p => p.classList.remove('no-click'));
-        intervalId = setInterval(updateClock, updateIntervalMs);
-        _isActive = true;
-    }
-
-    function stopClock(autoSwitch = false) {
-        clearInterval(intervalId);
-        clockFace.classList.remove('time-almost-up');
-        // Garante que os cliques sejam reativados quando o clock para (importante se o jogo pausa ou muda de fase)
-        // No entanto, se o próximo clock for iniciar, ele vai reativar.
-        // A lógica principal de desabilitar/reabilitar está no updateClock e startClock.
-        // Opcional: document.querySelectorAll('.palavra').forEach(p => p.classList.remove('no-click'));
-        
-        // Se não foi por conclusão (parada manual), reseta o progresso visualmente
-        if (!autoSwitch) {
-            currentProgress = 0;
-            clockFace.style.setProperty('--progress', currentProgress);
-        }
-        
-        _isActive = false;
-        
-        if (autoSwitch) {
-            setTimeout(() => {
-                switchStoppedClock(clockFaceId);
-            }, 100);
-        }
-    }
-
-    function isActive() {
-        return _isActive;
-    }
-
-    return {
-        start: startClock,
-        stop: stopClock,
-        isActive: isActive
-    };
-}
-	
-function switchStoppedClock(currentClockId) {
-    if (currentClockId === 'clock-face1') {
-        player2Clock.start();
-        console.log('Clock 1 finished, starting Clock 2');
-    } else if (currentClockId === 'clock-face2') {
-        player1Clock.start();
-        console.log('Clock 2 finished, starting Clock 1');
-    }
-}
-
-function getActiveClockId() {
-    if (player1Clock && player1Clock.isActive()) {
-        return 'clock-face1';
-    }
-    if (player2Clock && player2Clock.isActive()) {
-        return 'clock-face2';
-    }
-    return null;
-}
-
-function switchActiveClock() {
-    const activeClockId = getActiveClockId();
-
-    if (activeClockId === 'clock-face1') {
-        player1Clock.stop();
-        player2Clock.start();
-        console.log('Switched from Player 1 clock to Player 2 clock.');
-    } else if (activeClockId === 'clock-face2') {
-        player2Clock.stop();
-        player1Clock.start();
-        console.log('Switched from Player 2 clock to Player 1 clock.');
-    } else {
-        player1Clock.start();
-        console.log('No active clock found, starting Player 1 clock.');
-    }
-}
-
-// Variáveis globais para controle do modo de jogo
-let gameMode = {
-    playerMode: null,  // 'solo', 'multi', 'computer'
-    timeMode: null,    // 'study', 'challenge'
-    selectedLessonIndex: null
-};
-
-// Função para exibir a seção de seleção de modo
-function showModeSelection(lessonIndex) {
-    const lesson = lessons[lessonIndex];
-    gameMode.selectedLessonIndex = lessonIndex;
-    
-    // Ocultar o jogo principal e mostrar seleção de modo
-    document.querySelector('.game-section').style.display = 'none';
-    document.getElementById('mode-selection').classList.remove('hidden');
-    
-    // Definir o título da videoaula selecionada
-    document.getElementById('selected-video-title').textContent = lesson.name;
-    
-    // Resetar seleções anteriores
-    gameMode.playerMode = null;
-    gameMode.timeMode = null;
-    document.getElementById('time-mode-container').classList.add('hidden');
-    
-    // Remover estados visuais dos botões
-    resetModeButtonStates();
-}
-
-// Função para voltar ao menu principal
-function goBack() {
-    document.getElementById('mode-selection').classList.add('hidden');
-    document.querySelector('.game-section').style.display = 'flex';
-    toggleMenu(); // Reabrir o menu de lições
-}
-
-// Função para selecionar modo de jogador
-function selectPlayerMode(mode) {
-    gameMode.playerMode = mode;
-    
-    // Atualizar estado visual dos botões
-    updatePlayerModeButtons(mode);
-    
-    // Mostrar opções de tempo após selecionar modo de jogador
-    document.getElementById('time-mode-container').classList.remove('hidden');
-    
-    // Auto-selecionar modo de tempo baseado no modo de jogador
-    if (mode === 'solo') {
-        // Para modo solo, padrão é estudo (sem tempo)
-        selectTimeMode('study');
-    } else {
-        // Para multiplayer e vs computador, mostrar ambas opções
-        resetTimeModeButtons();
-    }
-}
-
-// Função para selecionar modo de tempo
-function selectTimeMode(mode) {
-    gameMode.timeMode = mode;
-    
-    // Atualizar estado visual dos botões
-    updateTimeModeButtons(mode);
-    
-    // Aguardar um pouco e depois iniciar o jogo
-    setTimeout(() => {
-        startGameWithSelectedModes();
-    }, 500);
-}
-
-// Função para atualizar estado visual dos botões de modo de jogador
-function updatePlayerModeButtons(selectedMode) {
-    const buttons = document.querySelectorAll('#player-mode-buttons .mode-button');
-    buttons.forEach(button => {
-        button.classList.remove('selected');
-        if (button.onclick.toString().includes(`'${selectedMode}'`)) {
-            button.classList.add('selected');
-        }
-    });
-}
-
-// Função para atualizar estado visual dos botões de modo de tempo
-function updateTimeModeButtons(selectedMode) {
-    const buttons = document.querySelectorAll('#time-mode-buttons .mode-button');
-    buttons.forEach(button => {
-        button.classList.remove('selected');
-        if (button.onclick.toString().includes(`'${selectedMode}'`)) {
-            button.classList.add('selected');
-        }
-    });
-}
-
-// Função para resetar estado visual dos botões
-function resetModeButtonStates() {
-    const allButtons = document.querySelectorAll('.mode-button');
-    allButtons.forEach(button => button.classList.remove('selected'));
-}
-
-// Função para resetar botões de modo de tempo
-function resetTimeModeButtons() {
-    const buttons = document.querySelectorAll('#time-mode-buttons .mode-button');
-    buttons.forEach(button => button.classList.remove('selected'));
-}
-
-// Função para iniciar o jogo com os modos selecionados
-function startGameWithSelectedModes() {
-    // Ocultar seleção de modo e mostrar jogo
-    document.getElementById('mode-selection').classList.add('hidden');
-    document.querySelector('.game-section').style.display = 'flex';
-    
-    // Aplicar configurações baseadas no modo selecionado
-    applyGameModeSettings();
-    
-    // Carregar a lição selecionada
-    loadLesson(gameMode.selectedLessonIndex);
-}
-
-// Função para aplicar configurações baseadas no modo selecionado
-function applyGameModeSettings() {
-    const playerContainers = document.querySelectorAll('.player-container');
-    
-    switch(gameMode.playerMode) {
-        case 'solo':
-            // Modo solo - ocultar jogador 2, mostrar apenas jogador 1 centralizado
-            playerContainers[1].style.display = 'none';
-            playerContainers[0].querySelector('h6:last-child').textContent = 'Você';
-            break;
-            
-        case 'multi':
-            // Modo multiplayer - mostrar ambos jogadores
-            playerContainers[0].style.display = 'flex';
-            playerContainers[1].style.display = 'flex';
-            playerContainers[0].querySelector('h6:last-child').textContent = 'Jogador 1';
-            playerContainers[1].querySelector('h6:last-child').textContent = 'Jogador 2';
-            break;
-            
-        case 'computer':
-            // Modo vs computador - mostrar ambos, mas renomear jogador 2
-            playerContainers[0].style.display = 'flex';
-            playerContainers[1].style.display = 'flex';
-            playerContainers[0].querySelector('h6:last-child').textContent = 'Você';
-            playerContainers[1].querySelector('h6:last-child').textContent = 'IA';
-            break;
-    }
-    
-    // Configurações de tempo
-    if (gameMode.timeMode === 'study') {
-        // Modo estudo - desabilitar relógios
-        disableClocks();
-    } else if (gameMode.timeMode === 'challenge') {
-        // Modo desafio - habilitar relógios
-        enableClocks();
-    }
-}
-
-// Função para desabilitar relógios (modo estudo)
-function disableClocks() {
-    if (player1Clock) player1Clock.stop();
-    if (player2Clock) player2Clock.stop();
-    
-    // Ocultar visualmente os relógios
-    document.querySelectorAll('.clock-face').forEach(clock => {
-        clock.style.opacity = '0.3';
-        clock.style.pointerEvents = 'none';
-    });
-    
-    // Remover qualquer restrição de clique nas palavras
-    document.querySelectorAll('.palavra').forEach(p => p.classList.remove('no-click'));
-}
-
-// Função para habilitar relógios (modo desafio)
-function enableClocks() {
-    // Mostrar visualmente os relógios
-    document.querySelectorAll('.clock-face').forEach(clock => {
-        clock.style.opacity = '1';
-        clock.style.pointerEvents = 'auto';
-    });
-}
-
-// Modificar a função loadLesson original para usar seleção de modo
-function loadLessonWithModeSelection(lessonIndex) {
-    showModeSelection(lessonIndex);
-}
-
-// Atualizar os botões de lição para usar a nova função
-function initializeMenuButtonsWithModeSelection() {
-    const menuItemsContainer = document.getElementById('menu-items');
-    menuItemsContainer.innerHTML = '<h2 class="menu-title">Lista de Lições</h2>';
-
-    lessons.forEach((lesson, index) => {
-        const button = document.createElement('button');
-        button.textContent = lesson.name;
-        button.classList.add('lesson-button');
-        button.onclick = () => loadLessonWithModeSelection(index);
-        menuItemsContainer.appendChild(button);
-    });
-}
-
-// CSS adicional para botões selecionados (adicionar ao CSS existente)
-const additionalCSS = `
-.mode-button.selected {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 6px 12px rgba(40, 167, 69, 0.4);
-}
-
-.mode-button.selected:hover {
-    background: linear-gradient(135deg, #34ce57 0%, #2dd4aa 100%) !important;
-}
-`;
-
-// Adicionar o CSS adicional ao documento
-const styleSheet = document.createElement('style');
-styleSheet.textContent = additionalCSS;
-document.head.appendChild(styleSheet);
-
-// Atualizar a inicialização para usar os novos botões com seleção de modo
-// Substitua a chamada initializeMenuButtons() por initializeMenuButtonsWithModeSelection() na função init()
-
-// *** Inicializar a aplicação *** //
-function init() {
-    initializeMenuButtonsWithModeSelection()
-
-    // Initialize clocks
-    player1Clock = createClock('clock-face1');
-    player2Clock = createClock('clock-face2');
-    // Example: start one of the clocks, or none, based on your game's start state
-    // player1Clock.start(); // Start if game begins automatically
-
-    // Mostrar inicialmente a mensagem para selecionar uma lição
-    document.getElementById('current-lesson').textContent = "Nome da Lição";
-
-    // Verificar se há algum parâmetro na URL para carregar uma lição específica
-    const urlParams = new URLSearchParams(window.location.search);
-    const lessonParam = urlParams.get('lesson');
-
-    if (lessonParam !== null && !isNaN(lessonParam) && lessons[parseInt(lessonParam)]) {
-        // Carregar a lição especificada pelo parâmetro da URL
-        loadLesson(parseInt(lessonParam));
-    } else {
-        // Se não houver parâmetro, abrir o menu automaticamente
-        setTimeout(() => {
-            toggleMenu();
-        }, 500);
-    }
-
-    // REMOVIDA: A lógica para o switch de legendas e o localStorage 'subtitlesOn' foi removida.
-
-    // Adicionar listener para teclas de atalho
-    document.addEventListener('keydown', function(event) {
-        // Tecla ESC para fechar ou abrir o menu
-        if (event.key === 'Escape') {
-            const menuOverlay = document.getElementById('menu-overlay');
-            if (menuOverlay.classList.contains('active')) {
-                toggleMenu();
-            }
-        }
-
-        // Tecla ESPAÇO para reproduzir/pausar o trecho atual
-        if (event.code === 'Space' && !event.target.matches('input, textarea')) {
-            event.preventDefault();
-            if (playerReady && videoElement.paused) {
-                reproduzirTrechoAtual();
-            } else {
-                videoElement.pause();
-                pararMonitorTempo();
-            }
-        }
-
-        // Tecla ENTER para avançar quando disponível
-        if (event.key === 'Enter') {
-            const avancarBtn = document.getElementById('avancar');
-            if (avancarBtn.style.display !== 'none') {
-                avancarBtn.click();
-            }
-        }
-    });
-
-// Modifique a função de evento do vídeo para chamar a verificação
-videoElement.addEventListener('loadedmetadata', function() {
-    console.log("Evento 'loadedmetadata' disparado. Player está pronto!");
-    playerReady = true;
-    // Tenta iniciar o jogo após o vídeo carregar
-    checkAndStartLesson();
-});
-
-    // Verificar se há uma última lição acessada
-    const lastLessonIndex = localStorage.getItem('lastLessonIndex');
-    if (lastLessonIndex !== null && !isNaN(lastLessonIndex) && lessons[parseInt(lastLessonIndex)]) {
-        // Perguntar ao usuário se deseja carregar a última lição
-        setTimeout(() => {
-            const carregarUltimaLicao = confirm(`Deseja carregar a última lição acessada? (${lessons[parseInt(lastLessonIndex)].name})`);
-            if (carregarUltimaLicao) {
-                loadLesson(parseInt(lastLessonIndex));
-            }
-        }, 1000);
-    }
-}
-
-// Função para salvar o progresso do usuário no localStorage
-function salvarProgresso() {
-    if (!currentLessonName) return;
-
-    const progressoData = {
-        lessonName: currentLessonName,
-        fraseIndex: indiceFrase,
-        acertos1: acertos1,
-        acertos2: acertos2,
-        timestamp: new Date().getTime()
-    };
-
-    localStorage.setItem('listeningProProgresso', JSON.stringify(progressoData));
-}
-
-// Função para carregar o progresso salvo
-function carregarProgresso() {
-    const progressoSalvo = localStorage.getItem('listeningProProgresso');
-    if (!progressoSalvo) return null;
-
-    try {
-        return JSON.parse(progressoSalvo);
-    } catch (e) {
-        console.error("Erro ao carregar progresso:", e);
-        return null;
-    }
-}
-
-// Função para verificar se há progresso salvo para a lição atual
-function verificarProgressoLicao(lessonName) {
-    const progresso = carregarProgresso();
-    if (!progresso || progresso.lessonName !== lessonName) return false;
-
-    // Verificar se o progresso é recente (menos de 7 dias)
-    const agora = new Date().getTime();
-    const diferenca = agora - progresso.timestamp;
-    const diasDiferenca = diferenca / (1000 * 60 * 60 * 24);
-
-    return diasDiferenca < 7;
-}
-
-// Inicializar a aplicação quando o DOM estiver carregado
-document.addEventListener('DOMContentLoaded', init);
-		</script>
-	</body>
+</script>
+</body>
 </html>
