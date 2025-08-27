@@ -48,7 +48,7 @@
 <main style="padding-bottom: 80px;">
   <!-- Header da página com título -->
   <header>
-    <h1>SpeedPhrase</h1>
+    <h1>SpeedPhrase <span id="timer"></span></h1>
   </header>
   
   <section id="avulsas-section" class="video-grid-container">
@@ -59,10 +59,9 @@
     <div id="trilha-grid" class="video-grid"></div>
   </section>
 
-
   <!-- Seção do timer, separado do header -->
   <section id="timerSection" style="margin-top: 10px; font-weight: bold;">
-    <div id="timer"></div>
+    
     <div id="totalTime" style="margin-top: 5px;"></div>
   </section>
 
@@ -111,426 +110,467 @@
 
   <script>
     //=============================
-    // Estado da Aplicação
-    //=============================
-    let subtitles = [];
-    let currentIndex = 0;
-    let formedWords = [];
-     
-    //=============================
-    // Estado de Timer
-    //=============================
-    let startTime = 0;
-    let totalElapsedTime = 0;
-    let totalEstimatedTime = 0; // New variable
-    let timerInterval = null;
-     
-    //=============================
-    // Lessons
-    //=============================
-	const avulsasLessons = [
-      {
-        name: "I'm Gonna Be - 500 Miles.mp4",
-        srtUrl: "https://files.catbox.moe/wt145j.srt",
-        videoUrl: "https://files.catbox.moe/8pzqza.mp4"
-      }
-    ];
+// Estado da Aplicação
+//=============================
+let subtitles = [];
+let currentIndex = 0;
+let formedWords = [];
 
-    const trilhaLessons = [
-      {
-        name: "Chapter 1 - Welcome & Nationalities",
-        srtUrl: "https://files.catbox.moe/wt145j.srt",
-        videoUrl: "https://files.catbox.moe/8pzqza.mp4"
-      }
-    ];
+//=============================
+// Estado de Timer
+//=============================
+let startTime = 0;
+let totalElapsedTime = 0;
+let totalEstimatedTime = 0;
+let timerInterval = null;
 
-    //=============================
-    // Função: Carrega e Processa o SRT
-    //=============================
-    async function loadSrt(url) {
-      const res = await fetch(url);
-      const text = await res.text();
-      return parseSRT(text);
+//=============================
+// Lessons
+//=============================
+const avulsasLessons = [{
+    name: "I'm Gonna Be - 500 Miles.mp4",
+    srtUrl: "https://files.catbox.moe/wt145j.srt",
+    videoUrl: "https://files.catbox.moe/8pzqza.mp4"
+}];
+
+const trilhaLessons = [{
+    name: "Chapter 1 - Welcome & Nationalities",
+    srtUrl: "https://files.catbox.moe/wt145j.srt",
+    videoUrl: "https://files.catbox.moe/8pzqza.mp4"
+}];
+
+//=============================
+// Função: Carrega e Processa o SRT
+//=============================
+async function loadSrt(url) {
+    const res = await fetch(url);
+    const text = await res.text();
+    return parseSRT(text);
+}
+
+//=============================
+// Função: Parser SRT simples
+//=============================
+function parseSRT(srt) {
+    const regex = /(\d+)\s+(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\s+([\s\S]*?)(?=\n{2,}|$)/g;
+    let result = [];
+    let match;
+    while ((match = regex.exec(srt)) !== null) {
+        result.push({
+            index: Number(match[1]),
+            start: timeToSeconds(match[2]),
+            end: timeToSeconds(match[3]),
+            text: match[4].replace(/\n/g, ' ').trim()
+        });
     }
+    return result;
+}
 
-    //=============================
-    // Função: Parser SRT simples
-    //=============================
-    function parseSRT(srt) {
-      const regex = /(\d+)\s+(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\s+([\s\S]*?)(?=\n{2,}|$)/g;
-      let result = [];
-      let match;
-      while ((match = regex.exec(srt)) !== null) {
-        result.push({
-          index: Number(match[1]),
-          start: timeToSeconds(match[2]),
-          end: timeToSeconds(match[3]),
-          text: match[4].replace(/\n/g, ' ').trim()
-        });
-      }
-      return result;
+//=============================
+// Função: Converte tempo SRT para segundos
+//=============================
+function timeToSeconds(time) {
+    const [h, m, s] = time.replace(',', '.').split(':');
+    return parseFloat(h) * 3600 + parseFloat(m) * 60 + parseFloat(s);
+}
+
+//=============================
+// Função: Embaralha palavras
+//=============================
+function shuffleWords(text) {
+    const words = text.split(' ');
+    for (let i = words.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [words[i], words[j]] = [words[j], words[i]];
     }
+    return words;
+}
 
-    //=============================
-    // Função: Converte tempo SRT para segundos
-    //=============================
-    function timeToSeconds(time) {
-      const [h, m, s] = time.replace(',', '.').split(':');
-      return parseFloat(h) * 3600 + parseFloat(m) * 60 + parseFloat(s);
-    }
+//=============================
+// Função: Exibe palavras embaralhadas
+//=============================
+function displayShuffledWords(words, original) {
+    const container = document.getElementById('shuffledWords');
+    container.innerHTML = '';
+    formedWords = [];
 
-    //=============================
-    // Função: Embaralha palavras
-    //=============================
-    function shuffleWords(text) {
-      const words = text.split(' ');
-      for (let i = words.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [words[i], words[j]] = [words[j], words[i]];
-      }
-      return words;
-    }
-
-    //=============================
-    // Função: Exibe palavras embaralhadas
-    //=============================
-    function displayShuffledWords(words, original) {
-      const container = document.getElementById('shuffledWords');
-      container.innerHTML = '';
-      formedWords = [];
-
-      words.forEach(word => {
-        const span = document.createElement('span');
-        span.className = 'word';
-        span.textContent = word;
-        span.onclick = () => handleWordClick(word, span, original);
-        container.appendChild(span);
-      });
-
-      updateFormedSentence();
-    }
-     
-    //=============================
-    // Função principal de clique
-    //=============================
-    function handleWordClick(word, element, original) {
-      if (isCorrectWord(word, original)) {
-        processCorrectWord(word, element);
-        clearIncorrectWords();
-      } else {
-        markWordAsIncorrect(element);
-      }
-
-      updateFormedSentence();
-      checkIfSentenceIsComplete(original);
-    }
-
-	//=============================
-    // Verifica se palavra está correta
-    //=============================
-    function isCorrectWord(word, original) {
-      const expectedWords = original.split(' ');
-      const currentIndex = formedWords.length;
-      return word === expectedWords[currentIndex];
-    }
-
-    //=============================
-    // Processa palavra correta
-    //=============================
-    function processCorrectWord(word, element) {
-      formedWords.push(word);
-      element.classList.add('correct');
-      element.onclick = null;
-    }
-
-    //=============================
-    // Marca palavra incorreta (não adiciona à frase)
-    //=============================
-    function markWordAsIncorrect(element) {
-      element.classList.add('incorrect');
-    }
-
-    //=============================
-    // Limpa marcações incorretas
-    //=============================
-    function clearIncorrectWords() {
-      const incorrectElements = document.querySelectorAll('.word.incorrect');
-      incorrectElements.forEach(el => {
-        el.classList.remove('incorrect');
-      });
-    }
-
-    //=============================
-    // Verifica se frase está completa e correta
-    //=============================
-    function checkIfSentenceIsComplete(original) {
-      if (formedWords.join(' ') === original) {
-        setTimeout(() => {
-          const timeUsed = stopTimerAndGetElapsed();
-          console.log(`⏱️ Tempo para essa frase: ${timeUsed.toFixed(2)}s`);
-          updatePerformanceDisplay(timeUsed); 
-
-          if (currentIndex < subtitles.length - 1) {
-            nextPhrase();
-          } else {
-            alert('🎉 Todas as frases completas! Lição finalizada.');
-            displayTotalTime();
-          }
-        }, 200);
-      }
-    }
-     
-    //=============================
-    // Função: Atualiza frase formada
-    //=============================
-    function updateFormedSentence() {
-      document.getElementById('formedSentence').textContent = formedWords.join(' ');
-    }
-
-    //=============================
-    // Função: Avança para próxima frase
-    //=============================
-    function nextPhrase() {
-      if (currentIndex < subtitles.length - 1) {
-        currentIndex++;
-        prepareCurrentSubtitle();
-      } else {
-        alert("✅ Fim das legendas!");
-      }
-    }
-
-    //=============================
-    // Função: Prepara legenda atual
-    //=============================
-    function prepareCurrentSubtitle() {
-      const sub = subtitles[currentIndex];
-      const shuffled = shuffleWords(sub.text);
-
-      displayShuffledWords(shuffled, sub.text);
-
-      startTimer();
-      playCurrentSubtitle();
-    }
-
-
-    //=============================
-    // Função: Inicia o vídeo no tempo especificado e começa a tocar
-    //=============================
-    function startVideoAtTime(video, startTime) {
-      video.currentTime = startTime;
-      video.play();
-    }
-
-    //=============================
-    // Função: Monitora o vídeo para pausar no tempo final usando requestVideoFrameCallback
-    //=============================
-    function monitorVideoEnd(video, endTime) {
-      function checkFrame() {
-        if (video.currentTime >= endTime) {
-          video.pause();
-        } else {
-          if (typeof video.requestVideoFrameCallback === 'function') {
-            video.requestVideoFrameCallback(checkFrame);
-          } else {
-            setTimeout(checkFrame, 50);
-          }
-        }
-      }
-      checkFrame();
-    }
-
-    //=============================
-    // Função principal que usa as duas acima
-    //=============================
-    function playCurrentSubtitle() {
-      const video = document.getElementById('video');
-      const sub = subtitles[currentIndex];
-      if (!video || !sub) return;
-
-      startVideoAtTime(video, sub.start);
-      monitorVideoEnd(video, sub.end);
-    }
-     
-    //=============================
-    // Bloco de Timer (Revisado)
-    //=============================
-    // Retorna tempo (segundos) para frase (palavras / 5)
-    //=============================
-    function getTimeLimitForSentence(sentence) {
-        // Conta todos os caracteres, excluindo espaços
-        const characterCount = sentence.trim().replace(/\s/g, '').length;
-        // Define o tempo estimado em segundos (ex: 0.2 segundos por caractere)
-        const timePerCharacter = 0.2; 
-        return characterCount * timePerCharacter;
-    }
-
-    // This function now calculates and displays the current performance.
-    function updatePerformanceDisplay(elapsed) {
-      const display = document.getElementById('timer');
-      const sentenceEstimatedTime = getTimeLimitForSentence(subtitles[currentIndex].text);
-      let performance = (sentenceEstimatedTime / elapsed) * 100;
-
-      let emoji = '👍';
-      if (performance < 75) {
-        emoji = '🐢';
-      } else if (performance < 100) {
-        emoji = '🤔';
-      } else if (performance > 125) {
-        emoji = '🚀';
-      }
-
-      display.innerHTML = `Desempenho: <span style="font-weight: bold; color: ${performance >= 100 ? 'green' : 'red'};">${performance.toFixed(2)}%</span> ${emoji}`;
-    }
-
-    //=============================
-    // Inicia contagem de tempo real do usuário
-    //=============================
-    function startTimer() {
-      startTime = performance.now(); // mais preciso que Date.now()
-    }
-
-    //=============================
-    // Calcula tempo gasto em segundos
-    //=============================
-    function stopTimerAndGetElapsed() {
-      const endTime = performance.now();
-      const elapsed = (endTime - startTime) / 1000; // em segundos
-      totalElapsedTime += elapsed;
-      return elapsed;
-    }
-
-    //=============================
-    // Exibe o tempo total acumulado
-    //=============================
-    function displayTotalTime() {
-      const totalTimeElement = document.getElementById('totalTime');
-      const totalPerformance = (totalEstimatedTime / totalElapsedTime) * 100;
-      totalTimeElement.innerHTML = `⏱️ Tempo total: ${totalElapsedTime.toFixed(2)}s | Desempenho geral: <span style="font-weight: bold; color: ${totalPerformance >= 100 ? 'green' : 'red'};">${totalPerformance.toFixed(2)}%</span>`;
-    }
-     
-    //=============================
-    // Bloco de Footer
-    //=============================
-    // ---------------
-    //=============================
-    function goToAvulsas() {
-      hideAllSections();
-      document.getElementById('avulsas-section').style.display = '';
-      // Se a grade de avulsas precisa ser gerada novamente, chame a função
-      generateVideoCards(avulsasLessons, 'avulsas-grid', handleLessonClick);
-    }
-
-    function goToTrilha() {
-      hideAllSections();
-      document.getElementById('trilha-section').style.display = '';
-      // Se a grade de trilha precisa ser gerada novamente, chame a função
-      generateVideoCards(trilhaLessons, 'trilha-grid', handleLessonClick);
-    }
-
-	//=============================
-    // Bloco de Ocultar/Mostrar seções
-    //=============================
-
-    function hideAllSections() {
-      const sectionsToHide = [
-        'avulsas-section',
-        'trilha-section',
-        'timerSection',
-        'videoSection',
-        'formedSentenceSection',
-        'shuffledWordsSection'
-      ];
-
-      sectionsToHide.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = 'none';
-      });
-    }
-     
-    //=========================
-    // Bloco lessons cards
-    //=========================
-    // Cria um card individual
-    //=========================
-    function createVideoCard(lesson, onClick) {
-      const card = document.createElement('div');
-      card.className = 'video-card';
-      card.textContent = lesson.name;
-      card.onclick = () => onClick(lesson);
-      return card;
-    }
-     
-    //==========================================
-    // Gera grid de cards dentro do container
-    //==========================================
-    function generateVideoCards(lessons, containerId, onClick) {
-      const container = document.getElementById(containerId);
-      if (!container) return;
-
-      container.innerHTML = ''; // limpa antes de inserir
-
-      lessons.forEach(lesson => {
-        const card = createVideoCard(lesson, onClick);
-        container.appendChild(card);
-      });
-    }
-
-     
-    //==========================================
-    // Carrega lições nas seções correspondentes
-    //==========================================
-    function loadAllLessons() {
-      generateVideoCards(avulsasLessons, 'avulsas-grid', handleLessonClick);
-      generateVideoCards(trilhaLessons, 'trilha-grid', handleLessonClick);
-    }
-
-    //=============================
-    // Clique no card de lição
-    //=============================
-    async function handleLessonClick(lesson) {
-      console.log('Lição selecionada:', lesson);
-      hideAllSections();
-      document.getElementById('videoSection').style.display = '';
-      document.getElementById('timerSection').style.display = '';
-      document.getElementById('formedSentenceSection').style.display = '';
-      document.getElementById('shuffledWordsSection').style.display = '';
-
-      const video = document.getElementById('video');
-      video.src = lesson.videoUrl;
-      subtitles = await loadSrt(lesson.srtUrl);
-
-      // Calculate total estimated time for the lesson
-      totalEstimatedTime = subtitles.reduce((sum, sub) => {
-        return sum + getTimeLimitForSentence(sub.text);
-      }, 0);
-      
-      totalElapsedTime = 0; // Reset total elapsed time for the new lesson
-
-      console.log(`⏱️ Tempo total estimado para a lição: ${totalEstimatedTime.toFixed(2)}s`);
-
-      currentIndex = 0;
-      prepareCurrentSubtitle();
-    }
-     
-    //=============================
-    // Clique no card de lição
-    //=============================
-    async function loadVideoAndSrt(lesson) {
-      const video = document.getElementById('video');
-      video.src = lesson.videoUrl;
-      subtitles = await loadSrt(lesson.srtUrl);
-      currentIndex = 0;
-      prepareCurrentSubtitle();
-    }
-
-    //=============================
-    // Inicialização
-    //=============================
-    document.addEventListener('DOMContentLoaded', () => {
-      loadAllLessons();
-      goToAvulsas();
+    words.forEach(word => {
+        const span = document.createElement('span');
+        span.className = 'word';
+        span.textContent = word;
+        span.onclick = () => handleWordClick(word, span, original);
+        container.appendChild(span);
     });
-  </script>
 
+    updateFormedSentence();
+}
+
+//=============================
+// Função principal de clique
+//=============================
+function handleWordClick(word, element, original) {
+    if (isCorrectWord(word, original)) {
+        processCorrectWord(word, element);
+        clearIncorrectWords();
+        updateDisplay(); // Atualiza após adicionar palavra correta
+    } else {
+        markWordAsIncorrect(element);
+    }
+
+    updateFormedSentence();
+    checkIfSentenceIsComplete(original);
+}
+
+//=============================
+// Verifica se palavra está correta
+//=============================
+function isCorrectWord(word, original) {
+    const expectedWords = original.split(' ');
+    const currentIndex = formedWords.length;
+    return word === expectedWords[currentIndex];
+}
+
+//=============================
+// Processa palavra correta
+//=============================
+function processCorrectWord(word, element) {
+    formedWords.push(word);
+    element.classList.add('correct');
+    element.onclick = null;
+}
+
+//=============================
+// Marca palavra incorreta (não adiciona à frase)
+//=============================
+function markWordAsIncorrect(element) {
+    element.classList.add('incorrect');
+}
+
+//=============================
+// Limpa marcações incorretas
+//=============================
+function clearIncorrectWords() {
+    const incorrectElements = document.querySelectorAll('.word.incorrect');
+    incorrectElements.forEach(el => {
+        el.classList.remove('incorrect');
+    });
+}
+
+//=============================
+// Verifica se frase está completa e correta
+//=============================
+async function checkIfSentenceIsComplete(original) {
+    if (formedWords.join(' ') === original) {
+        clearInterval(timerInterval);
+        
+        const timeUsed = stopTimerAndGetElapsed();
+        console.log(`⏱️ Tempo para essa frase: ${timeUsed.toFixed(2)}s`);
+
+        // Toca o vídeo e aguarda terminar
+        console.log('🎬 Reproduzindo trecho da frase completada...');
+        await playCurrentSubtitleAndWait();
+        
+        // Só depois que o vídeo terminou, avança
+        if (currentIndex < subtitles.length - 1) {
+            nextPhrase();
+        } else {
+            alert('🎉 Todas as frases completas! Lição finalizada.');
+            displayTotalTime();
+        }
+    }
+}
+
+//=============================
+// Função: Atualiza frase formada
+//=============================
+function updateFormedSentence() {
+    document.getElementById('formedSentence').textContent = formedWords.join(' ');
+}
+
+//=============================
+// Função: Avança para próxima frase
+//=============================
+function nextPhrase() {
+    currentIndex++;
+    console.log(`📝 Avançando para frase ${currentIndex + 1}/${subtitles.length}`);
+    
+    if (currentIndex < subtitles.length) {
+        prepareCurrentSubtitle();
+    } else {
+        alert("✅ Fim das legendas!");
+        displayTotalTime();
+    }
+}
+
+//=============================
+// Função: Prepara legenda atual
+//=============================
+function prepareCurrentSubtitle() {
+    const sub = subtitles[currentIndex];
+    console.log(`🎬 Preparando frase ${currentIndex + 1}: "${sub.text}"`);
+    
+    // Limpar estado anterior
+    formedWords = [];
+    clearInterval(timerInterval);
+    
+    const shuffled = shuffleWords(sub.text);
+    displayShuffledWords(shuffled, sub.text);
+
+    startTimer();
+    startPerformanceUpdate();
+    
+    // Toca o trecho inicial (sem aguardar)
+    playCurrentSubtitle();
+}
+
+//=============================
+// Inicia a contagem de tempo real e a atualização da performance
+//=============================
+function startPerformanceUpdate() {
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        updateDisplay();
+    }, 1000);
+}
+
+//=============================
+// Função para atualizar o display da performance (Chamada por setInterval e click)
+//=============================
+function updateDisplay() {
+    const display = document.getElementById('timer');
+    const sub = subtitles[currentIndex];
+    const sentenceEstimatedTime = getTimeLimitForSentence(sub.text);
+    const elapsed = (performance.now() - startTime) / 1000;
+    
+    // Calcula a projeção: tempo já gasto + tempo restante baseado na performance atual
+    const wordsCompleted = formedWords.length;
+    const totalWords = sub.text.split(' ').length;
+    
+    let projectedTotalTime;
+    if (wordsCompleted > 0) {
+        const timePerCompletedWord = elapsed / wordsCompleted;
+        const remainingWords = totalWords - wordsCompleted;
+        projectedTotalTime = elapsed + (remainingWords * timePerCompletedWord);
+    } else {
+        // Se ainda não completou nenhuma palavra, usa o tempo atual como base
+        projectedTotalTime = elapsed * (totalWords / Math.max(1, wordsCompleted || 0.1));
+    }
+    
+    // Calcula a performance: quanto melhor que o estimado
+    let performanceValue = (sentenceEstimatedTime / projectedTotalTime) * 100;
+    
+    // Garante que não seja infinito ou NaN
+    if (!isFinite(performanceValue) || performanceValue > 1000) {
+        performanceValue = 100;
+    }
+
+    let emoji = '👍';
+    if (performanceValue < 75) {
+        emoji = '🐢';
+    } else if (performanceValue < 100) {
+        emoji = '🤔';
+    } else if (performanceValue > 125) {
+        emoji = '🚀';
+    }
+
+    display.innerHTML = `<span style="font-weight: bold; color: ${performanceValue >= 100 ? 'green' : 'red'};">${performanceValue.toFixed(2)}%</span> ${emoji}`;
+}
+
+//=============================
+// Nova função que reproduz o vídeo e retorna uma Promise
+//=============================
+function playCurrentSubtitleAndWait() {
+    const video = document.getElementById('video');
+    const sub = subtitles[currentIndex];
+    
+    if (!video || !sub) {
+        console.error('❌ Vídeo ou legenda não encontrados');
+        return Promise.resolve();
+    }
+
+    return new Promise((resolve) => {
+        console.log(`▶️ Reproduzindo trecho: ${sub.start.toFixed(2)}s - ${sub.end.toFixed(2)}s`);
+        
+        // Para o vídeo antes de reposicionar
+        video.pause();
+        video.currentTime = sub.start;
+        
+        // Função para monitorar o fim do trecho
+        function checkVideoEnd() {
+            if (video.currentTime >= sub.end) {
+                video.pause();
+                console.log(`⏸️ Vídeo pausado em ${sub.end.toFixed(2)}s - Prosseguindo...`);
+                resolve();
+            } else if (!video.paused) {
+                if (typeof video.requestVideoFrameCallback === 'function') {
+                    video.requestVideoFrameCallback(checkVideoEnd);
+                } else {
+                    requestAnimationFrame(checkVideoEnd);
+                }
+            }
+        }
+        
+        // Inicia reprodução
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                console.log(`✅ Vídeo iniciado em ${sub.start.toFixed(2)}s`);
+                checkVideoEnd();
+            }).catch(error => {
+                console.error('❌ Erro ao reproduzir vídeo:', error);
+                resolve(); // Resolve mesmo com erro para não travar
+            });
+        } else {
+            checkVideoEnd();
+        }
+    });
+}
+
+//=============================
+// Função principal que toca o vídeo (usada pelo botão)
+//=============================
+function playCurrentSubtitle() {
+    playCurrentSubtitleAndWait(); // Não precisa aguardar quando chamado pelo botão
+}
+
+//=============================
+// Bloco de Timer (Revisado)
+//=============================
+function getTimeLimitForSentence(sentence) {
+    const characterCount = sentence.trim().replace(/\s/g, '').length;
+    const timePerCharacter = 0.2;
+    return characterCount * timePerCharacter;
+}
+
+//=============================
+// Inicia contagem de tempo real do usuário
+//=============================
+function startTimer() {
+    startTime = performance.now();
+}
+
+//=============================
+// Calcula tempo gasto em segundos
+//=============================
+function stopTimerAndGetElapsed() {
+    const endTime = performance.now();
+    const elapsed = (endTime - startTime) / 1000;
+    totalElapsedTime += elapsed;
+    return elapsed;
+}
+
+//=============================
+// Exibe o tempo total acumulado
+//=============================
+function displayTotalTime() {
+    const totalPerformance = (totalEstimatedTime / totalElapsedTime) * 100;
+    alert(`Lição completa! 🏁
+Tempo total: ${totalElapsedTime.toFixed(2)}s
+Desempenho geral: ${totalPerformance.toFixed(2)}%`);
+}
+
+//=============================
+// Bloco de Footer
+//=============================
+function goToSearch() {
+    // Função para futuro desenvolvimento
+    alert('🔍 Função de pesquisa em desenvolvimento');
+}
+
+function goToAvulsas() {
+    hideAllSections();
+    document.getElementById('avulsas-section').style.display = '';
+    generateVideoCards(avulsasLessons, 'avulsas-grid', handleLessonClick);
+}
+
+function goToTrilha() {
+    hideAllSections();
+    document.getElementById('trilha-section').style.display = '';
+    generateVideoCards(trilhaLessons, 'trilha-grid', handleLessonClick);
+}
+
+//=============================
+// Bloco de Ocultar/Mostrar seções
+//=============================
+function hideAllSections() {
+    const sectionsToHide = [
+        'avulsas-section',
+        'trilha-section',
+        'videoSection',
+        'formedSentenceSection',
+        'shuffledWordsSection'
+    ];
+
+    sectionsToHide.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+}
+
+//=========================
+// Bloco lessons cards
+//=========================
+function createVideoCard(lesson, onClick) {
+    const card = document.createElement('div');
+    card.className = 'video-card';
+    card.textContent = lesson.name;
+    card.onclick = () => onClick(lesson);
+    return card;
+}
+
+//==========================================
+// Gera grid de cards dentro do container
+//==========================================
+function generateVideoCards(lessons, containerId, onClick) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    container.innerHTML = '';
+    lessons.forEach(lesson => {
+        const card = createVideoCard(lesson, onClick);
+        container.appendChild(card);
+    });
+}
+
+//==========================================
+// Carrega lições nas seções correspondentes
+//==========================================
+function loadAllLessons() {
+    generateVideoCards(avulsasLessons, 'avulsas-grid', handleLessonClick);
+    generateVideoCards(trilhaLessons, 'trilha-grid', handleLessonClick);
+}
+
+//=============================
+// Clique no card de lição
+//=============================
+async function handleLessonClick(lesson) {
+    console.log('Lição selecionada:', lesson);
+    hideAllSections();
+    document.getElementById('videoSection').style.display = '';
+    document.getElementById('formedSentenceSection').style.display = '';
+    document.getElementById('shuffledWordsSection').style.display = '';
+
+    const video = document.getElementById('video');
+    video.src = lesson.videoUrl;
+    subtitles = await loadSrt(lesson.srtUrl);
+
+    totalEstimatedTime = subtitles.reduce((sum, sub) => {
+        return sum + getTimeLimitForSentence(sub.text);
+    }, 0);
+
+    totalElapsedTime = 0;
+    console.log(`⏱️ Tempo total estimado para a lição: ${totalEstimatedTime.toFixed(2)}s`);
+    currentIndex = 0;
+    prepareCurrentSubtitle();
+}
+
+//=============================
+// Inicialização
+//=============================
+document.addEventListener('DOMContentLoaded', () => {
+    loadAllLessons();
+    goToAvulsas();
+});
+</script>
 </body>
 </html>
