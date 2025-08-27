@@ -16,36 +16,49 @@
 </head>
 <body>
 
-  <main>
-    <!-- Seção do título e timers -->
-    <section id="header">
-      <h1>SpeedPhrase</h1>
-      <div id="timer" style="margin-top: 10px; font-weight: bold;"></div>
-      <div id="totalTime" style="margin-top: 5px; font-weight: bold;"></div>
-    </section>
+<main>
+  <!-- Header da página com título -->
+  <header>
+    <h1>SpeedPhrase</h1>
+  </header>
 
-    <!-- Seção do vídeo e controles -->
-    <section id="videoSection">
-      <div class="video-container">
-        <video id="video" width="70%" height="340" controls>
-          <source src="https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.mp4" type="video/mp4" />
-        </video>
-      </div>
-      <div class="controls" style="margin-top: 10px;">
-        <button onclick="playCurrentSubtitle()">▶️ Tocar trecho</button>
-      </div>
-    </section>
+  <!-- Seção do timer, separado do header -->
+  <section id="timerSection" style="margin-top: 10px; font-weight: bold;">
+    <div id="timer"></div>
+    <div id="totalTime" style="margin-top: 5px;"></div>
+  </section>
 
-    <!-- Seção da frase formada -->
-    <section id="formedSentenceSection" style="margin-top: 20px;">
-      <div class="formed-sentence" id="formedSentence"></div>
-    </section>
+  <!-- Seção do vídeo e controles -->
+  <section id="videoSection" style="margin-top: 20px;">
+    <div class="video-container">
+      <video id="video" width="70%" height="340" controls>
+        <source src="https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.mp4" type="video/mp4" />
+      </video>
+    </div>
+    <div class="controls" style="margin-top: 10px;">
+      <button onclick="playCurrentSubtitle()">▶️ Tocar trecho</button>
+    </div>
+  </section>
 
-    <!-- Seção das palavras embaralhadas -->
-    <section id="shuffledWordsSection" style="margin-top: 20px;">
-      <div class="words-container" id="shuffledWords"></div>
-    </section>
-  </main>
+  <!-- Seção da frase formada -->
+  <section id="formedSentenceSection" style="margin-top: 20px;">
+    <div class="formed-sentence" id="formedSentence"></div>
+  </section>
+
+  <!-- Seção das palavras embaralhadas -->
+  <section id="shuffledWordsSection" style="margin-top: 20px;">
+    <div class="words-container" id="shuffledWords"></div>
+  </section>
+</main>
+
+<footer style="margin-top: 30px; padding: 15px; background-color: #eee; text-align: center;">
+  <nav>
+    <button onclick="goToSearch()">🔍 Pesquisar</button>
+    <button onclick="goToAvulsas()">📹 Avulsas</button>
+    <button onclick="goToTrilha()">🛤️ Trilha</button>
+  </nav>
+</footer>
+
 
   <script>
     //=============================
@@ -270,7 +283,6 @@
       startVideoAtTime(video, sub.start);
       monitorVideoEnd(video, sub.end);
     }
-
     
     //=============================
     // Bloco de Timer
@@ -326,7 +338,60 @@
       const totalTimeElement = document.getElementById('totalTime');
       totalTimeElement.textContent = `⏱️ Tempo total: ${totalElapsedTime.toFixed(2)}s`;
     }
+    
+    //=============================
+    // Bloco de Footer
+    //=============================
+    // ---------------
+    //=============================
+    function goToSearch() {
+      hideGameSectionsById();
+    }
 
+    function goToAvulsas() {
+      hideGameSectionsById();
+    }
+
+    function goToTrilha() {
+      hideGameSectionsById();
+    }
+
+
+	//=============================
+    // Bloco Ocultar/Mostrar sections
+    //=============================
+    // Oculta game sections pelo ID
+    //=============================
+    function hideGameSectionsById() {
+      const idsToHide = [
+        'timerSection',
+        'videoSection',
+        'formedSentenceSection',
+        'shuffledWordsSection'
+      ];
+
+      idsToHide.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
+    }
+    
+    //=============================
+    // Mostra game sections pelo ID
+    //=============================
+    function showGameSectionsById() {
+      const idsToShow = [
+        'timerSection',
+        'videoSection',
+        'formedSentenceSection',
+        'shuffledWordsSection'
+      ];
+
+      idsToShow.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = '';
+      });
+    }
 
     //=============================
     // Inicialização
