@@ -45,7 +45,7 @@
 <main style="padding-bottom: 80px;">
   <!-- Header da página com título -->
   <header>
-    <h1>SpeedPhrase</h1>
+    <div id="breadcrumb"></div>
   </header>
   
   <section id="avulsas-section" class="video-grid-container">
@@ -137,6 +137,64 @@
         videoUrl: "https://f005.backblazeb2.com/file/Trilha/Chapter-1.-Welcome-%26-Nationalities.mp4"
       }
     ];
+    
+    //=============================
+    // Breadcrumb
+    //=============================    
+    function updateBreadcrumb() {
+      const breadcrumbEl = document.getElementById('breadcrumb');
+      if (!breadcrumbEl) return;
+
+      const levels = ['SpeedPhrase'];
+
+      const isTrilha = isElementVisible('trilha-section');
+      const isAvulsas = isElementVisible('avulsas-section');
+      const isGame = areGameSectionsVisible();
+
+      // Página inicial: Trilha + Avulsas visíveis
+      if (isTrilha && isAvulsas) {
+        levels.push('Avulsas & Trilha');
+      } else if (isTrilha) {
+        levels.push('Trilha');
+      } else if (isAvulsas) {
+        levels.push('Avulsas');
+      }
+
+      if (isGame) {
+        const video = document.getElementById('video');
+        if (video?.src) {
+          const lessonName = getLessonNameFromSrc(video.src);
+          if (lessonName) levels.push(lessonName);
+        }
+      }
+
+      breadcrumbEl.innerHTML = levels
+        .map((level, index) => {
+          return `<span class="breadcrumb-level">${level}</span>${index < levels.length - 1 ? ' › ' : ''}`;
+        })
+        .join('');
+    }
+
+    // Helper: verifica se elemento está visível
+    function isElementVisible(id) {
+      const el = document.getElementById(id);
+      return el && el.style.display !== 'none';
+    }
+
+    // Helper: verifica se seções do game estão visíveis
+    function areGameSectionsVisible() {
+      const ids = ['timerSection', 'videoSection', 'shuffledWordsSection'];
+      return ids.every(id => isElementVisible(id));
+    }
+
+    // Helper: extrai nome da lição do src do vídeo
+    function getLessonNameFromSrc(src) {
+      if (!src) return null;
+      const parts = decodeURIComponent(src).split('/');
+      const filename = parts[parts.length - 1];
+      const name = filename.replace(/\.(mp4|webm)$/i, '').replace(/[_-]/g, ' ');
+      return name;
+    }
 
     //=============================
     // Função: Carrega e Processa o SRT
@@ -608,6 +666,7 @@
     })();
     
     document.addEventListener('DOMContentLoaded', () => {
+      updateBreadcrumb();
       hideGameSectionsById();
       loadAllLessons();
     });
