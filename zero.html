@@ -91,7 +91,7 @@
   </section>
 </main>
 
-<footer style="
+<footer id="lessons-footer" style="
   position: fixed;
   bottom: 0;
   left: 0;
@@ -104,8 +104,8 @@
 ">
   <nav>
     <button onclick="goToSearch()">🔍 Pesquisar</button>
-    <button onclick="goToAvulsas()">📂 Avulsas</button>
-    <button onclick="goToTrilha()">🛤️ Trilha</button>
+    <button onclick="goToAvulsasLessons()">📂 Avulsas</button>
+    <button onclick="goToTrackLessons()">🛤️ Trilha</button>
   </nav>
 </footer>
 
@@ -138,51 +138,58 @@
     const avulsasLessons = [
       {
         name: "I'm Gonna Be - 500 Miles.mp4",
-        srtUrl: "https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.srt",
-        videoUrl: "https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.mp4"
+        srtUrl: "https://files.catbox.moe/wt145j.srt",
+        videoUrl: "https://files.catbox.moe/8pzqza.mp4"
       }
     ];
 
     const trilhaLessons = [
       {
         name: "Chapter 1 - Welcome & Nationalities",
-        srtUrl: "https://f005.backblazeb2.com/file/Trilha/Chapter-1.-Welcome-%26-Nationalities.srt",
-        videoUrl: "https://f005.backblazeb2.com/file/Trilha/Chapter-1.-Welcome-%26-Nationalities.mp4"
+        srtUrl: "https://files.catbox.moe/wt145j.srt",
+        videoUrl: "https://files.catbox.moe/8pzqza.mp4"
       }
     ];
     
     //=============================
     // Breadcrumb
     //=============================    
-    function updateBreadcrumb() {
-      const breadcrumb = document.getElementById('breadcrumb');
-      if (!breadcrumb) return;
+function updateBreadcrumb() {
+  const breadcrumb = document.getElementById('breadcrumb');
+  if (!breadcrumb) return;
 
-      let trail = ['🎮 SpeedPhrase'];
+  const trail = [];
 
-      const trilhaVisible = isSectionVisible('trilha-section');
-      const avulsasVisible = isSectionVisible('avulsas-section');
-      const gameVisible = isSectionVisible('videoSection');
+  // Home
+  trail.push(`<a href="#" onclick="showHome()">🎮 SpeedPhrase</a>`);
 
-      if (trilhaVisible && avulsasVisible) {
-        trail.push('Avulsas & Trilha');
-      } else if (trilhaVisible) {
-        trail.push('Trilha');
-      } else if (avulsasVisible) {
-        trail.push('Avulsas');
-      }
+  const trilhaVisible = isSectionVisible('trilha-section');
+  const avulsasVisible = isSectionVisible('avulsas-section');
+  const gameVisible = isSectionVisible('videoSection');
 
-      if (gameVisible && currentLessonName) {
-        if (currentLessonContext === 'trilha') {
-          trail.push('Trilha');
-        } else if (currentLessonContext === 'avulsas') {
-          trail.push('Avulsas');
-        }
-        trail.push(currentLessonName);
-      }
+  const sectionTrail = new Set();
 
-      breadcrumb.textContent = trail.join(' › ');
+  if (trilhaVisible && avulsasVisible) {
+    sectionTrail.add('Avulsas & Trilha');
+    trail.push(`<a href="#" onclick="showLessonSections()">Avulsas & Trilha</a>`);
+  } else if (trilhaVisible) {
+    sectionTrail.add('Trilha');
+    trail.push(`<a href="#" onclick="showTrilhaSections()">Trilha</a>`);
+  } else if (avulsasVisible) {
+    sectionTrail.add('Avulsas');
+    trail.push(`<a href="#" onclick="showAvulsasSections()">Avulsas</a>`);
+  }
+
+  if (gameVisible && currentLessonName) {
+    const label = currentLessonContext === 'trilha' ? 'Trilha' : 'Avulsas';
+    if (!sectionTrail.has(label)) {
+      trail.push(`<a href="#" onclick="navigateTo('${label.toLowerCase()}')">${label}</a>`);
     }
+    trail.push(`<span>${currentLessonName}</span>`);
+  }
+
+  breadcrumb.innerHTML = trail.join(' › ');
+}
 
     function isSectionVisible(id) {
       const el = document.getElementById(id);
@@ -518,25 +525,27 @@
     //=============================
     // ---------------
     //=============================
-    function goToAvulsas() {
+    function goToAvulsasLessons() {
       hideGameSectionsById();
       hideLessonSections();
-      showOnlySection('avulsas-section');
+      showOnlySection('avulsas-section', 'lessons-footer');
       generateVideoCards(avulsasLessons, 'avulsas-grid', handleLessonClick);
       updateBreadcrumb()
     }
 
-    function goToTrilha() {
+    function goToTrackLessons() {
       hideGameSectionsById();
       hideLessonSections();
-      showOnlySection('trilha-section');
+      showOnlySection('trilha-section', 'lessons-footer');
       generateVideoCards(trilhaLessons, 'trilha-grid', handleLessonClick);
       updateBreadcrumb()
     }
 
-    function showOnlySection(sectionId) {
-      const el = document.getElementById(sectionId);
-      if (el) el.style.display = '';
+    function showOnlySection(...sectionIds) {
+      sectionIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = '';
+      });
     }
 
 	//=============================
@@ -582,7 +591,8 @@
     //=============================
     function hideAvulsasSections() {
       const idsToHide = [
-        'avulsas-section'
+        'avulsas-section',
+        'lessons-footer'
       ];
 
       idsToHide.forEach(id => {
@@ -593,7 +603,8 @@
     
     function hideTrilhaSections() {
       const idsToHide = [
-        'trilha-section'
+        'trilha-section',
+        'lessons-footer'
       ];
 
       idsToHide.forEach(id => {
@@ -612,7 +623,8 @@
     //=============================
     function showAvulsasSections() {
       const idsToShow = [
-        'avulsas-section'
+        'avulsas-section',
+        'lessons-footer'
       ];
 
       idsToShow.forEach(id => {
@@ -623,7 +635,8 @@
     
     function showTrilhaSections() {
       const idsToShow = [
-        'trilha-section'
+        'trilha-section',
+        'lessons-footer'
       ];
 
       idsToShow.forEach(id => {
@@ -635,7 +648,49 @@
     function showLessonSections() {
       showAvulsasSections();
       showTrilhaSections();
+      hideModeSectionById()
     }    
+    
+    //=============================
+    // Oculta mode section pelo ID
+    //=============================
+    function hideModeSectionById() {
+      const idsToHide = [
+        'mode-section'
+      ];
+
+      idsToHide.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
+
+        pauseVideo();
+    }   
+    
+    //=============================
+    // Mostra mode section pelo ID
+    //=============================
+    function showModeSectionById() {
+      const idsToHide = [
+        'mode-section'
+      ];
+
+      idsToShow.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = '';
+      });
+
+        pauseVideo();
+    }  
+       
+    //=============================
+    // Mostra Home
+    //=============================
+    function showHome() {
+      showModeSectionById()
+      hideGameSectionsById();
+      hideLessonSections();
+    }
     
     //=========================
     // Bloco lessons cards
@@ -723,6 +778,25 @@
       });
 
       prepareCurrentSubtitle();
+    }    
+
+    //=============================
+    // Bloco Multiplayer
+    //=============================
+    // Seleciona o Modo
+    //=============================
+    function selectPlayerMode(mode) {
+        if (mode === 'solo') {
+        	showLessonSelection()
+        } else if (mode === 'multi') {
+            joinOrCreateMatch();
+        }
+    }
+	
+    function showLessonSelection() {
+      showLessonSections();
+      updateBreadcrumb();
+      hideModeSectionById()
     }
 
     //=============================
@@ -731,9 +805,9 @@
     document.addEventListener('DOMContentLoaded', () => {
       updateBreadcrumb();
       hideGameSectionsById();
+      hideLessonSections();
       loadAllLessons();
     });
-
 
   </script>
 
