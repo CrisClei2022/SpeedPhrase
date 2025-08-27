@@ -17,6 +17,9 @@
 <body>
 
   <h1>Exercício com Legendas</h1>
+  
+  <div id="timer" style="margin-top: 10px; font-weight: bold;"></div>
+  <div id="totalTime" style="margin-top: 5px; font-weight: bold;"></div>
 
   <div class="video-container">
     <video id="video" width="70%" height="340" controls>
@@ -26,7 +29,6 @@
 
   <div class="controls">
     <button onclick="playCurrentSubtitle()">▶️ Tocar trecho</button>
-    <button onclick="nextPhrase()">➡️ Próxima frase</button>
   </div>
 
   <div class="formed-sentence" id="formedSentence"></div>
@@ -39,6 +41,14 @@
     let subtitles = [];
     let currentIndex = 0;
     let formedWords = [];
+    
+    //=============================
+    // Estado de Timer
+    //=============================
+    let startTime = 0;
+    let totalElapsedTime = 0;
+    let timerInterval = null;
+
 
     //=============================
     // Função: Carrega e Processa o SRT
@@ -157,11 +167,21 @@
     }
 
     //=============================
-    // Verifica se frase está completa
+    // Verifica se frase está completa e correta
     //=============================
     function checkIfSentenceIsComplete(original) {
       if (formedWords.join(' ') === original) {
-        setTimeout(() => alert('✅ Frase correta!'), 200);
+        setTimeout(() => {
+          const timeUsed = stopTimerAndGetElapsed();
+          console.log(`⏱️ Tempo para essa frase: ${timeUsed}s`);
+          displayTotalTime(); // atualiza tempo acumulado na tela
+
+          if (currentIndex < subtitles.length - 1) {
+            nextPhrase();
+          } else {
+            alert('🎉 Todas as frases completas! Lição finalizada.');
+          }
+        }, 200);
       }
     }
     
@@ -190,8 +210,14 @@
     function prepareCurrentSubtitle() {
       const sub = subtitles[currentIndex];
       const shuffled = shuffleWords(sub.text);
+
       displayShuffledWords(shuffled, sub.text);
+
+      const timeLimit = getTimeLimitForSentence(sub.text);
+      startCountdown(timeLimit);
+      startTimer(); // começa a contar tempo real
     }
+
 
     //=============================
     // Função: Toca vídeo no trecho da legenda
@@ -205,6 +231,62 @@
       const duration = sub.end - sub.start;
       setTimeout(() => video.pause(), duration * 1000);
     }
+    
+    //=============================
+    // Bloco de Timer
+    //=============================
+    // Retorna tempo (segundos) para frase (palavras / 5)
+    //=============================
+    function getTimeLimitForSentence(sentence) {
+      const wordCount = sentence.trim().split(/\s+/).length;
+      return Math.ceil(wordCount * 3);
+    }
+
+    //=============================
+    // Inicia cronômetro regressivo na tela
+    //=============================
+    function startCountdown(seconds) {
+      const display = document.getElementById('timer');
+      let remaining = seconds;
+
+      clearInterval(timerInterval); // limpa cronômetros anteriores
+      display.textContent = `⏳ ${remaining}s`;
+
+      timerInterval = setInterval(() => {
+        remaining--;
+        display.textContent = `⏳ ${remaining}s`;
+        if (remaining <= 0) {
+          clearInterval(timerInterval);
+          display.textContent = '⏰ Tempo estimado esgotado!';
+        }
+      }, 1000);
+    }
+
+    //=============================
+    // Inicia contagem de tempo real do usuário
+    //=============================
+    function startTimer() {
+      startTime = performance.now(); // mais preciso que Date.now()
+    }
+
+    //=============================
+    // Calcula tempo gasto em segundos
+    //=============================
+    function stopTimerAndGetElapsed() {
+      const endTime = performance.now();
+      const elapsed = (endTime - startTime) / 1000; // em segundos
+      totalElapsedTime += elapsed;
+      return elapsed.toFixed(2);
+    }
+
+    //=============================
+    // Exibe o tempo total acumulado
+    //=============================
+    function displayTotalTime() {
+      const totalTimeElement = document.getElementById('totalTime');
+      totalTimeElement.textContent = `⏱️ Tempo total: ${totalElapsedTime.toFixed(2)}s`;
+    }
+
 
     //=============================
     // Inicialização
