@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Treino com Legendas</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f9f9f9; padding: 20px; }
+    .video-container, .words-container, .formed-sentence, .controls { margin-top: 20px; }
+    .word { display: inline-block; margin: 5px; padding: 10px 15px; background: #eee; border-radius: 5px; cursor: pointer; }
+    .word.correct { background-color: #c8f7c5; }
+    .word.incorrect { background-color: #f7c5c5; }
+    .formed-sentence { font-weight: bold; margin-top: 10px; }
+    button { margin-top: 10px; padding: 10px 20px; }
+  </style>
+</head>
+<body>
+
+  <h1>Exercício com Legendas</h1>
+
+  <div class="video-container">
+    <video id="video" width="70%" height="340" controls>
+      <source src="https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.mp4" type="video/mp4">
+    </video>
+  </div>
+
+  <div class="controls">
+    <button onclick="playCurrentSubtitle()">▶️ Tocar trecho</button>
+    <button onclick="nextPhrase()">➡️ Próxima frase</button>
+  </div>
+
+  <div class="formed-sentence" id="formedSentence"></div>
+  <div class="words-container" id="shuffledWords"></div>
+
+  <script>
+    //=============================
+    // Estado da Aplicação
+    //=============================
+    let subtitles = [];
+    let currentIndex = 0;
+    let formedWords = [];
+
+    //=============================
+    // Função: Carrega e Processa o SRT
+    //=============================
+    async function loadSrt(url) {
+      const res = await fetch(url);
+      const text = await res.text();
+      return parseSRT(text);
+    }
+
+    //=============================
+    // Função: Parser SRT simples
+    //=============================
+    function parseSRT(srt) {
+      const regex = /(\d+)\s+(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\s+([\s\S]*?)(?=\n{2,}|$)/g;
+      let result = [];
+      let match;
+      while ((match = regex.exec(srt)) !== null) {
+        result.push({
+          index: Number(match[1]),
+          start: timeToSeconds(match[2]),
+          end: timeToSeconds(match[3]),
+          text: match[4].replace(/\n/g, ' ').trim()
+        });
+      }
+      return result;
+    }
+
+    //=============================
+    // Função: Converte tempo SRT para segundos
+    //=============================
+    function timeToSeconds(time) {
+      const [h, m, s] = time.replace(',', '.').split(':');
+      return parseFloat(h) * 3600 + parseFloat(m) * 60 + parseFloat(s);
+    }
+
+    //=============================
+    // Função: Embaralha palavras
+    //=============================
+    function shuffleWords(text) {
+      const words = text.split(' ');
+      for (let i = words.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [words[i], words[j]] = [words[j], words[i]];
+      }
+      return words;
+    }
+
+    //=============================
+    // Função: Exibe palavras embaralhadas
+    //=============================
+    function displayShuffledWords(words, original) {
+      const container = document.getElementById('shuffledWords');
+      container.innerHTML = '';
+      formedWords = [];
+
+      words.forEach(word => {
+        const span = document.createElement('span');
+        span.className = 'word';
+        span.textContent = word;
+        span.onclick = () => handleWordClick(word, span, original);
+        container.appendChild(span);
+      });
+
+      updateFormedSentence();
+    }
+    
+    //=============================
+    // Função principal de clique
+    //=============================
+    function handleWordClick(word, element, original) {
+      if (isCorrectWord(word, original)) {
+        processCorrectWord(word, element);
+        clearIncorrectWords();
+      } else {
+        markWordAsIncorrect(element);
+      }
+
+      updateFormedSentence();
+      checkIfSentenceIsComplete(original);
+    }
+
+	//=============================
+    // Verifica se palavra está correta
+    //=============================
+    function isCorrectWord(word, original) {
+      const expectedWords = original.split(' ');
+      const currentIndex = formedWords.length;
+      return word === expectedWords[currentIndex];
+    }
+
+    //=============================
+    // Processa palavra correta
+    //=============================
+    function processCorrectWord(word, element) {
+      formedWords.push(word);
+      element.classList.add('correct');
+      element.onclick = null;
+    }
+
+    //=============================
+    // Marca palavra incorreta (não adiciona à frase)
+    //=============================
+    function markWordAsIncorrect(element) {
+      element.classList.add('incorrect');
+    }
+
+    //=============================
+    // Limpa marcações incorretas
+    //=============================
+    function clearIncorrectWords() {
+      const incorrectElements = document.querySelectorAll('.word.incorrect');
+      incorrectElements.forEach(el => {
+        el.classList.remove('incorrect');
+      });
+    }
+
+    //=============================
+    // Verifica se frase está completa
+    //=============================
+    function checkIfSentenceIsComplete(original) {
+      if (formedWords.join(' ') === original) {
+        setTimeout(() => alert('✅ Frase correta!'), 200);
+      }
+    }
+    
+    //=============================
+    // Função: Atualiza frase formada
+    //=============================
+    function updateFormedSentence() {
+      document.getElementById('formedSentence').textContent = formedWords.join(' ');
+    }
+
+    //=============================
+    // Função: Avança para próxima frase
+    //=============================
+    function nextPhrase() {
+      if (currentIndex < subtitles.length - 1) {
+        currentIndex++;
+        prepareCurrentSubtitle();
+      } else {
+        alert("✅ Fim das legendas!");
+      }
+    }
+
+    //=============================
+    // Função: Prepara legenda atual
+    //=============================
+    function prepareCurrentSubtitle() {
+      const sub = subtitles[currentIndex];
+      const shuffled = shuffleWords(sub.text);
+      displayShuffledWords(shuffled, sub.text);
+    }
+
+    //=============================
+    // Função: Toca vídeo no trecho da legenda
+    //=============================
+    function playCurrentSubtitle() {
+      const video = document.getElementById('video');
+      const sub = subtitles[currentIndex];
+      video.currentTime = sub.start;
+      video.play();
+
+      const duration = sub.end - sub.start;
+      setTimeout(() => video.pause(), duration * 1000);
+    }
+
+    //=============================
+    // Inicialização
+    //=============================
+    (async () => {
+      subtitles = await loadSrt("https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.srt");
+      prepareCurrentSubtitle();
+    })();
+
+  </script>
+
+</body>
+</html>
