@@ -41,6 +41,17 @@
     .video-card:hover {
       transform: scale(1.03);
     }
+    
+    .video-container {
+    text-align: center;
+    margin-top: 20px;
+    }
+    
+    #video {
+        max-width: 100%;
+        height: auto;
+        width: 70%;
+    }
   </style>
 </head>
 <body>
@@ -59,14 +70,8 @@
     <div id="trilha-grid" class="video-grid"></div>
   </section>
 
-  <!-- Seção do timer, separado do header -->
-  <section id="timerSection" style="margin-top: 10px; font-weight: bold;">
-    
-    <div id="totalTime" style="margin-top: 5px;"></div>
-  </section>
-
   <!-- Seção do vídeo e controles -->
-  <section id="videoSection" style="margin-top: 20px;">
+  <section id="videoSection" style="margin-top: 0;">
     <div class="video-container">
       <video id="video" width="70%" height="340" controls>
         <source src="https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.mp4" type="video/mp4" />
@@ -546,14 +551,21 @@ function loadAllLessons() {
 async function handleLessonClick(lesson) {
     console.log('Lição selecionada:', lesson);
     hideAllSections();
+    
+    // Centralizar o conteúdo do jogo
+    const main = document.querySelector('main');
+    main.style.maxWidth = '800px';
+    main.style.margin = '0 auto';
+    main.style.paddingTop = '20px';
+    
     document.getElementById('videoSection').style.display = '';
     document.getElementById('formedSentenceSection').style.display = '';
     document.getElementById('shuffledWordsSection').style.display = '';
 
     const video = document.getElementById('video');
     video.src = lesson.videoUrl;
+    
     subtitles = await loadSrt(lesson.srtUrl);
-
     totalEstimatedTime = subtitles.reduce((sum, sub) => {
         return sum + getTimeLimitForSentence(sub.text);
     }, 0);
