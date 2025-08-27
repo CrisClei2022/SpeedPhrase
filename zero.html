@@ -250,20 +250,21 @@
       return words;
     }
 
-    //=============================
-    // Função: Exibe palavras embaralhadas
-    //=============================
+    //=========================================
+    // Aplica CSS e exibe palavras embaralhadas
+    //=========================================
     function displayShuffledWords(words, original) {
       const container = document.getElementById('shuffledWords');
       container.innerHTML = '';
       formedWords = [];
 
       words.forEach(word => {
-        const span = document.createElement('span');
-        span.className = 'word';
-        span.textContent = word;
-        span.onclick = () => handleWordClick(word, span, original);
-        container.appendChild(span);
+        const btn = document.createElement('button');
+        btn.className = 'word';
+        btn.textContent = word;
+        btn.type = 'button'; // evita comportamento padrão de submit
+        btn.onclick = () => handleWordClick(word, btn, original);
+        container.appendChild(btn);
       });
 
       updateFormedSentence();
@@ -391,9 +392,9 @@
       }
     }
 
-    //=============================
-    // Função: Monitora o vídeo para pausar no tempo final usando requestVideoFrameCallback
-    //=============================
+    //=============================================================
+    // Pausa víedo no tempo final usando requestVideoFrameCallback
+    //=============================================================
     function monitorVideoEnd(video, endTime) {
       function checkFrame() {
         if (video.currentTime >= endTime) {
@@ -430,6 +431,17 @@
       const wordCount = sentence.trim().split(/\s+/).length;
       return Math.ceil(wordCount * 3);
     }
+    
+    // Função para formatar tempo em minutos e segundos
+    function formatTime(seconds) {
+      if (seconds < 60) {
+        return seconds.toFixed(2) + 's';
+      } else {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = (seconds % 60).toFixed(2);
+        return `${minutes}m ${remainingSeconds}s`;
+      }
+    }
 
     // Atualiza contagem regressiva
     function startCountdown(seconds) {
@@ -460,7 +472,7 @@
         const currentElapsed = (now - startTime) / 1000;
         const liveTotal = totalElapsedTime + currentElapsed;
 
-        liveDisplay.textContent = `⏳ Tempo total ao vivo: ${liveTotal.toFixed(2)}s`;
+        liveDisplay.textContent = `⏳ Tempo total ao vivo: ${formatTime(liveTotal)}`;
       }, 200);
     }
 
@@ -475,7 +487,7 @@
     // Exibe o tempo total fixo acumulado
     function displayTotalTime() {
       const totalTimeElement = document.getElementById('totalTime');
-      totalTimeElement.textContent = `⏱️ Tempo total: ${totalElapsedTime.toFixed(2)}s`;
+      totalTimeElement.textContent = `⏱️ Tempo total: ${formatTime(totalElapsedTime)}`;
     }
 
     // Ao iniciar a frase
