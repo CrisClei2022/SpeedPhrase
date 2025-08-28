@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velocímetro de Tempo</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+            flex-direction: column;
+        }
+
+        .velocimetro-container {
+            position: relative;
+            width: 300px;
+            height: 150px;
+            overflow: hidden;
+            margin-top: 50px;
+        }
+
+        .meio-arco-base {
+            width: 300px;
+            height: 150px;
+            border-radius: 150px 150px 0 0;
+            border: 20px solid #ddd;
+            border-bottom: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            box-sizing: border-box;
+        }
+
+        .meio-arco-progresso {
+            width: 300px;
+            height: 150px;
+            border-radius: 150px 150px 0 0;
+            border: 20px solid #4CAF50; /* Cor inicial verde */
+            border-bottom: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            box-sizing: border-box;
+            transform: rotate(0deg); /* Inicia com 0 rotação */
+            transform-origin: bottom center;
+            transition: transform 1s ease-in-out, border-color 1s ease-in-out;
+        }
+
+        .percentual {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -10%);
+            font-size: 3em;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="velocimetro-container">
+        <div class="meio-arco-base"></div>
+        <div class="meio-arco-progresso" id="progressoBarra"></div>
+        <div class="percentual" id="percentualValor">0%</div>
+    </div>
+
+    <script>
+        const progressoBarra = document.getElementById('progressoBarra');
+        const percentualValor = document.getElementById('percentualValor');
+        
+        const duracaoTotal = 10; // Duração em segundos
+        let tempoAtual = 0; // Inicia em 0 segundos
+
+        function atualizarVelocimetro() {
+            if (tempoAtual <= duracaoTotal) {
+                const percentual = (tempoAtual / duracaoTotal) * 100;
+                const rotacao = (percentual / 100) * -180; // Rotação no sentido horário
+                progressoBarra.style.transform = `rotate(${rotacao}deg)`;
+                
+                percentualValor.innerText = `${percentual.toFixed(0)}%`;
+
+                // Muda a cor da barra com base no percentual
+                if (percentual < 15) {
+                    progressoBarra.style.borderColor = '#4CAF50'; // Verde
+                } else if (percentual < 30) {
+                    progressoBarra.style.borderColor = '#FFC107'; // Amarelo
+                } else {
+                    progressoBarra.style.borderColor = '#F44336'; // Vermelho
+                }
+
+                tempoAtual++;
+            } else {
+                clearInterval(intervalo);
+                percentualValor.innerText = 'Fim!';
+            }
+        }
+
+        // Inicia a contagem progressiva
+        const intervalo = setInterval(atualizarVelocimetro, 1000);
+        atualizarVelocimetro(); // Chama a função uma vez para inicializar
+    </script>
+</body>
+</html>
