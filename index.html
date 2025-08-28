@@ -41,15 +41,73 @@
     .video-card:hover {
       transform: scale(1.03);
     }
+    
+    .video-container {
+    text-align: center;
+    margin-top: 20px;
+    }
+    
+    #video {
+        max-width: 100%;
+        height: auto;
+        width: 70%;
+    }
   </style>
 </head>
 <body>
 
 <main style="padding-bottom: 80px;">
-  <!-- Header da página com título -->
-  <header>
-    <h1>SpeedPhrase <span id="timer"></span></h1>
-  </header>
+  <!-- Header fixo com navegação
+  Por que esta abordagem é profissional:
+  ✅ Separação de responsabilidades - Timer não mistura com título 
+  ✅ Visual limpo - Badges discretos mas visíveis 
+  ✅ Responsivo - Se adapta a diferentes tamanhos de tela 
+  ✅ Contextual - Só aparece quando relevante
+  ✅ Padrão da indústria - Similar a apps como Duolingo, Khan Academy
+  O timer fica como um badge verde elegante ao lado do progresso, mantendo o header profissional e organizados.
+  -->
+<header id="mainHeader" class="main-header">
+  <nav class="header-nav">
+    <button id="homeBtn" class="nav-button home-button" onclick="NavigationController.goHome()">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-text">Home</span>
+    </button>
+    
+    <button id="backBtn" class="nav-button back-button hidden" onclick="NavigationController.goBack()">
+      <span class="nav-icon">←</span>
+      <span class="nav-text">Voltar</span>
+    </button>
+    
+    <div class="header-center">
+      <h1 id="headerTitle" class="header-title">SpeedPhrase</h1>
+      <div id="exerciseStatus" class="exercise-status hidden">
+        <span id="timer" class="timer-badge"></span>
+        <span id="progressBadge" class="progress-badge"></span>
+      </div>
+    </div>
+    
+    <button id="settingsBtn" class="nav-button settings-button" onclick="NavigationController.openSettings()">
+      <span class="nav-icon">⚙️</span>
+    </button>
+  </nav>
+</header>
+  
+  <!-- Seção de seleção de modo de jogo -->
+<section id="gameModeSection" class="game-mode-container">
+  <h2>Escolha o modo de jogo</h2>
+  <div class="mode-buttons">
+    <button class="mode-button" onclick="selectGameMode('solo')">
+      <span class="mode-icon">🎯</span>
+      <span class="mode-title">Solo</span>
+      <span class="mode-description">Jogue no seu próprio ritmo</span>
+    </button>
+    <button class="mode-button" onclick="selectGameMode('multiplayer')">
+      <span class="mode-icon">👥</span>
+      <span class="mode-title">Multiplayer</span>
+      <span class="mode-description">Desafie outros jogadores</span>
+    </button>
+  </div>
+</section>
   
   <section id="avulsas-section" class="video-grid-container">
     <div id="avulsas-grid" class="video-grid"></div>
@@ -59,14 +117,8 @@
     <div id="trilha-grid" class="video-grid"></div>
   </section>
 
-  <!-- Seção do timer, separado do header -->
-  <section id="timerSection" style="margin-top: 10px; font-weight: bold;">
-    
-    <div id="totalTime" style="margin-top: 5px;"></div>
-  </section>
-
   <!-- Seção do vídeo e controles -->
-  <section id="videoSection" style="margin-top: 20px;">
+  <section id="videoSection" style="margin-top: 0;">
     <div class="video-container">
       <video id="video" width="70%" height="340" controls>
         <source src="https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.mp4" type="video/mp4" />
@@ -109,12 +161,13 @@
 
 
   <script>
-    //=============================
+//=============================
 // Estado da Aplicação
 //=============================
 let subtitles = [];
 let currentIndex = 0;
 let formedWords = [];
+let currentGameMode = null;
 
 //=============================
 // Estado de Timer
@@ -138,6 +191,232 @@ const trilhaLessons = [{
     srtUrl: "https://files.catbox.moe/wt145j.srt",
     videoUrl: "https://files.catbox.moe/8pzqza.mp4"
 }];
+
+//=============================
+// Game Mode Selection
+//=============================
+function selectGameMode(mode) {
+    currentGameMode = mode;
+    console.log(`Modo selecionado: ${mode}`);
+    
+    NavigationController.navigateTo('lessonSelection');
+    NavigationController.showLessonSelection();
+}
+
+//=============================
+// Navigation Controller
+//=============================
+const NavigationController = {
+  currentSection: 'gameMode',
+  navigationStack: [],
+  
+  // Simplificar configurações - tratar lições como estado único
+  sectionConfig: {
+    gameMode: {
+      title: 'SpeedPhrase',
+      showBack: false,
+      showHome: true,
+      showFooter: false
+    },
+    lessonSelection: {
+      title:'',
+      showBack: true,
+      showHome: true,
+      showFooter: true
+    },
+    exercise: {
+      title: 'Exercício',
+      showBack: true,
+      showHome: true,
+      showFooter: false
+    }
+  },
+
+
+  // incluir limpeza
+  // controlar footer
+  navigateTo(section, pushToStack = true) {
+    // Se saindo de um exercício, pausar tudo
+    if (this.currentSection === 'exercise' && section !== 'exercise') {
+      this.pauseAllResources();
+      this.hideExerciseStatus();
+    }
+
+    if (pushToStack && this.currentSection !== section) {
+      this.navigationStack.push(this.currentSection);
+    }
+    
+    this.currentSection = section;
+    this.updateHeader();
+    this.updateFooterVisibility(); // Adicionar controle do footer
+  },
+    
+  // Nova função para controlar footer
+  updateFooterVisibility() {
+    const config = this.sectionConfig[this.currentSection];
+    if (config && config.showFooter) {
+      showFooter();
+    } else {
+      hideFooter();
+    }
+  },
+  
+  // Voltar
+  // incluir limpeza quando necessário
+  // manter estado de lições
+  goBack() {
+    if (this.currentSection === 'exercise') {
+      this.pauseAllResources();
+      this.hideExerciseStatus();
+      // Voltar sempre para seleção de lições (com footer)
+      this.navigateToSection('lessonSelection');
+      return;
+    }
+
+    if (this.navigationStack.length > 0) {
+      const previousSection = this.navigationStack.pop();
+      this.navigateToSection(previousSection);
+    }
+  },
+    
+  // Modificar goHome para garantir limpeza completa
+  goHome() {
+    this.pauseAllResources(); // Pausar tudo antes de ir para home
+    this.hideExerciseStatus();
+    this.navigationStack = [];
+    this.currentSection = 'gameMode';
+    this.showGameModeSelection();
+    this.updateHeader();
+  },
+
+  // Abrir configurações
+  openSettings() {
+    alert('⚙️ Configurações em desenvolvimento');
+  },
+
+  // Atualizar header baseado na seção atual
+    updateHeader() {
+      const config = this.sectionConfig[this.currentSection];
+      if (!config) return;
+    
+      // Obter título dinâmico para lessonSelection
+      let title = config.title;
+      if (this.currentSection === 'lessonSelection') {
+        title = this.getLessonSelectionTitle();
+      }
+    
+      // Atualizar título
+      document.getElementById('headerTitle').textContent = title;
+    
+      // Mostrar/esconder botão voltar
+      const backBtn = document.getElementById('backBtn');
+      if (config.showBack && this.navigationStack.length > 0) {
+        backBtn.classList.remove('hidden');
+      } else {
+        backBtn.classList.add('hidden');
+      }
+    },
+    
+  // Navegar para seção específica
+  navigateToSection(section) {
+    switch(section) {
+      case 'gameMode':
+        this.showGameModeSelection();
+        break;
+      case 'lessonSelection':
+        // Manter a última categoria visitada ou ir para avulsas por padrão
+        this.showLessonSelection();
+        break;
+      default:
+        this.showGameModeSelection();
+    }
+    this.currentSection = section;
+    this.updateHeader();
+    this.updateFooterVisibility();
+  },
+
+  // Mostrar seleção de modo
+  showGameModeSelection() {
+    hideAllSections();
+    hideFooter();
+    document.getElementById('gameModeSection').style.display = '';
+  },
+  
+    showExerciseStatus() {
+      document.getElementById('exerciseStatus').classList.remove('hidden');
+      this.updateProgressBadge();
+    },
+    
+    hideExerciseStatus() {
+      document.getElementById('exerciseStatus').classList.add('hidden');
+    },
+    
+    updateProgressBadge() {
+      const badge = document.getElementById('progressBadge');
+      if (subtitles.length > 0) {
+        badge.textContent = `${currentIndex + 1}/${subtitles.length}`;
+      }
+    },
+    showLessonSelection() {
+      hideAllSections();
+      
+      // Sempre mostrar avulsas quando vem da seleção de modo
+      document.getElementById('avulsas-section').style.display = '';
+      generateVideoCards(avulsasLessons, 'avulsas-grid', handleLessonClick);
+      
+      // Definir avulsas como categoria atual se não havia nenhuma
+      if (!localStorage.getItem('lastLessonCategory')) {
+        localStorage.setItem('lastLessonCategory', 'avulsas');
+      }
+    },
+    
+  // Pausar todos os recursos ativos
+  pauseAllResources() {
+    this.pauseVideo();
+    this.stopTimers();
+    this.resetExerciseState();
+  },
+
+  // Pausar vídeo
+  pauseVideo() {
+    const video = document.getElementById('video');
+    if (video && !video.paused) {
+      video.pause();
+      console.log('🎬 Vídeo pausado pela navegação');
+    }
+  },
+
+  // Parar todos os timers
+  stopTimers() {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      console.log('⏱️ Timer de performance interrompido');
+    }
+  },
+
+  // Resetar estado do exercício
+  resetExerciseState() {
+    formedWords = [];
+    startTime = 0;
+    
+    // Limpar display do timer
+    const timerElement = document.getElementById('timer');
+    if (timerElement) {
+      timerElement.innerHTML = '';
+    }
+  },
+
+    getLessonSelectionTitle() {
+      const mode = currentGameMode ? 
+        currentGameMode.charAt(0).toUpperCase() + currentGameMode.slice(1) : 
+        '';
+      const category = localStorage.getItem('lastLessonCategory') || 'avulsas';
+      const categoryName = category.charAt(0).toUpperCase() + category.slice(1);
+      
+      return `${mode} - ${categoryName}`;
+    }
+};
 
 //=============================
 // Função: Carrega e Processa o SRT
@@ -261,7 +540,8 @@ function clearIncorrectWords() {
 //=============================
 async function checkIfSentenceIsComplete(original) {
     if (formedWords.join(' ') === original) {
-        clearInterval(timerInterval);
+        // Parar timer antes de qualquer ação
+        NavigationController.stopTimers();
         
         const timeUsed = stopTimerAndGetElapsed();
         console.log(`⏱️ Tempo para essa frase: ${timeUsed.toFixed(2)}s`);
@@ -269,6 +549,12 @@ async function checkIfSentenceIsComplete(original) {
         // Toca o vídeo e aguarda terminar
         console.log('🎬 Reproduzindo trecho da frase completada...');
         await playCurrentSubtitleAndWait();
+        
+        // Verificar se ainda estamos na seção de exercício antes de continuar
+        if (NavigationController.currentSection !== 'exercise') {
+            console.log('⚠️ Usuário saiu do exercício, interrompendo fluxo');
+            return;
+        }
         
         // Só depois que o vídeo terminou, avança
         if (currentIndex < subtitles.length - 1) {
@@ -306,18 +592,25 @@ function nextPhrase() {
 // Função: Prepara legenda atual
 //=============================
 function prepareCurrentSubtitle() {
+    // Verificar se ainda estamos no exercício
+    if (NavigationController.currentSection !== 'exercise') {
+        console.log('⚠️ Não estamos mais no exercício, cancelando preparação');
+        return;
+    }
+
     const sub = subtitles[currentIndex];
     console.log(`🎬 Preparando frase ${currentIndex + 1}: "${sub.text}"`);
     
     // Limpar estado anterior
     formedWords = [];
-    clearInterval(timerInterval);
+    NavigationController.stopTimers(); // Usar método centralizado
     
     const shuffled = shuffleWords(sub.text);
     displayShuffledWords(shuffled, sub.text);
 
     startTimer();
     startPerformanceUpdate();
+    NavigationController.updateProgressBadge();
     
     // Toca o trecho inicial (sem aguardar)
     playCurrentSubtitle();
@@ -337,7 +630,15 @@ function startPerformanceUpdate() {
 // Função para atualizar o display da performance (Chamada por setInterval e click)
 //=============================
 function updateDisplay() {
+    // Verificar se ainda estamos no exercício
+    if (NavigationController.currentSection !== 'exercise') {
+        NavigationController.stopTimers();
+        return;
+    }
+
     const display = document.getElementById('timer');
+    if (!display) return;
+
     const sub = subtitles[currentIndex];
     const sentenceEstimatedTime = getTimeLimitForSentence(sub.text);
     const elapsed = (performance.now() - startTime) / 1000;
@@ -472,21 +773,57 @@ Desempenho geral: ${totalPerformance.toFixed(2)}%`);
 //=============================
 // Bloco de Footer
 //=============================
+function showFooter() {
+    const footer = document.querySelector('footer');
+    if (footer) footer.style.display = 'block';
+}
+
+function hideFooter() {
+    const footer = document.querySelector('footer');
+    if (footer) footer.style.display = 'none';
+}
+
 function goToSearch() {
     // Função para futuro desenvolvimento
     alert('🔍 Função de pesquisa em desenvolvimento');
 }
 
 function goToAvulsas() {
+    if (!currentGameMode) return;
+    
+    if (NavigationController.currentSection === 'exercise') {
+        NavigationController.pauseAllResources();
+    }
+    
     hideAllSections();
     document.getElementById('avulsas-section').style.display = '';
     generateVideoCards(avulsasLessons, 'avulsas-grid', handleLessonClick);
+    
+    localStorage.setItem('lastLessonCategory', 'avulsas');
+    NavigationController.updateHeader();
+    
+    if (NavigationController.currentSection !== 'lessonSelection') {
+        NavigationController.navigateTo('lessonSelection', false);
+    }
 }
 
 function goToTrilha() {
+    if (!currentGameMode) return;
+    
+    if (NavigationController.currentSection === 'exercise') {
+        NavigationController.pauseAllResources();
+    }
+    
     hideAllSections();
     document.getElementById('trilha-section').style.display = '';
     generateVideoCards(trilhaLessons, 'trilha-grid', handleLessonClick);
+    
+    localStorage.setItem('lastLessonCategory', 'trilha');
+    NavigationController.updateHeader();
+    
+    if (NavigationController.currentSection !== 'lessonSelection') {
+        NavigationController.navigateTo('lessonSelection', false);
+    }
 }
 
 //=============================
@@ -494,6 +831,7 @@ function goToTrilha() {
 //=============================
 function hideAllSections() {
     const sectionsToHide = [
+        'gameModeSection',  // Adicionar esta linha
         'avulsas-section',
         'trilha-section',
         'videoSection',
@@ -545,15 +883,34 @@ function loadAllLessons() {
 //=============================
 async function handleLessonClick(lesson) {
     console.log('Lição selecionada:', lesson);
+    
     hideAllSections();
+    hideFooter();
+    
+    // Centralizar o conteúdo do jogo
+    const main = document.querySelector('main');
+    main.style.maxWidth = '800px';
+    main.style.margin = '0 auto';
+    main.style.paddingTop = '20px';
+    
+    // Mostrar seções do exercício
     document.getElementById('videoSection').style.display = '';
     document.getElementById('formedSentenceSection').style.display = '';
     document.getElementById('shuffledWordsSection').style.display = '';
+    // Configurar header do exercício
+    NavigationController.sectionConfig.exercise.title = lesson.name;
+    NavigationController.navigateTo('exercise');
+    // Mostrar status do exercício
+    NavigationController.showExerciseStatus();
+    
+    // Configurar título com nome da lição
+    NavigationController.sectionConfig.exercise.title = `${lesson.name}`;
+    NavigationController.navigateTo('exercise');
 
     const video = document.getElementById('video');
     video.src = lesson.videoUrl;
+    
     subtitles = await loadSrt(lesson.srtUrl);
-
     totalEstimatedTime = subtitles.reduce((sum, sub) => {
         return sum + getTimeLimitForSentence(sub.text);
     }, 0);
@@ -569,7 +926,21 @@ async function handleLessonClick(lesson) {
 //=============================
 document.addEventListener('DOMContentLoaded', () => {
     loadAllLessons();
-    goToAvulsas();
+    hideFooter();
+    NavigationController.showGameModeSelection();
+    NavigationController.updateHeader();
+});
+
+// Adicionar listener para quando a página é fechada/recarregada
+window.addEventListener('beforeunload', () => {
+    NavigationController.pauseAllResources();
+});
+
+// Adicionar listener para visibilidade da página
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden && NavigationController.currentSection === 'exercise') {
+        NavigationController.pauseVideo();
+    }
 });
 </script>
 </body>
