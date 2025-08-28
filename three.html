@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpeedPhrase</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f9f9f9; padding: 20px; }
+    .video-container, .words-container, .formed-sentence, .controls { margin-top: 20px; }
+    .word { display: inline-block; margin: 5px; padding: 10px 15px; background: #eee; border-radius: 5px; cursor: pointer; }
+    .word.correct { background-color: #c8f7c5; }
+    .word.incorrect { background-color: #f7c5c5; }
+    .formed-sentence { font-weight: bold; margin-top: 10px; }
+    button { margin-top: 10px; padding: 10px 20px; }
+    .video-grid-container {
+      padding: 20px;
+    }
+    
+    .hidden {
+      display: none;
+    }
+
+    .video-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    .video-card {
+      background: #fff;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      width: 200px;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+    }
+
+    .video-card:hover {
+      transform: scale(1.03);
+    }
+    
+    .video-container {
+    text-align: center;
+    margin-top: 20px;
+    }
+    
+    #video {
+        max-width: 100%;
+        height: auto;
+        width: 70%;
+    }
+    
+    /* Adicione este CSS dentro da sua tag <style> */
+
+    .status-line {
+      display: flex; /* Alinha o texto e o ícone na mesma linha */
+      align-items: center;
+      gap: 8px; /* Espaçamento entre o ícone e o texto */
+      font-weight: 500;
+    }
+    
+    /* O pseudo-elemento ::before cria o ícone dinamicamente */
+    .status-line::before {
+      content: ''; /* Ícone vazio por padrão */
+      font-size: 1.2em;
+    }
+    
+    /* Classe para quando o turno está ATIVO */
+    .status-line.turn-active {
+      opacity: 1;
+    }
+    .status-line.turn-active::before {
+      content: '🟢'; /* Ícone verde para turno ativo */
+    }
+    
+    /* Classe para quando o turno está ESPERANDO (vez do oponente) */
+    .status-line.turn-waiting {
+      opacity: 0.6; /* Deixa o status um pouco apagado para indicar inatividade */
+    }
+    .status-line.turn-waiting::before {
+      content: '🔴'; /* Ícone vermelho para turno em espera */
+    }
+
+  </style>
+</head>
+<body>
+
+<main style="padding-bottom: 80px;">
+  <!-- Header fixo com navegação
+  Por que esta abordagem é profissional:
+  ✅ Separação de responsabilidades - Timer não mistura com título 
+  ✅ Visual limpo - Badges discretos mas visíveis 
+  ✅ Responsivo - Se adapta a diferentes tamanhos de tela 
+  ✅ Contextual - Só aparece quando relevante
+  ✅ Padrão da indústria - Similar a apps como Duolingo, Khan Academy
+  O timer fica como um badge verde elegante ao lado do progresso, mantendo o header profissional e organizados.
+  -->
+<header id="mainHeader" class="main-header">
+  <nav class="header-nav">
+    <button id="homeBtn" class="nav-button home-button" onclick="NavigationController.goHome()">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-text">Home</span>
+    </button>
+    
+    <button id="backBtn" class="nav-button back-button hidden" onclick="NavigationController.goBack()">
+      <span class="nav-icon">←</span>
+      <span class="nav-text">Voltar</span>
+    </button>
+    
+    <div class="header-center">
+      <h1 id="headerTitle" class="header-title">SpeedPhrase</h1>
+      
+      <div id="exerciseStatus" class="exercise-status hidden">
+        
+        <div id="playerStatus" class="status-line">
+          <span id="progressBadge" class="progress-badge"></span>
+          <span id="timer" class="timer-badge"></span>
+        </div>
+        
+        <div id="opponentStatus" class="status-line hidden">
+          <span id="opponentProgressBadge" class="progress-badge"></span>
+          <span id="opponentTimer" class="timer-badge"></span>
+        </div>
+        
+      </div>
+    </div>
+
+    
+    <button id="settingsBtn" class="nav-button settings-button" onclick="NavigationController.openSettings()">
+      <span class="nav-icon">⚙️</span>
+    </button>
+  </nav>
+</header>
+  
+  <!-- Seção de seleção de modo de jogo -->
+<section id="gameModeSection" class="game-mode-container">
+  <h2>Escolha o modo de jogo</h2>
+  <div class="mode-buttons">
+    <button class="mode-button" onclick="selectGameMode('solo')">
+      <span class="mode-icon">🎯</span>
+      <span class="mode-title">Solo</span>
+      <span class="mode-description">Jogue no seu próprio ritmo</span>
+    </button>
+    <button class="mode-button" onclick="selectGameMode('multiplayer')">
+      <span class="mode-icon">👥</span>
+      <span class="mode-title">Multiplayer</span>
+      <span class="mode-description">Desafie outros jogadores</span>
+    </button>
+  </div>
+</section>
+  
+  <section id="avulsas-section" class="video-grid-container">
+    <div id="avulsas-grid" class="video-grid"></div>
+  </section>
+
+  <section id="trilha-section" class="video-grid-container">
+    <div id="trilha-grid" class="video-grid"></div>
+  </section>
+
+<!-- ========================================================= -->
+<!-- Bloco HTML para o Plugin Multiplayer (Lobby Unificado v3) -->
+<!-- ========================================================= -->
+<section id="multiplayerLobbySection" style="display: none; text-align: center;">
+
+  <!-- Seção para ENTRAR em partidas existentes (visível por padrão) -->
+  <div id="joinGameView">
+    <button onclick="MultiplayerPlugin.toggleLobbyView()">Ou, Crie Sua Própria Partida</button>
+    <h2>Partidas Abertas</h2>
+    <p>Entre em uma partida para desafiar outro jogador.</p>
+    <div id="waitingGamesList" class="video-grid" style="margin-bottom: 20px;">
+      <!-- Partidas abertas serão injetadas aqui -->
+    </div>
+  </div>
+
+  <!-- Seção para CRIAR uma nova partida (oculta por padrão) -->
+  <div id="createGameView" style="display: none;">
+    <button onclick="MultiplayerPlugin.toggleLobbyView()">Ver Partidas Abertas</button>
+    <h2>Criar Nova Partida</h2>
+    <p>Escolha uma lição e aguarde um oponente.</p>
+    <!-- As seções de lições existentes (avulsas/trilha) serão mostradas aqui -->
+  </div>
+
+</section>
+
+  <!-- Seção do vídeo e controles -->
+  <section id="videoSection" style="margin-top: 0;">
+    <div class="video-container">
+      <video id="video" width="70%" height="340" controls>
+        <source src="https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.mp4" type="video/mp4" />
+      </video>
+    </div>
+    <div class="controls" style="margin-top: 10px;">
+      <button onclick="playCurrentSubtitle()">▶️ Tocar trecho</button>
+    </div>
+  </section>
+
+  <!-- Seção da frase formada -->
+  <section id="formedSentenceSection" style="margin-top: 20px;">
+    <div class="formed-sentence" id="formedSentence"></div>
+  </section>
+
+  <!-- Seção das palavras embaralhadas -->
+  <section id="shuffledWordsSection" style="margin-top: 20px;">
+    <div class="words-container" id="shuffledWords"></div>
+  </section>
+</main>
+
+<footer style="
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #eee;
+  padding: 10px;
+  text-align: center;
+  border-top: 1px solid #ccc;
+  z-index: 1000;
+">
+  <nav>
+    <button onclick="goToSearch()">🔍 Pesquisar</button>
+    <button onclick="goToAvulsas()">📂 Avulsas</button>
+    <button onclick="goToTrilha()">🛤️ Trilha</button>
+  </nav>
+</footer>
+
+
+
+  <script>
+//=============================
+// Estado da Aplicação
+//=============================
+let subtitles = [];
+let currentIndex = 0;
+let formedWords = [];
+let currentGameMode = null;
+
+//=============================
+// Estado de Timer
+//=============================
+let startTime = 0;
+let totalElapsedTime = 0;
+let totalEstimatedTime = 0;
+let timerInterval = null;
+
+//=============================
+// Lessons
+//=============================
+const avulsasLessons = [{
+    name: "I'm Gonna Be - 500 Miles.mp4",
+    srtUrl: "https://files.catbox.moe/wt145j.srt",
+    videoUrl: "https://files.catbox.moe/8pzqza.mp4"
+}];
+
+const trilhaLessons = [{
+    name: "Chapter 1 - Welcome & Nationalities",
+    srtUrl: "https://files.catbox.moe/wt145j.srt",
+    videoUrl: "https://files.catbox.moe/8pzqza.mp4"
+}];
+
+//=============================
+// Game Mode Selection
+//=============================
+function selectGameMode(mode) {
+    currentGameMode = mode;
+    console.log(`Modo selecionado: ${mode}`);
+    
+    NavigationController.navigateTo('lessonSelection');
+    NavigationController.showLessonSelection();
+}
+
+//=============================
+// Navigation Controller
+//=============================
+const NavigationController = {
+  currentSection: 'gameMode',
+  navigationStack: [],
+  
+  // Simplificar configurações - tratar lições como estado único
+  sectionConfig: {
+    gameMode: {
+      title: 'SpeedPhrase',
+      showBack: false,
+      showHome: true,
+      showFooter: false
+    },
+    lessonSelection: {
+      title:'',
+      showBack: true,
+      showHome: true,
+      showFooter: true
+    },
+    exercise: {
+      title: 'Exercício',
+      showBack: true,
+      showHome: true,
+      showFooter: false
+    }
+  },
+
+
+  // incluir limpeza
+  // controlar footer
+  navigateTo(section, pushToStack = true) {
+    // Se saindo de um exercício, pausar tudo
+    if (this.currentSection === 'exercise' && section !== 'exercise') {
+      this.pauseAllResources();
+      this.hideExerciseStatus();
+    }
+
+    if (pushToStack && this.currentSection !== section) {
+      this.navigationStack.push(this.currentSection);
+    }
+    
+    this.currentSection = section;
+    this.updateHeader();
+    this.updateFooterVisibility(); // Adicionar controle do footer
+  },
+    
+  // Nova função para controlar footer
+  updateFooterVisibility() {
+    const config = this.sectionConfig[this.currentSection];
+    if (config && config.showFooter) {
+      showFooter();
+    } else {
+      hideFooter();
+    }
+  },
+  
+  // Voltar
+  // incluir limpeza quando necessário
+  // manter estado de lições
+  goBack() {
+    if (this.currentSection === 'exercise') {
+      this.pauseAllResources();
+      this.hideExerciseStatus();
+      // Voltar sempre para seleção de lições (com footer)
+      this.navigateToSection('lessonSelection');
+      return;
+    }
+
+    if (this.navigationStack.length > 0) {
+      const previousSection = this.navigationStack.pop();
+      this.navigateToSection(previousSection);
+    }
+  },
+    
+  // Modificar goHome para garantir limpeza completa
+  goHome() {
+    this.pauseAllResources(); // Pausar tudo antes de ir para home
+    this.hideExerciseStatus();
+    this.navigationStack = [];
+    this.currentSection = 'gameMode';
+    this.showGameModeSelection();
+    this.updateHeader();
+  },
+
+  // Abrir configurações
+  openSettings() {
+    alert('⚙️ Configurações em desenvolvimento');
+  },
+
+  // Atualizar header baseado na seção atual
+    updateHeader() {
+      const config = this.sectionConfig[this.currentSection];
+      if (!config) return;
+    
+      // Obter título dinâmico para lessonSelection
+      let title = config.title;
+      if (this.currentSection === 'lessonSelection') {
+        title = this.getLessonSelectionTitle();
+      }
+    
+      // Atualizar título
+      document.getElementById('headerTitle').textContent = title;
+    
+      // Mostrar/esconder botão voltar
+      const backBtn = document.getElementById('backBtn');
+      if (config.showBack && this.navigationStack.length > 0) {
+        backBtn.classList.remove('hidden');
+      } else {
+        backBtn.classList.add('hidden');
+      }
+    },
+    
+  // Navegar para seção específica
+  navigateToSection(section) {
+    switch(section) {
+      case 'gameMode':
+        this.showGameModeSelection();
+        break;
+      case 'lessonSelection':
+        // Manter a última categoria visitada ou ir para avulsas por padrão
+        this.showLessonSelection();
+        break;
+      default:
+        this.showGameModeSelection();
+    }
+    this.currentSection = section;
+    this.updateHeader();
+    this.updateFooterVisibility();
+  },
+
+  // Mostrar seleção de modo
+  showGameModeSelection() {
+    hideAllSections();
+    hideFooter();
+    document.getElementById('gameModeSection').style.display = '';
+  },
+  
+    showExerciseStatus() {
+      document.getElementById('exerciseStatus').classList.remove('hidden');
+      this.updateProgressBadge();
+    },
+    
+    hideExerciseStatus() {
+      document.getElementById('exerciseStatus').classList.add('hidden');
+    },
+
+    updateProgressBadge() {
+      const badge = document.getElementById('progressBadge');
+      if (subtitles.length > 0) {
+        // Apenas o texto, sem ícones. O CSS cuidará disso.
+        badge.textContent = `Você: ${currentIndex + 1}/${subtitles.length}`;
+      }
+    },
+
+    showLessonSelection() {
+      hideAllSections();
+      
+      // Sempre mostrar avulsas quando vem da seleção de modo
+      document.getElementById('avulsas-section').style.display = '';
+      generateVideoCards(avulsasLessons, 'avulsas-grid', handleLessonClick);
+      
+      // Definir avulsas como categoria atual se não havia nenhuma
+      if (!localStorage.getItem('lastLessonCategory')) {
+        localStorage.setItem('lastLessonCategory', 'avulsas');
+      }
+    },
+    
+  // Pausar todos os recursos ativos
+  pauseAllResources() {
+    this.pauseVideo();
+    this.stopTimers();
+    this.resetExerciseState();
+  },
+
+  // Pausar vídeo
+  pauseVideo() {
+    const video = document.getElementById('video');
+    if (video && !video.paused) {
+      video.pause();
+      console.log('🎬 Vídeo pausado pela navegação');
+    }
+  },
+
+  // Parar todos os timers
+  stopTimers() {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      console.log('⏱️ Timer de performance interrompido');
+    }
+  },
+
+  // Resetar estado do exercício
+  resetExerciseState() {
+    formedWords = [];
+    startTime = 0;
+    
+    // Limpar display do timer
+    const timerElement = document.getElementById('timer');
+    if (timerElement) {
+      timerElement.innerHTML = '';
+    }
+  },
+
+    getLessonSelectionTitle() {
+      const mode = currentGameMode ? 
+        currentGameMode.charAt(0).toUpperCase() + currentGameMode.slice(1) : 
+        '';
+      const category = localStorage.getItem('lastLessonCategory') || 'avulsas';
+      const categoryName = category.charAt(0).toUpperCase() + category.slice(1);
+      
+      return `${mode} - ${categoryName}`;
+    }
+};
+
+//=============================
+// Função: Carrega e Processa o SRT
+//=============================
+async function loadSrt(url) {
+    const res = await fetch(url);
+    const text = await res.text();
+    return parseSRT(text);
+}
+
+//=============================
+// Função: Parser SRT simples
+//=============================
+function parseSRT(srt) {
+    const regex = /(\d+)\s+(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\s+([\s\S]*?)(?=\n{2,}|$)/g;
+    let result = [];
+    let match;
+    while ((match = regex.exec(srt)) !== null) {
+        result.push({
+            index: Number(match[1]),
+            start: timeToSeconds(match[2]),
+            end: timeToSeconds(match[3]),
+            text: match[4].replace(/\n/g, ' ').trim()
+        });
+    }
+    return result;
+}
+
+//=============================
+// Função: Converte tempo SRT para segundos
+//=============================
+function timeToSeconds(time) {
+    const [h, m, s] = time.replace(',', '.').split(':');
+    return parseFloat(h) * 3600 + parseFloat(m) * 60 + parseFloat(s);
+}
+
+//=============================
+// Função: Embaralha palavras
+//=============================
+function shuffleWords(text) {
+    const words = text.split(' ');
+    for (let i = words.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [words[i], words[j]] = [words[j], words[i]];
+    }
+    return words;
+}
+
+//=============================
+// Função: Exibe palavras embaralhadas
+//=============================
+function displayShuffledWords(words, original) {
+    const container = document.getElementById('shuffledWords');
+    container.innerHTML = '';
+    formedWords = [];
+
+    words.forEach(word => {
+        const span = document.createElement('span');
+        span.className = 'word';
+        span.textContent = word;
+        span.onclick = () => handleWordClick(word, span, original);
+        container.appendChild(span);
+    });
+
+    updateFormedSentence();
+}
+
+//=============================
+// Função principal de clique
+//=============================
+function handleWordClick(word, element, original) {
+    if (isCorrectWord(word, original)) {
+        processCorrectWord(word, element);
+        clearIncorrectWords();
+        updateDisplay(); // Atualiza após adicionar palavra correta
+    } else {
+        markWordAsIncorrect(element);
+    }
+
+    updateFormedSentence();
+    checkIfSentenceIsComplete(original);
+}
+
+//=============================
+// Verifica se palavra está correta
+//=============================
+function isCorrectWord(word, original) {
+    const expectedWords = original.split(' ');
+    const currentIndex = formedWords.length;
+    return word === expectedWords[currentIndex];
+}
+
+//=============================
+// Processa palavra correta
+//=============================
+function processCorrectWord(word, element) {
+    formedWords.push(word);
+    element.classList.add('correct');
+    element.onclick = null;
+}
+
+//=============================
+// Marca palavra incorreta (não adiciona à frase)
+//=============================
+function markWordAsIncorrect(element) {
+    element.classList.add('incorrect');
+}
+
+//=============================
+// Limpa marcações incorretas
+//=============================
+function clearIncorrectWords() {
+    const incorrectElements = document.querySelectorAll('.word.incorrect');
+    incorrectElements.forEach(el => {
+        el.classList.remove('incorrect');
+    });
+}
+
+//=============================
+// Verifica se frase está completa e correta
+//=============================
+async function checkIfSentenceIsComplete(original) {
+    if (formedWords.join(' ') === original) {
+        // Parar timer antes de qualquer ação
+        NavigationController.stopTimers();
+        
+        const timeUsed = stopTimerAndGetElapsed();
+        console.log(`⏱️ Tempo para essa frase: ${timeUsed.toFixed(2)}s`);
+
+        // Toca o vídeo e aguarda terminar
+        console.log('🎬 Reproduzindo trecho da frase completada...');
+        await playCurrentSubtitleAndWait();
+        
+        // Verificar se ainda estamos na seção de exercício antes de continuar
+        if (NavigationController.currentSection !== 'exercise') {
+            console.log('⚠️ Usuário saiu do exercício, interrompendo fluxo');
+            return;
+        }
+        
+        // Só depois que o vídeo terminou, avança
+        if (currentIndex < subtitles.length - 1) {
+            nextPhrase();
+        } else {
+            alert('🎉 Todas as frases completas! Lição finalizada.');
+            displayTotalTime();
+        }
+    }
+}
+
+//=============================
+// Função: Atualiza frase formada
+//=============================
+function updateFormedSentence() {
+    document.getElementById('formedSentence').textContent = formedWords.join(' ');
+}
+
+//=============================
+// Função: Avança para próxima frase
+//=============================
+function nextPhrase() {
+    currentIndex++;
+    console.log(`📝 Avançando para frase ${currentIndex + 1}/${subtitles.length}`);
+    
+    if (currentIndex < subtitles.length) {
+        prepareCurrentSubtitle();
+    } else {
+        alert("✅ Fim das legendas!");
+        displayTotalTime();
+    }
+}
+
+//=============================
+// Função: Prepara legenda atual
+//=============================
+function prepareCurrentSubtitle() {
+    // Verificar se ainda estamos no exercício
+    if (NavigationController.currentSection !== 'exercise') {
+        console.log('⚠️ Não estamos mais no exercício, cancelando preparação');
+        return;
+    }
+
+    const sub = subtitles[currentIndex];
+    console.log(`🎬 Preparando frase ${currentIndex + 1}: "${sub.text}"`);
+    
+    // Limpar estado anterior
+    formedWords = [];
+    NavigationController.stopTimers(); // Usar método centralizado
+    
+    const shuffled = shuffleWords(sub.text);
+    displayShuffledWords(shuffled, sub.text);
+
+    startTimer();
+    startPerformanceUpdate();
+    NavigationController.updateProgressBadge();
+    
+    // Toca o trecho inicial (sem aguardar)
+    playCurrentSubtitle();
+}
+
+//=============================
+// Inicia a contagem de tempo real e a atualização da performance
+//=============================
+function startPerformanceUpdate() {
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        updateDisplay();
+    }, 1000);
+}
+
+//=============================
+// Função para atualizar o display da performance (Chamada por setInterval e click)
+//=============================
+function updateDisplay() {
+    // Verificar se ainda estamos no exercício
+    if (NavigationController.currentSection !== 'exercise') {
+        NavigationController.stopTimers();
+        return;
+    }
+
+    const display = document.getElementById('timer');
+    if (!display) return;
+
+    const sub = subtitles[currentIndex];
+    const sentenceEstimatedTime = getTimeLimitForSentence(sub.text);
+    const elapsed = (performance.now() - startTime) / 1000;
+    
+    // Calcula a projeção: tempo já gasto + tempo restante baseado na performance atual
+    const wordsCompleted = formedWords.length;
+    const totalWords = sub.text.split(' ').length;
+    
+    let projectedTotalTime;
+    if (wordsCompleted > 0) {
+        const timePerCompletedWord = elapsed / wordsCompleted;
+        const remainingWords = totalWords - wordsCompleted;
+        projectedTotalTime = elapsed + (remainingWords * timePerCompletedWord);
+    } else {
+        // Se ainda não completou nenhuma palavra, usa o tempo atual como base
+        projectedTotalTime = elapsed * (totalWords / Math.max(1, wordsCompleted || 0.1));
+    }
+    
+    // Calcula a performance: quanto melhor que o estimado
+    let performanceValue = (sentenceEstimatedTime / projectedTotalTime) * 100;
+    
+    // Garante que não seja infinito ou NaN
+    if (!isFinite(performanceValue) || performanceValue > 1000) {
+        performanceValue = 100;
+    }
+
+    let emoji = '👍';
+    if (performanceValue < 75) {
+        emoji = '🐢';
+    } else if (performanceValue < 100) {
+        emoji = '🤔';
+    } else if (performanceValue > 125) {
+        emoji = '🚀';
+    }
+
+    display.innerHTML = `<span style="font-weight: bold; color: ${performanceValue >= 100 ? 'green' : 'red'};">${performanceValue.toFixed(2)}%</span> ${emoji}`;
+}
+
+//=============================
+// Nova função que reproduz o vídeo e retorna uma Promise
+//=============================
+function playCurrentSubtitleAndWait() {
+    const video = document.getElementById('video');
+    const sub = subtitles[currentIndex];
+    
+    if (!video || !sub) {
+        console.error('❌ Vídeo ou legenda não encontrados');
+        return Promise.resolve();
+    }
+
+    return new Promise((resolve) => {
+        console.log(`▶️ Reproduzindo trecho: ${sub.start.toFixed(2)}s - ${sub.end.toFixed(2)}s`);
+        
+        // Para o vídeo antes de reposicionar
+        video.pause();
+        video.currentTime = sub.start;
+        
+        // Função para monitorar o fim do trecho
+        function checkVideoEnd() {
+            if (video.currentTime >= sub.end) {
+                video.pause();
+                console.log(`⏸️ Vídeo pausado em ${sub.end.toFixed(2)}s - Prosseguindo...`);
+                resolve();
+            } else if (!video.paused) {
+                if (typeof video.requestVideoFrameCallback === 'function') {
+                    video.requestVideoFrameCallback(checkVideoEnd);
+                } else {
+                    requestAnimationFrame(checkVideoEnd);
+                }
+            }
+        }
+        
+        // Inicia reprodução
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                console.log(`✅ Vídeo iniciado em ${sub.start.toFixed(2)}s`);
+                checkVideoEnd();
+            }).catch(error => {
+                console.error('❌ Erro ao reproduzir vídeo:', error);
+                resolve(); // Resolve mesmo com erro para não travar
+            });
+        } else {
+            checkVideoEnd();
+        }
+    });
+}
+
+//=============================
+// Função principal que toca o vídeo (usada pelo botão)
+//=============================
+function playCurrentSubtitle() {
+    playCurrentSubtitleAndWait(); // Não precisa aguardar quando chamado pelo botão
+}
+
+//=============================
+// Bloco de Timer (Revisado)
+//=============================
+function getTimeLimitForSentence(sentence) {
+    const characterCount = sentence.trim().replace(/\s/g, '').length;
+    const timePerCharacter = 0.2;
+    return characterCount * timePerCharacter;
+}
+
+//=============================
+// Inicia contagem de tempo real do usuário
+//=============================
+function startTimer() {
+    startTime = performance.now();
+}
+
+//=============================
+// Calcula tempo gasto em segundos
+//=============================
+function stopTimerAndGetElapsed() {
+    const endTime = performance.now();
+    const elapsed = (endTime - startTime) / 1000;
+    totalElapsedTime += elapsed;
+    return elapsed;
+}
+
+/**
+ * Atualiza o estado visual do turno com base no modo de jogo.
+ * @param {boolean} isPlayerTurn - True se for a vez do jogador local.
+ */
+function updateTurnStatus(isPlayerTurn) {
+  const playerStatusEl = document.getElementById('playerStatus');
+  const opponentStatusEl = document.getElementById('opponentStatus');
+
+  if (currentGameMode === 'solo') {
+    // No modo solo, o jogador está sempre ativo e o oponente nunca é mostrado.
+    if (playerStatusEl) {
+      playerStatusEl.classList.remove('turn-waiting');
+      playerStatusEl.classList.add('turn-active');
+    }
+    if (opponentStatusEl) {
+      // Usar display: none é mais seguro para garantir que não ocupe espaço.
+      opponentStatusEl.style.display = 'none';
+    }
+  } else { // Modo Multiplayer
+    // Garante que o status do oponente seja visível no modo multiplayer.
+    if (opponentStatusEl) {
+      opponentStatusEl.style.display = ''; // Remove o display: none se existir.
+    }
+
+    // Aplica as classes de turno para ambos.
+    if (playerStatusEl) {
+      playerStatusEl.classList.toggle('turn-active', isPlayerTurn);
+      playerStatusEl.classList.toggle('turn-waiting', !isPlayerTurn);
+    }
+    if (opponentStatusEl) {
+      opponentStatusEl.classList.toggle('turn-active', !isPlayerTurn);
+      opponentStatusEl.classList.toggle('turn-waiting', isPlayerTurn);
+    }
+  }
+}
+
+//=============================
+// Exibe o tempo total acumulado
+//=============================
+function displayTotalTime() {
+    const totalPerformance = (totalEstimatedTime / totalElapsedTime) * 100;
+    alert(`Lição completa! 🏁
+Tempo total: ${totalElapsedTime.toFixed(2)}s
+Desempenho geral: ${totalPerformance.toFixed(2)}%`);
+}
+
+//=============================
+// Bloco de Footer
+//=============================
+function showFooter() {
+    const footer = document.querySelector('footer');
+    if (footer) footer.style.display = 'block';
+}
+
+function hideFooter() {
+    const footer = document.querySelector('footer');
+    if (footer) footer.style.display = 'none';
+}
+
+function goToSearch() {
+    // Função para futuro desenvolvimento
+    alert('🔍 Função de pesquisa em desenvolvimento');
+}
+
+function goToAvulsas() {
+    if (!currentGameMode) return;
+    
+    if (NavigationController.currentSection === 'exercise') {
+        NavigationController.pauseAllResources();
+    }
+    
+    hideAllSections();
+    document.getElementById('avulsas-section').style.display = '';
+    generateVideoCards(avulsasLessons, 'avulsas-grid', handleLessonClick);
+    
+    localStorage.setItem('lastLessonCategory', 'avulsas');
+    NavigationController.updateHeader();
+    
+    if (NavigationController.currentSection !== 'lessonSelection') {
+        NavigationController.navigateTo('lessonSelection', false);
+    }
+}
+
+function goToTrilha() {
+    if (!currentGameMode) return;
+    
+    if (NavigationController.currentSection === 'exercise') {
+        NavigationController.pauseAllResources();
+    }
+    
+    hideAllSections();
+    document.getElementById('trilha-section').style.display = '';
+    generateVideoCards(trilhaLessons, 'trilha-grid', handleLessonClick);
+    
+    localStorage.setItem('lastLessonCategory', 'trilha');
+    NavigationController.updateHeader();
+    
+    if (NavigationController.currentSection !== 'lessonSelection') {
+        NavigationController.navigateTo('lessonSelection', false);
+    }
+}
+
+//=============================
+// Bloco de Ocultar/Mostrar seções
+//=============================
+function hideAllSections() {
+    const sectionsToHide = [
+        'gameModeSection',  // Adicionar esta linha
+        'avulsas-section',
+        'trilha-section',
+        'videoSection',
+        'formedSentenceSection',
+        'shuffledWordsSection'
+    ];
+
+    sectionsToHide.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+}
+
+//=========================
+// Bloco lessons cards
+//=========================
+function createVideoCard(lesson, onClick) {
+    const card = document.createElement('div');
+    card.className = 'video-card';
+    card.textContent = lesson.name;
+    card.onclick = () => onClick(lesson);
+    return card;
+}
+
+//==========================================
+// Gera grid de cards dentro do container
+//==========================================
+function generateVideoCards(lessons, containerId, onClick) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    container.innerHTML = '';
+    lessons.forEach(lesson => {
+        const card = createVideoCard(lesson, onClick);
+        container.appendChild(card);
+    });
+}
+
+//==========================================
+// Carrega lições nas seções correspondentes
+//==========================================
+function loadAllLessons() {
+    generateVideoCards(avulsasLessons, 'avulsas-grid', handleLessonClick);
+    generateVideoCards(trilhaLessons, 'trilha-grid', handleLessonClick);
+}
+
+//=============================
+// Clique no card de lição
+//=============================
+// CORREÇÃO: Versão aprimorada e mais robusta
+async function handleLessonClick(lesson) {
+    console.log(`Iniciando lição "${lesson.name}" no modo: ${currentGameMode}`);
+    
+    // 1. Prepara a interface para o modo de exercício
+    hideAllSections();
+    hideFooter();
+    
+    const main = document.querySelector('main');
+    main.style.maxWidth = '800px';
+    main.style.margin = '0 auto';
+    main.style.paddingTop = '20px';
+    
+    document.getElementById('videoSection').style.display = '';
+    document.getElementById('formedSentenceSection').style.display = '';
+    document.getElementById('shuffledWordsSection').style.display = '';
+
+    // 2. Configura o header e a navegação
+    NavigationController.sectionConfig.exercise.title = lesson.name;
+    NavigationController.navigateTo('exercise');
+    NavigationController.showExerciseStatus();
+
+    // 3. Configura o status do turno com base no modo de jogo
+    // A lógica complexa agora está centralizada em `updateTurnStatus`.
+    if (currentGameMode === 'multiplayer') {
+        // Exemplo: No multiplayer, o oponente pode começar.
+        updateTurnStatus(false); 
+    } else { // Solo
+        // No modo solo, o jogador sempre começa e está sempre ativo.
+        updateTurnStatus(true);
+    }
+
+    // 4. Carrega os recursos da lição e inicia o jogo
+    const video = document.getElementById('video');
+    video.src = lesson.videoUrl;
+    
+    try {
+        subtitles = await loadSrt(lesson.srtUrl);
+        if (subtitles.length === 0) {
+            alert("Erro: Não foi possível carregar as legendas. Verifique o arquivo SRT.");
+            NavigationController.goHome();
+            return;
+        }
+    } catch (error) {
+        console.error("Falha ao carregar ou processar o SRT:", error);
+        alert("Ocorreu um erro ao carregar os dados da lição.");
+        NavigationController.goHome();
+        return;
+    }
+
+    totalEstimatedTime = subtitles.reduce((sum, sub) => sum + getTimeLimitForSentence(sub.text), 0);
+    totalElapsedTime = 0;
+    console.log(`⏱️ Tempo total estimado para a lição: ${totalEstimatedTime.toFixed(2)}s`);
+    
+    currentIndex = 0;
+    prepareCurrentSubtitle();
+}
+
+
+//=============================
+// Inicialização
+//=============================
+document.addEventListener('DOMContentLoaded', () => {
+    loadAllLessons();
+    hideFooter();
+    NavigationController.showGameModeSelection();
+    NavigationController.updateHeader();
+});
+
+// Adicionar listener para quando a página é fechada/recarregada
+window.addEventListener('beforeunload', () => {
+    NavigationController.pauseAllResources();
+});
+
+// Adicionar listener para visibilidade da página
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden && NavigationController.currentSection === 'exercise') {
+        NavigationController.pauseVideo();
+    }
+});
+</script>
+<script>
+/**
+ * =================================================================
+ *  PLUGIN MULTIPLAYER - v5 (O Co-Piloto Profissional)
+ * =================================================================
+ *  Autor: Manus AI
+ *  Descrição: Assume controle total do fluxo multiplayer interceptando
+ *             funções de navegação para uma integração perfeita e robusta.
+ *             Utiliza "Monkey Patching" para compatibilidade total.
+ * =================================================================
+ */
+const MultiplayerPlugin = {
+    
+    // --- Estado Interno do Plugin ---
+    pluginInitialized: false,
+    isCreateViewVisible: false,
+    
+    // Simulação de partidas
+    mockWaitingGames: [
+        { name: "I'm Gonna Be - 500 Miles.mp4", srtUrl: "https://files.catbox.moe/wt145j.srt", videoUrl: "https://files.catbox.moe/8pzqza.mp4" }
+    ],
+
+    /**
+     * Ponto de entrada do plugin.
+     */
+    initialize: function() {
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🔌 Plugin Multiplayer v5: Inicializando...');
+            
+            // 1. Intercepta todas as funções necessárias para o controle do fluxo.
+            this.overrideCoreFunctions();
+            
+            // 2. Prepara a lista de jogos em espera.
+            this.populateWaitingGames();
+            
+            this.pluginInitialized = true;
+            console.log('🔌 Plugin Multiplayer v5: Pronto e operando como co-piloto.');
+        });
+    },
+
+    // VERSÃO FINAL E DEFINITIVA - SEM INTERFERÊNCIA NO MODO SOLO
+    overrideCoreFunctions: function() {
+        // --- Intercepta APENAS o botão "Multiplayer" ---
+        const buttons = document.querySelectorAll('.mode-button');
+        buttons.forEach(button => {
+            const onClickAttr = button.getAttribute('onclick');
+            if (onClickAttr && onClickAttr.includes("selectGameMode('multiplayer')")) {
+                button.setAttribute('onclick', 'MultiplayerPlugin.showLobby()');
+            }
+        });
+    
+        // --- Guarda uma referência das funções originais ---
+        const originalGoToAvulsas = window.goToAvulsas;
+        const originalGoToTrilha = window.goToTrilha;
+        const originalGoBack = NavigationController.goBack;
+        const originalGoHome = NavigationController.goHome;
+    
+        // --- Embrulha as funções de navegação ---
+    
+        window.goToAvulsas = () => {
+            if (window.currentGameMode === 'multiplayer') {
+                this.showLessonsInCategory('avulsas');
+            } else {
+                originalGoToAvulsas(); 
+            }
+        };
+    
+        window.goToTrilha = () => {
+            if (window.currentGameMode === 'multiplayer') {
+                this.showLessonsInCategory('trilha');
+            } else {
+                originalGoToTrilha();
+            }
+        };
+        
+        // 3. Intercepta "Voltar" - LÓGICA CORRIGIDA
+        NavigationController.goBack = () => {
+            // AÇÃO DO PLUGIN: Apenas se o lobby estiver visível.
+            if (document.getElementById('multiplayerLobbySection').style.display === 'block') {
+                console.log('🔌 Plugin: "Voltar" acionado a partir do Lobby. Retornando para seleção de modo.');
+                this.hideLobby();
+                NavigationController.showGameModeSelection();
+                NavigationController.navigationStack = [];
+                NavigationController.updateHeader();
+            } 
+            // AÇÃO PADRÃO: Para todos os outros casos (incluindo TODO o modo Solo).
+            else {
+                console.log('🔌 Plugin: "Voltar" acionado fora do Lobby. Devolvendo controle ao sistema original.');
+                // Devolve o controle para a função original, que já tem a lógica de limpeza.
+                originalGoBack.call(NavigationController);
+            }
+        };
+        
+        // 4. Intercepta "Home" - LÓGICA CORRIGIDA
+        NavigationController.goHome = () => {
+            // Ação do plugin: esconder o lobby se ele estiver visível.
+            const lobbyWasVisible = document.getElementById('multiplayerLobbySection').style.display === 'block';
+            if (lobbyWasVisible) {
+                console.log('🔌 Plugin: "Home" acionado. Escondendo o lobby.');
+                this.hideLobby();
+            }
+            
+            // Ação padrão: SEMPRE chama a função original, que já faz a limpeza robusta.
+            console.log('🔌 Plugin: Devolvendo controle ao sistema original para navegação "Home".');
+            originalGoHome.call(NavigationController);
+        };
+        
+        console.log('🔌 Plugin Multiplayer: Funções de navegação interceptadas com separação de contexto.');
+    },
+
+    /**
+     * Ação principal: exibe o lobby.
+     */
+    showLobby: function() {
+        if (!this.pluginInitialized) return;
+        selectGameMode('multiplayer');
+        hideAllSections();
+        document.getElementById('multiplayerLobbySection').style.display = 'block';
+        
+        if (typeof NavigationController !== 'undefined') {
+            document.getElementById('headerTitle').textContent = 'Lobby Multiplayer';
+            document.getElementById('backBtn').classList.remove('hidden');
+            NavigationController.navigationStack.push('gameMode');
+        }
+        this.updateLobbyView();
+    },
+    
+    /**
+     * Esconde o lobby e seus componentes.
+     */
+    hideLobby: function() {
+        document.getElementById('multiplayerLobbySection').style.display = 'none';
+        hideFooter();
+    },
+
+    /**
+     * Alterna entre a visão de "Entrar" e "Criar".
+     */
+    toggleLobbyView: function() {
+        this.isCreateViewVisible = !this.isCreateViewVisible;
+        this.updateLobbyView();
+    },
+    
+    /**
+     * Atualiza a UI do lobby, movendo as seções de lições para o lugar certo.
+     */
+    updateLobbyView: function() {
+        const createView = document.getElementById('createGameView');
+        const joinView = document.getElementById('joinGameView');
+        
+        if (this.isCreateViewVisible) {
+            joinView.style.display = 'none';
+            createView.style.display = 'block';
+            this.showLessonsInCategory('avulsas'); // Mostra 'avulsas' por padrão
+            showFooter();
+        } else {
+            createView.style.display = 'none';
+            joinView.style.display = 'block';
+            document.getElementById('avulsas-section').style.display = 'none';
+            document.getElementById('trilha-section').style.display = 'none';
+            hideFooter();
+        }
+    },
+    
+    /**
+     * LÓGICA CORRIGIDA: Mostra a categoria de lição DENTRO do lobby.
+     */
+    showLessonsInCategory: function(category) {
+        const createView = document.getElementById('createGameView');
+        const avulsasSection = document.getElementById('avulsas-section');
+        const trilhaSection = document.getElementById('trilha-section');
+
+        // Garante que ambas as seções de lições estejam dentro do contêiner do lobby
+        createView.appendChild(avulsasSection);
+        createView.appendChild(trilhaSection);
+
+        if (category === 'avulsas') {
+            avulsasSection.style.display = 'block';
+            trilhaSection.style.display = 'none';
+        } else {
+            avulsasSection.style.display = 'none';
+            trilhaSection.style.display = 'block';
+        }
+    },
+
+    /**
+     * Popula a lista de partidas abertas.
+     */
+    populateWaitingGames: function() {
+        const container = document.getElementById('waitingGamesList');
+        container.innerHTML = '';
+        if (this.mockWaitingGames.length === 0) {
+            container.innerHTML = '<p>Nenhuma partida aberta.</p>';
+            return;
+        }
+        this.mockWaitingGames.forEach(lesson => {
+            if (typeof createVideoCard === 'function') {
+                const card = createVideoCard(lesson, (lessonData) => {
+                    handleLessonClick(lessonData);
+                });
+                container.appendChild(card);
+            }
+        });
+    }
+};
+
+// Inicia o plugin.
+MultiplayerPlugin.initialize();
+
+  </script>
+</body>
+</html>
