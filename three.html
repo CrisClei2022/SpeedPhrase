@@ -646,23 +646,23 @@ function updateFormedSentence() {
 //=============================
 // Função: Avança para próxima frase
 //=============================
-function nextPhrase() {
+async function nextPhrase() { // Tornou-se async
     currentIndex++;
     console.log(`📝 Avançando para frase ${currentIndex + 1}/${subtitles.length}`);
     
     if (currentIndex < subtitles.length) {
-        prepareCurrentSubtitle();
+        await prepareCurrentSubtitle(); // Aguarda a preparação completa (incluindo vídeo)
     } else {
         alert("✅ Fim das legendas!");
         displayTotalTime();
     }
 }
 
+
 //=============================
 // Função: Prepara legenda atual
 //=============================
-function prepareCurrentSubtitle() {
-    // Verificar se ainda estamos no exercício
+async function prepareCurrentSubtitle() { // Tornou-se async
     if (NavigationController.currentSection !== 'exercise') {
         console.log('⚠️ Não estamos mais no exercício, cancelando preparação');
         return;
@@ -671,19 +671,27 @@ function prepareCurrentSubtitle() {
     const sub = subtitles[currentIndex];
     console.log(`🎬 Preparando frase ${currentIndex + 1}: "${sub.text}"`);
     
-    // Limpar estado anterior
+    // 1. Limpa o estado anterior e prepara a interface
     formedWords = [];
-    NavigationController.stopTimers(); // Usar método centralizado
-    
+    NavigationController.stopTimers();
     const shuffled = shuffleWords(sub.text);
     displayShuffledWords(shuffled, sub.text);
+    NavigationController.updateProgressBadge();
 
+    // 2. Toca o trecho de vídeo e AGUARDA sua conclusão
+    console.log('▶️ Reproduzindo trecho de introdução...');
+    await playCurrentSubtitleAndWait();
+    
+    // Verifica se o usuário não navegou para outra tela enquanto o vídeo tocava
+    if (NavigationController.currentSection !== 'exercise') {
+        console.log('⚠️ Usuário saiu durante a introdução. Cancelando início do timer.');
+        return;
+    }
+
+    // 3. SOMENTE AGORA, inicia o timer de performance do usuário
+    console.log('⏱️ Introdução finalizada. Iniciando timer do usuário AGORA.');
     startTimer();
     startPerformanceUpdate();
-    NavigationController.updateProgressBadge();
-    
-    // Toca o trecho inicial (sem aguardar)
-    playCurrentSubtitle();
 }
 
 //=============================
@@ -987,7 +995,7 @@ function loadAllLessons() {
 //=============================
 // Clique no card de lição
 //=============================
-// CORREÇÃO: Versão aprimorada e mais robusta
+// VERSÃO CORRIGIDA E ROBUSTA
 async function handleLessonClick(lesson) {
     console.log(`Iniciando lição "${lesson.name}" no modo: ${currentGameMode}`);
     
@@ -1009,24 +1017,23 @@ async function handleLessonClick(lesson) {
     NavigationController.navigateTo('exercise');
     NavigationController.showExerciseStatus();
 
-    // 3. Configura o status do turno com base no modo de jogo
-    // A lógica complexa agora está centralizada em `updateTurnStatus`.
+    // 3. Gerencia a visibilidade do status do oponente (lógica que já corrigimos)
     if (currentGameMode === 'multiplayer') {
-        // Exemplo: No multiplayer, o oponente pode começar.
+        document.getElementById('opponentStatus').classList.remove('hidden');
         updateTurnStatus(false); 
-    } else { // Solo
-        // No modo solo, o jogador sempre começa e está sempre ativo.
+    } else {
+        document.getElementById('opponentStatus').classList.add('hidden');
         updateTurnStatus(true);
     }
 
-    // 4. Carrega os recursos da lição e inicia o jogo
+    // 4. Carrega os recursos da lição
     const video = document.getElementById('video');
     video.src = lesson.videoUrl;
     
     try {
         subtitles = await loadSrt(lesson.srtUrl);
         if (subtitles.length === 0) {
-            alert("Erro: Não foi possível carregar as legendas. Verifique o arquivo SRT.");
+            alert("Erro: Não foi possível carregar as legendas.");
             NavigationController.goHome();
             return;
         }
@@ -1042,8 +1049,11 @@ async function handleLessonClick(lesson) {
     console.log(`⏱️ Tempo total estimado para a lição: ${totalEstimatedTime.toFixed(2)}s`);
     
     currentIndex = 0;
-    prepareCurrentSubtitle();
+    
+    // 5. **A CORREÇÃO:** Aguarda a preparação da primeira frase antes de concluir.
+    await prepareCurrentSubtitle();
 }
+
 
 
 //=============================
@@ -1195,13 +1205,33 @@ const MultiplayerPlugin = {
         this.updateLobbyView();
     },
     
-    /**
-     * Esconde o lobby e seus componentes.
-     */
+    // VERSÃO CORRIGIDA E ROBUSTA - COM RESTAURAÇÃO DO DOM
     hideLobby: function() {
-        document.getElementById('multiplayerLobbySection').style.display = 'none';
+        const lobbySection = document.getElementById('multiplayerLobbySection');
+        if (!lobbySection || lobbySection.style.display === 'none') {
+            return; // Se o lobby já está oculto, não faz nada.
+        }
+    
+        console.log('🔌 Plugin: Escondendo o lobby e restaurando o DOM original.');
+    
+        // 1. Esconde o lobby e o footer.
+        lobbySection.style.display = 'none';
         hideFooter();
+    
+        // 2. **A LÓGICA DE RESTAURAÇÃO:** Move as seções de lições de volta para o <main>.
+        // Isso garante que o modo Solo as encontrará no lugar certo.
+        const mainElement = document.querySelector('main');
+        const avulsasSection = document.getElementById('avulsas-section');
+        const trilhaSection = document.getElementById('trilha-section');
+    
+        if (mainElement && avulsasSection) {
+            mainElement.appendChild(avulsasSection);
+        }
+        if (mainElement && trilhaSection) {
+            mainElement.appendChild(trilhaSection);
+        }
     },
+
 
     /**
      * Alterna entre a visão de "Entrar" e "Criar".
@@ -1277,6 +1307,6 @@ const MultiplayerPlugin = {
 // Inicia o plugin.
 MultiplayerPlugin.initialize();
 
-  </script>
+</script>
 </body>
 </html>
