@@ -1,6 +1,6 @@
 # SpeedPhrase
 ---
-  
+
 Para implementar essa estrutura no Appwrite, você vai usar o serviço de **Databases**. O Appwrite simplifica a criação de coleções (que são equivalentes a tabelas de um banco de dados relacional) e a definição dos seus atributos (colunas).
 
 A lógica para as relações, como a de "muitos-para-muitos", é um pouco diferente de um banco de dados tradicional. Em vez de tabelas intermediárias, o Appwrite utiliza atributos de relação que você define diretamente nas coleções.
@@ -11,89 +11,69 @@ Vamos ver como ficaria o mapeamento para a estrutura que planejamos:
 
 ### Mapeando as Coleções no Appwrite
 
-Você precisará criar as seguintes **Coleções** e definir seus **Atributos**:
+Você precisará de três coleções no total, cada uma funcionando como uma tabela separada em um banco de dados.
 
 #### **1. Coleção `Licoes`**
 
-Esta é a coleção principal para o conteúdo.
+Esta coleção conterá todas as suas lições, tanto as da "Trilha" quanto as "Avulsas". Ela será o coração do seu banco de dados.
 
-* `nome_licao`: String
-* `descricao`: String
-* `link_video`: URL
-* `quantidade_frases`: Integer
-* `link_srt`: URL (Você pode adicionar isso para armazenar o link da legenda)
+* `name`: **String** (O nome da lição, ex: "Chapter 1 - Welcome & Nationalities")
+* `videoUrl`: **URL**
+* `srtUrl`: **URL**
+* `type`: **String** (Este é o atributo que você usará para diferenciar "trilha" de "avulsas").
+* `ordem`: **Integer** (Para manter a sequência das lições da trilha, se houver).
 
-#### **2. Coleção `Trilhas`**
+#### **2. Coleção `Categorias`**
 
-Esta coleção agrupa as trilhas de estudo.
+Esta coleção armazenará todas as categorias que você usará para agrupar as lições, como "Gramática", "Vocabulário", "Conversação", etc.
 
-* `nome_trilha`: String
-* `descricao_trilha`: String
+* `name`: **String** (O nome da categoria, ex: "Gramática")
+
+#### **3. Coleção `Tags`**
+
+Esta coleção armazenará todas as tags que podem ser usadas para rotular as lições de forma mais granular, como "present simple", "countries", "hobbies".
+
+* `name`: **String** (O nome da tag, ex: "present simple")
 
 ---
 
 ### Implementando as Relações
 
-Aqui está a parte mais importante para simular o modelo relacional no Appwrite. Você vai usar o recurso de **Atributos de Relação**.
+Aqui está a parte mais importante. No Appwrite, você vai criar atributos de relacionamento na coleção **`Licoes`** que se conectarão às coleções de **`Categorias`** e **`Tags`**.
 
-#### **Relação `Licoes` <> `Trilhas`**
+#### **Relação com Categorias (Muitos para Muitos)**
 
-Em vez de uma tabela `trilhas_licoes`, você vai criar um atributo de relação nas duas coleções:
-
-* **Na coleção `Licoes`**: Crie um atributo chamado `trilha`.
+* **Na coleção `Licoes`**:
+    * Crie um novo atributo.
     * Tipo: **Relationship**
-    * Relacionado a: **`Trilhas`**
-    * Tipo de relação: **Um-para-Muitos** (`one-to-many`) ou **Muitos-para-Um** (`many-to-one`). Como uma lição pode pertencer a apenas uma trilha, o ideal é **Muitos-para-Um**.
+    * Relacionado a: **`Categorias`**
+    * Tipo de relação: **Muitos-para-Muitos** (`many-to-many`).
+        * _Por quê? Uma lição pode pertencer a várias categorias (ex: "Conversação" e "Gramática"), e uma categoria pode conter várias lições._
+    * Chame o atributo de `categorias` ou `lesson_categories`.
 
-* **Na coleção `Trilhas`**: Crie um atributo chamado `licoes_da_trilha`.
+#### **Relação com Tags (Muitos para Muitos)**
+
+* **Na coleção `Licoes`**:
+    * Crie um novo atributo.
     * Tipo: **Relationship**
-    * Relacionado a: **`Licoes`**
-    * Tipo de relação: **Um-para-Muitos** (`one-to-many`). Esta relação será a "outra ponta" da relação anterior, permitindo que uma trilha contenha várias lições.
-
-#### **Como lidar com a ordem (`ordem`)**
-
-O Appwrite não tem um atributo `ordem` para relações nativamente. A forma mais comum de lidar com isso é **adicionar um atributo de ordem diretamente na coleção de `Licoes`**.
-
-* **Na coleção `Licoes`**: Adicione um atributo `ordem_na_trilha` (Tipo: `Integer`).
-
-Ao exibir uma trilha, você pode buscar todas as lições associadas a ela e, em seguida, **ordená-las** pelo atributo `ordem_na_trilha` na sua aplicação.
+    * Relacionado a: **`Tags`**
+    * Tipo de relação: **Muitos-para-Muitos** (`many-to-many`).
+        * _Por quê? Uma lição pode ter várias tags, e uma tag pode ser usada em várias lições._
+    * Chame o atributo de `tags` ou `lesson_tags`.
 
 ---
 
-### Implementando Categorias e Tags
+### Como Ficará no Frontend
 
-Você pode usar a mesma lógica de relação para categorias e tags.
+A sua lógica de frontend irá evoluir para usar o SDK do Appwrite para fazer consultas poderosas.
 
-#### **Coleção `Categorias`**
+1.  **Botões `Avulsas` e `Trilha`**:
+    * Ao clicar, a função correspondente (`goToAvulsas()` ou `goToTrilha()`) fará uma consulta na coleção **`Licoes`** usando o atributo `type` para filtrar.
+    * `appwrite.database.listDocuments('licoes', [Query.equal('type', 'avulsas')])`
 
-* `nome_categoria`: String
+2.  **Filtragem por Categorias e Tags**:
+    * Quando o usuário quiser ver, por exemplo, todas as lições de "Gramática", você fará uma consulta que busca todas as lições relacionadas àquele ID de categoria.
+    * `appwrite.database.listDocuments('licoes', [Query.equal('categorias', 'ID_da_Categoria_Gramatica')])`
+    * Isso se aplica da mesma forma para as tags.
 
-#### **Coleção `Tags`**
-
-* `nome_tag`: String
-
-#### **Relações Muitos-para-Muitos**
-
-* **Na coleção `Licoes`**:
-    * Crie um atributo `categorias`.
-        * Tipo: **Relationship**
-        * Relacionado a: **`Categorias`**
-        * Tipo de relação: **Muitos-para-Muitos** (`many-to-many`). Uma lição pode ter várias categorias.
-
-    * Crie um atributo `tags`.
-        * Tipo: **Relationship**
-        * Relacionado a: **`Tags`**
-        * Tipo de relação: **Muitos-para-Muitos** (`many-to-many`). Uma lição pode ter várias tags.
-
-### Resumo do Fluxo no Appwrite
-
-1.  **Crie as coleções**: `Licoes`, `Trilhas`, `Categorias`, `Tags`.
-2.  **Defina os atributos simples**: Nome, descrição, links, etc.
-3.  **Crie os atributos de relacionamento**:
-    * **Trilhas/Lições**: Uma relação **Muitos-para-Um** (`many-to-one`) de `Licoes` para `Trilhas`.
-    * **Categorias/Lições**: Uma relação **Muitos-para-Muitos** (`many-to-many`) de `Licoes` para `Categorias`.
-    * **Tags/Lições**: Uma relação **Muitos-para-Muitos** (`many-to-many`) de `Licoes` para `Tags`.
-
-Essa abordagem, além de ser mais nativa ao Appwrite, também simplifica a lógica de consulta. Ao buscar uma lição, você já pode incluir as informações de suas categorias e tags relacionadas em uma única requisição.
-
-A documentação do Appwrite é excelente para te guiar, principalmente na seção de **Databases > Attributes > Relationship Attributes**.
+Essa abordagem garante que sua base de dados seja limpa e sua aplicação seja flexível. Você pode adicionar novas categorias e tags a qualquer momento pelo painel do Appwrite sem precisar modificar uma única linha de código.
