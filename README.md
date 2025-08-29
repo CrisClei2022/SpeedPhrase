@@ -77,3 +77,28 @@ A sua lógica de frontend irá evoluir para usar o SDK do Appwrite para fazer co
     * Isso se aplica da mesma forma para as tags.
 
 Essa abordagem garante que sua base de dados seja limpa e sua aplicação seja flexível. Você pode adicionar novas categorias e tags a qualquer momento pelo painel do Appwrite sem precisar modificar uma única linha de código.
+
+Você tem toda razão. Sua intuição sobre as tags não serem fixas está totalmente correta.
+
+Categorias geralmente são um conjunto limitado e pré-definido (por exemplo: "Gramática", "Vocabulário"), enquanto tags são fluidas e podem ser criadas em tempo real. Pense nas tags de um blog: você pode ter "React", "JavaScript", "frontend", e talvez precise criar uma nova tag como "Tailwind CSS" a qualquer momento.
+
+---
+
+### A Estratégia de Implementação
+
+Para lidar com isso de forma profissional, sua aplicação de nível 1 deve ter uma interface que reflete essa diferença:
+
+* **Para Categorias (fixas):** Exiba uma lista de checkboxes ou um menu `select` com as categorias existentes. O usuário apenas marca as opções que se aplicam à lição.
+    * **Backend (Appwrite):** As categorias já estarão cadastradas como documentos na coleção `Categorias`.
+
+* **Para Tags (fluidas):** Exiba um campo de texto onde o usuário pode digitar os nomes das tags, separados por vírgula.
+    * **Backend (Appwrite):** Ao processar as tags, sua aplicação de nível 1 vai precisar de uma lógica mais avançada:
+        1.  **Iterar sobre as tags digitadas:** Para cada tag digitada (por exemplo, "present simple", "countries").
+        2.  **Verificar se a tag já existe:** Faça uma busca na coleção `Tags` para ver se já existe um documento com esse nome.
+        3.  **Criar ou Usar o ID:**
+            * Se a tag **não existe**, crie um novo documento na coleção `Tags` com o nome digitado.
+            * Se a tag **já existe**, use o ID do documento encontrado.
+        4.  **Coletar os IDs:** Armazene todos os IDs das tags em uma lista.
+        5.  **Criar a Relação:** Ao criar o documento da lição, envie essa lista de IDs para o atributo de relacionamento `tags`.
+
+Essa abordagem garante que as tags sejam dinâmicas e que você não crie tags duplicadas (`gramatica` e `Gramatica`, por exemplo). É uma solução mais robusta e profissional para o seu sistema de gerenciamento de conteúdo.
