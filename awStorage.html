@@ -1,0 +1,33 @@
+<script src="https://cdn.jsdelivr.net/npm/appwrite@10.0.0/dist/browser/appwrite.min.js"></script>
+<script>
+    const { Client, Storage, ID } = Appwrite;
+
+    const client = new Client();
+
+    client
+        .setEndpoint('https://cloud.appwrite.io/v1') // Seu endpoint do Appwrite
+        .setProject('SEU_PROJECT_ID'); // O ID do seu projeto
+
+    const storage = new Storage(client);
+
+    // Exemplo: Obtendo a URL de visualização de um arquivo
+    async function getFileUrl() {
+        try {
+            const result = storage.getFileView(
+                'SEU_BUCKET_ID', // ID do seu bucket
+                'SEU_FILE_ID' // ID do seu arquivo
+            );
+            console.log(result.href); // URL da imagem ou arquivo
+            
+            // Exemplo de como exibir uma imagem
+            const imgElement = document.createElement('img');
+            imgElement.src = result.href;
+            document.body.appendChild(imgElement);
+
+        } catch (error) {
+            console.error('Erro ao acessar o arquivo:', error);
+        }
+    }
+
+    getFileUrl();
+</script>
