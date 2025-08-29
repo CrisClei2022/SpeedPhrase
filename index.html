@@ -468,7 +468,10 @@ const NavigationController = {
   // Resetar estado do exercício
   resetExerciseState() {
     formedWords = [];
+    currentIndex = 0;
     startTime = 0;
+    totalElapsedTime = 0;
+    totalEstimatedTime = 0;
     
     // Limpar display do timer
     const timerElement = document.getElementById('timer');
@@ -995,9 +998,12 @@ function loadAllLessons() {
 //=============================
 // Clique no card de lição
 //=============================
-// VERSÃO CORRIGIDA E ROBUSTA
 async function handleLessonClick(lesson) {
     console.log(`Iniciando lição "${lesson.name}" no modo: ${currentGameMode}`);
+
+    // CORREÇÃO: Limpa o estado do exercício IMEDIATAMENTE ao entrar na lição.
+    NavigationController.resetExerciseState();
+    NavigationController.updateProgressBadge(); // E atualiza o display
     
     // 1. Prepara a interface para o modo de exercício
     hideAllSections();
