@@ -255,7 +255,7 @@ const avulsasLessons = [{
 }];
 
 const trilhaLessons = [{
-    name: "B.B. - Chapter 1 - Welcome & Nationalities",
+    name: "B.B. Chapter 1 - Welcome & Nationalities",
     videoUrl: "https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.mp4",
     srtUrl: "https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.srt"
 }];
@@ -332,21 +332,35 @@ const NavigationController = {
   // Voltar
   // incluir limpeza quando necessário
   // manter estado de lições
-  goBack() {
-    if (this.currentSection === 'exercise') {
-      this.pauseAllResources();
-      this.hideExerciseStatus();
-      // Voltar sempre para seleção de lições (com footer)
-      this.navigateToSection('lessonSelection');
-      return;
-    }
-
-    if (this.navigationStack.length > 0) {
-      const previousSection = this.navigationStack.pop();
-      this.navigateToSection(previousSection);
-    }
-  },
+  // VERSÃO FINAL E DEFINITIVA
+    goBack() {
+        if (this.currentSection === 'exercise') {
+          this.pauseAllResources();
+          this.hideExerciseStatus();
+          
+          // **A CORREÇÃO DEFINITIVA:**
+          // Lê a última categoria visitada e chama a função de navegação correta.
+          const lastCategory = localStorage.getItem('lastLessonCategory') || 'avulsas';
+          console.log(`↩️ Voltando de um exercício para a categoria: ${lastCategory}`);
+          
+          if (lastCategory === 'trilha') {
+            goToTrilha();
+          } else {
+            goToAvulsas();
+          }
+          return;
+        }
     
+        if (this.navigationStack.length > 0) {
+          const previousSection = this.navigationStack.pop();
+          // Se estamos voltando para a seleção de modo, o plugin precisa saber.
+          if (previousSection === 'gameMode' && window.MultiplayerPlugin) {
+              MultiplayerPlugin.hideLobby();
+          }
+          this.navigateToSection(previousSection);
+        }
+    },
+
   // Modificar goHome para garantir limpeza completa
   goHome() {
     this.pauseAllResources(); // Pausar tudo antes de ir para home
@@ -427,18 +441,19 @@ const NavigationController = {
       }
     },
 
+    // VERSÃO CORRETA (A SUA ORIGINAL)
     showLessonSelection() {
       hideAllSections();
       
-      // Sempre mostrar avulsas quando vem da seleção de modo
+      // Esta função é chamada ao selecionar um modo de jogo.
+      // Ela SEMPRE mostra a seção "Avulsas" como padrão.
       document.getElementById('avulsas-section').style.display = '';
       generateVideoCards(avulsasLessons, 'avulsas-grid', handleLessonClick);
       
-      // Definir avulsas como categoria atual se não havia nenhuma
-      if (!localStorage.getItem('lastLessonCategory')) {
-        localStorage.setItem('lastLessonCategory', 'avulsas');
-      }
+      // Garante que o footer seja exibido.
+      showFooter();
     },
+
     
   // Pausar todos os recursos ativos
   pauseAllResources() {
