@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpeedPhrase</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body { 
+      font-family: Arial, sans-serif; 
+      background: #f9f9f9; 
+      padding-top: 80px;
+      padding-bottom: 80px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    /* ========== HEADER ========== */
+    .main-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: #fff;
+      border-bottom: 1px solid #ddd;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      z-index: 1000;
+    }
+
+    .header-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .nav-button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: none;
+      border: none;
+      padding: 8px 12px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background-color 0.2s;
+      font-size: 14px;
+    }
+
+    .nav-button:hover {
+      background-color: #f0f8ff;
+    }
+
+    .nav-icon {
+      font-size: 1.2em;
+    }
+
+    .header-center {
+      text-align: center;
+      flex: 1;
+    }
+
+    .header-title {
+      font-size: 1.5em;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .exercise-status {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: 0.9em;
+    }
+
+    .status-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+      justify-content: center;
+    }
+
+    .status-line::before {
+      content: '';
+      font-size: 1.2em;
+    }
+
+    .status-line.turn-active {
+      opacity: 1;
+    }
+    .status-line.turn-active::before {
+      content: '🟢';
+    }
+
+    .status-line.turn-waiting {
+      opacity: 0.6;
+    }
+    .status-line.turn-waiting::before {
+      content: '🔴';
+    }
+
+    .progress-badge, .timer-badge {
+      background: #e8f5e8;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.8em;
+      color: #2d5a2d;
+    }
+
+    .timer-badge {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    /* ========== MAIN CONTENT ========== */
+    main {
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+      min-height: calc(100vh - 160px);
+    }
+
+    /* ========== MODO SELECTION ========== */
+    .game-mode-container {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .game-mode-container h2 {
+      margin-bottom: 30px;
+      color: #333;
+      font-size: 1.8em;
+    }
+
+    .mode-buttons {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .mode-button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      background: #fff;
+      border: 2px solid #ddd;
+      border-radius: 12px;
+      padding: 30px 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+      min-width: 200px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .mode-button:hover {
+      transform: translateY(-3px);
+      border-color: #007bff;
+      box-shadow: 0 4px 15px rgba(0,123,255,0.2);
+    }
+
+    .mode-icon {
+      font-size: 2.5em;
+    }
+
+    .mode-title {
+      font-size: 1.3em;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .mode-description {
+      font-size: 0.9em;
+      color: #666;
+      text-align: center;
+    }
+
+    /* ========== SOLO/MULTI OPTIONS ========== */
+    .section-container {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .section-container h2 {
+      margin-bottom: 30px;
+      color: #333;
+      font-size: 1.6em;
+    }
+
+    .option-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 30px;
+    }
+
+    .option-button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      background: #fff;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      padding: 20px 15px;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-width: 150px;
+    }
+
+    .option-button:hover {
+      border-color: #007bff;
+      transform: translateY(-2px);
+    }
+
+    .option-button.active {
+      border-color: #007bff;
+      background-color: #f0f8ff;
+    }
+
+    /* ========== VIDEO GRID ========== */
+    .video-grid-container {
+      padding: 20px;
+    }
+
+    .video-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    .video-card {
+      background: #fff;
+      padding: 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      width: 200px;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+      text-align: center;
+    }
+
+    .video-card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+
+    /* ========== LESSON SCREEN ========== */
+    .video-container {
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    #video {
+      max-width: 100%;
+      height: auto;
+      width: 70%;
+      border-radius: 8px;
+    }
+
+    .controls {
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .controls button {
+      padding: 12px 24px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+
+    .controls button:hover {
+      background: #0056b3;
+    }
+
+    .formed-sentence {
+      font-weight: bold;
+      margin: 20px 0;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      text-align: center;
+      min-height: 50px;
+      border: 2px dashed #ddd;
+    }
+
+    .words-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin: 20px 0;
+    }
+
+    .word {
+      display: inline-block;
+      padding: 12px 18px;
+      background: #fff;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+
+    .word:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .word.correct {
+      background-color: #d4edda;
+      border-color: #c3e6cb;
+      color: #155724;
+    }
+
+    .word.incorrect {
+      background-color: #f8d7da;
+      border-color: #f5c6cb;
+      color: #721c24;
+    }
+
+    /* ========== WAITING ROOM ========== */
+    .waiting-room {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .room-code {
+      font-size: 2em;
+      font-weight: bold;
+      color: #007bff;
+      margin: 20px 0;
+      padding: 15px;
+      background: #f0f8ff;
+      border-radius: 10px;
+      border: 2px dashed #007bff;
+    }
+
+    .waiting-animation {
+      margin: 30px 0;
+    }
+
+    .pulse {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      background: #007bff;
+      border-radius: 50%;
+      margin: 0 5px;
+      animation: pulse 1.5s infinite;
+    }
+
+    .pulse:nth-child(2) { animation-delay: 0.3s; }
+    .pulse:nth-child(3) { animation-delay: 0.6s; }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.7; }
+    }
+
+    /* ========== SEARCH ========== */
+    .search-container {
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .search-input {
+      width: 100%;
+      max-width: 400px;
+      padding: 12px 16px;
+      border: 2px solid #ddd;
+      border-radius: 25px;
+      font-size: 1em;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus {
+      border-color: #007bff;
+    }
+
+    /* ========== FOOTER ========== */
+    .context-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: #fff;
+      border-top: 1px solid #ddd;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+      z-index: 1000;
+    }
+
+    .footer-nav {
+      display: flex;
+      justify-content: space-around;
+      padding: 12px 0;
+    }
+
+    .footer-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      background: none;
+      border: none;
+      padding: 8px 12px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background-color 0.2s;
+      min-width: 60px;
+    }
+
+    .footer-btn:hover,
+    .footer-btn.active {
+      background-color: #f0f8ff;
+    }
+
+    .footer-icon {
+      font-size: 1.3em;
+    }
+
+    .footer-text {
+      font-size: 0.75em;
+      color: #666;
+      font-weight: 500;
+    }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 768px) {
+      .mode-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .mode-button {
+        width: 100%;
+        max-width: 300px;
+      }
+
+      .option-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .option-button {
+        width: 100%;
+        max-width: 250px;
+      }
+
+      #video {
+        width: 95%;
+      }
+
+      .nav-text {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+<!-- ========== HEADER ========== -->
+<header id="mainHeader" class="main-header">
+  <nav class="header-nav">
+    <button id="backBtn" class="nav-button hidden" onclick="NavigationController.goBack()">
+      <span class="nav-icon">←</span>
+      <span class="nav-text">Voltar</span>
+    </button>
+    
+    <div class="header-center">
+      <h1 id="headerTitle" class="header-title">SpeedPhrase</h1>
+      
+      <!-- Status do exercício (só aparece durante lições) -->
+      <div id="exerciseStatus" class="exercise-status hidden">
+        <div id="playerStatus" class="status-line">
+          <span id="progressBadge" class="progress-badge"></span>
+          <span id="performance" class="performance-badge"></span>
+        </div>
+        
+        <div id="opponentStatus" class="status-line hidden">
+          <span id="opponentProgressBadge" class="progress-badge"></span>
+          <span id="opponentPerformance" class="performance-badge"></span>
+        </div>
+      </div>
+    </div>
+
+    <button id="homeBtn" class="nav-button" onclick="NavigationController.goHome()">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-text">Home</span>
+    </button>
+  </nav>
+</header>
+
+<!-- ========== MAIN CONTENT ========== -->
+<main>
+
+  <!-- ========== HOME: SELEÇÃO DE MODO ========== -->
+  <section id="homeSection" class="game-mode-container">
+    <h2>Escolha o modo de jogo</h2>
+    <div class="mode-buttons">
+      <button class="mode-button" onclick="NavigationController.goToMode('solo')">
+        <span class="mode-icon">🎯</span>
+        <span class="mode-title">Solo</span>
+        <span class="mode-description">Jogue no seu próprio ritmo</span>
+      </button>
+      <button class="mode-button" onclick="NavigationController.goToMode('multiplayer')">
+        <span class="mode-icon">👥</span>
+        <span class="mode-title">Multiplayer</span>
+        <span class="mode-description">Desafie outros jogadores</span>
+      </button>
+    </div>
+  </section>
+  
+  <!-- ========== LESSON SELECTION ========== -->
+  <section id="lessonSelection" class="section-container hidden">
+    <div id="avulsas-section" class="video-grid-container">
+      <div id="avulsas-grid" class="video-grid">
+        <!-- Lições serão injetadas aqui via JavaScript -->
+      </div>
+    </div>
+
+    <div id="trilha-section" class="video-grid-container hidden">
+      <div id="trilha-grid" class="video-grid">
+        <!-- Trilha será injetada aqui via JavaScript -->
+      </div>
+    </div>
+
+    <div id="pesquisar-section" class="video-grid-container hidden">
+      <div class="search-container">
+        <input type="search" class="search-input" placeholder="Digite para buscar lições..." oninput="searchLessons(this.value)" />
+      </div>
+      <div id="search-results" class="video-grid">
+        <!-- Resultados da busca aparecerão aqui -->
+        <p style="text-align: center; color: #666; margin-top: 20px;"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== MODO SOLO ========== -->
+  <section id="soloModeSection" class="section-container hidden">
+    <!-- Vai direto para >LESSON SECTION >Avulsas por padrão -->
+  </section>
+
+  <!-- ========== MODO MULTIPLAYER ========== -->
+  <section id="multiModeSection" class="section-container hidden">
+    <!-- Vai direto para Partidas Abertas por padrão -->    
+  </section>
+  
+  <!-- ========== PARTIDA ABERTAS ========== -->
+  <section id="partidas-abertas-section" class="video-grid-container hidden">
+    <!-- Partidas abertas serão injetadas aqui -->
+	<ul id="waitingGamesList" class="game-list">
+    <li class="game-item">
+      <span class="game-lesson-title"></span>
+    </li>
+	</ul> 
+  </section>
+
+  <!-- ========== CRIAR PARTIDA ========== -->
+  <section id="createGameSection" class="section-container hidden">
+    <h2>Criar Nova Partida</h2>
+    <p style="margin-bottom: 20px; color: #666;">Escolha uma lição para desafiar outros jogadores:</p>    
+    <!-- Mesmas opções do solo, mas para criar partida -->
+  </section>
+
+  <!-- ========== SALA DE ESPERA ========== -->
+  <section id="waitingRoomSection" class="waiting-room hidden">
+    <p style="margin-bottom: 10px; color: #666;">Compartilhe o código com seus amigos:</p>
+    <div class="room-code" id="roomCode">ABC123</div>
+    
+    <div class="waiting-animation">
+      <div class="pulse"></div>
+      <div class="pulse"></div>
+      <div class="pulse"></div>
+    </div>
+    
+    <p id="waitingStatus">Aguardando oponente entrar na sala...</p>
+    <button class="controls button" onclick="NavigationController.cancelWaitingRoom()" style="margin-top: 20px; background: #dc3545;">
+      Cancelar Partida
+    </button>
+  </section>
+
+  <!-- ========== TELA DA LIÇÃO ========== -->
+  <section id="lessonSection" class="hidden">
+    <!-- Vídeo -->
+    <section id="videoSection" style="margin-top: 0;">
+      <div class="video-container">
+        <video id="video" width="70%" height="340" controls>
+          <source src="https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.mp4" type="video/mp4" />
+        </video>
+      </div>
+      <div class="controls" style="margin-top: 10px;">
+        <button onclick="playCurrentSubtitle()">▶️ Tocar trecho</button>
+      </div>
+    </section>
+
+    <!-- Seção da frase formada -->
+    <section id="formedSentenceSection" style="margin-top: 20px;">
+      <div class="formed-sentence" id="formedSentence"></div>
+    </section>
+
+    <!-- Seção das palavras embaralhadas -->
+    <section id="shuffledWordsSection" style="margin-top: 20px;">
+      <div class="words-container" id="shuffledWords"></div>
+    </section>
+  </section>
+
+</main>
+
+<!-- ========== FOOTER CONTEXTUAL ========== -->
+
+<!-- Footer para Lições (Solo + Criar Partida) -->
+<footer id="lessonsFooter" class="context-footer hidden">
+  <nav class="footer-nav">
+    <li>
+    <button id="pesquisarFooterBtn" class="footer-btn" onclick="NavigationController.switchLessonType('pesquisar')">
+      <span class="footer-icon">🔍</span>
+      <span class="footer-text">Pesquisar</span>
+    </button>
+    </li>
+    <li>
+    <button id="avulsasFooterBtn" class="footer-btn" onclick="NavigationController.switchLessonType('avulsas')">
+      <span class="footer-icon">📂</span>
+      <span class="footer-text">Avulsas</span>
+    </button>
+	</li>
+	<li>
+    <button id="trilhaFooterBtn" class="footer-btn" onclick="NavigationController.switchLessonType('trilha')">
+      <span class="footer-icon">🛤️</span>
+      <span class="footer-text">Trilha</span>
+    </button>
+    </li>
+  </nav>
+</footer>
+
+<!-- Footer para Multiplayer -->
+<footer id="multiFooter" class="context-footer hidden">
+  <nav class="footer-nav">
+  	<li>
+    <button id="abertasFooterBtn" class="footer-btn active" onclick="NavigationController.switchMultiType('abertas')">
+      <span class="footer-icon">🎮</span>
+      <span class="footer-text">Abertas</span>
+    </button>
+    </li>
+    <li>
+    <button id="criarFooterBtn" class="footer-btn" onclick="NavigationController.switchMultiType('criar')">
+      <span class="footer-icon">➕</span>
+      <span class="footer-text">Criar</span>
+    </button>
+    </li>
+  </nav>
+</footer>
+<script>
+//=============================
+// Estado da Aplicação
+//=============================
+let subtitles = [];
+let currentIndex = 0;
+let formedWords = [];
+let currentGameMode = null;
+let lastLessonCategory = 'avulsas';
+
+//=============================
+// Estado de Timer
+//=============================
+let startTime = 0;
+let totalElapsedTime = 0;
+let totalEstimatedTime = 0;
+let timerInterval = null;
+
+//=============================
+// AppData - Dados Centralizados
+//=============================
+const AppData = {
+    lessons: {
+        avulsas: [{
+            name: "Catbox - I'm Gonna Be - 500 Miles",
+            srtUrl: "https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.srt",
+            videoUrl: "https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.mp4"
+        }],
+        trilha: [{
+            name: "B.B. Chapter 1 - Welcome & Nationalities",
+            srtUrl: "https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.srt",
+            videoUrl: "https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.mp4"
+        }]
+    }
+};
+
+//=============================
+// Game Mode Selection
+//=============================
+function selectGameMode(mode) {
+    currentGameMode = mode;
+    console.log(`Modo selecionado: ${mode}`);
+    
+    if (mode === 'solo') {
+      NavigationController.goToLessons();
+    } else if (mode === 'multiplayer') {
+      NavigationController.goToMultiplayer();
+    }
+}
+
+//=============================
+// Navigation Controller
+//=============================
+const NavigationController = {
+  currentSection: 'home',
+  navigationStack: [],
+  
+  navigateTo(section, pushToStack = true) {
+    this.hideAllSections();
+    
+    if (this.currentSection === 'lesson' && section !== 'lesson') {
+      this.pauseAllResources();
+      this.hideExerciseStatus();
+    }
+
+    if (pushToStack && this.currentSection !== section) {
+      this.navigationStack.push(this.currentSection);
+    }
+    
+    this.currentSection = section;
+    this.updateHeader();
+    this.updateFooterVisibility();
+    
+    switch(section) {
+      case 'home':
+        document.getElementById('homeSection').classList.remove('hidden');
+        break;
+      case 'lessonSelection':
+        document.getElementById('lessonSelection').classList.remove('hidden');
+        this.switchLessonType(lastLessonCategory, false);
+        break;
+      case 'multiplayer':
+        document.getElementById('multiModeSection').classList.remove('hidden');
+        this.switchMultiType('abertas', false);
+        break;
+      case 'waitingRoom':
+        document.getElementById('waitingRoomSection').classList.remove('hidden');
+        break;
+      case 'lesson':
+        document.getElementById('lessonSection').classList.remove('hidden');
+        break;
+    }
+  },
+  
+  updateFooterVisibility() {
+    document.getElementById('lessonsFooter').classList.add('hidden');
+    document.getElementById('multiFooter').classList.add('hidden');
+    
+    if (this.currentSection === 'lessonSelection') {
+      document.getElementById('lessonsFooter').classList.remove('hidden');
+    } else if (this.currentSection === 'multiplayer') {
+      document.getElementById('multiFooter').classList.remove('hidden');
+    }
+  },
+  
+  goBack() {
+    this.pauseAllResources();
+    this.hideExerciseStatus();
+    
+    if (this.navigationStack.length > 0) {
+      const previousSection = this.navigationStack.pop();
+      this.navigateTo(previousSection, false);
+    } else {
+      this.goHome();
+    }
+  },
+  
+  goHome() {
+    this.pauseAllResources();
+    this.hideExerciseStatus();
+    this.navigationStack = [];
+    this.navigateTo('home', false);
+  },
+  
+  updateHeader() {
+    const headerTitle = document.getElementById('headerTitle');
+    const backBtn = document.getElementById('backBtn');
+    
+    switch(this.currentSection) {
+      case 'home':
+        headerTitle.textContent = 'SpeedPhrase';
+        backBtn.classList.add('hidden');
+        break;
+      case 'lessonSelection':
+        headerTitle.textContent = this.getLessonSelectionTitle();
+        backBtn.classList.remove('hidden');
+        break;
+      case 'multiplayer':
+        headerTitle.textContent = 'Multiplayer';
+        backBtn.classList.remove('hidden');
+        break;
+      case 'lesson':
+        headerTitle.textContent = 'Exercício';
+        backBtn.classList.remove('hidden');
+        break;
+      default:
+        headerTitle.textContent = 'SpeedPhrase';
+        backBtn.classList.add('hidden');
+        break;
+    }
+  },
+
+  showExerciseStatus() {
+    document.getElementById('exerciseStatus').classList.remove('hidden');
+    this.updateProgressBadge();
+  },
+  
+  hideExerciseStatus() {
+    document.getElementById('exerciseStatus').classList.add('hidden');
+  },
+
+  updateProgressBadge() {
+    const badge = document.getElementById('progressBadge');
+    if (subtitles.length > 0) {
+      badge.textContent = `Você: ${currentIndex + 1}/${subtitles.length}`;
+    }
+  },
+  
+  // Novas funções de navegação
+  goToLessons() {
+    this.navigateTo('lessonSelection');
+    this.switchLessonType(lastLessonCategory);
+  },
+
+  goToMultiplayer() {
+    this.navigateTo('multiplayer');
+    this.switchMultiType('abertas');
+  },
+
+  switchLessonType(type, pushToStack = true) {
+    lastLessonCategory = type;
+    ['avulsas', 'trilha', 'pesquisar'].forEach(id => {
+      document.getElementById(`${id}-section`).classList.add('hidden');
+      document.getElementById(`${id}FooterBtn`).classList.remove('active');
+    });
+    document.getElementById(`${type}-section`).classList.remove('hidden');
+    document.getElementById(`${type}FooterBtn`).classList.add('active');
+    
+    if (type === 'avulsas') {
+      generateVideoCards(AppData.lessons.avulsas, 'avulsas-grid', handleLessonClick);
+    } else if (type === 'trilha') {
+      generateVideoCards(AppData.lessons.trilha, 'trilha-grid', handleLessonClick);
+    }
+    
+    this.updateHeader();
+  },
+  
+  switchMultiType(type, pushToStack = true) {
+    ['abertas', 'criar'].forEach(id => {
+      const section = document.getElementById(`${id}-section`);
+      if (section) section.classList.add('hidden');
+      document.getElementById(`${id}FooterBtn`).classList.remove('active');
+    });
+    const section = document.getElementById(type === 'abertas' ? 'partidas-abertas-section' : 'createGameSection');
+    if (section) section.classList.remove('hidden');
+    document.getElementById(`${type}FooterBtn`).classList.add('active');
+    
+    if (type === 'criar') {
+      generateVideoCards(AppData.lessons.avulsas, 'createGameSection', handleCreateGameClick);
+    }
+  },
+
+  hideAllSections() {
+    const sections = ['homeSection', 'lessonSelection', 'multiModeSection', 'waitingRoomSection', 'lessonSection'];
+    sections.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('hidden');
+    });
+  },
+
+  pauseAllResources() {
+    const video = document.getElementById('video');
+    if (video) video.pause();
+    if (timerInterval) clearInterval(timerInterval);
+  },
+
+  resetExerciseState() {
+    formedWords = [];
+    currentIndex = 0;
+    startTime = 0;
+    totalElapsedTime = 0;
+    totalEstimatedTime = 0;
+    if (document.getElementById('formedSentence')) {
+      document.getElementById('formedSentence').textContent = '';
+    }
+    if (document.getElementById('shuffledWords')) {
+      document.getElementById('shuffledWords').innerHTML = '';
+    }
+  },
+
+  getLessonSelectionTitle() {
+    const modeName = currentGameMode ?
+      currentGameMode.charAt(0).toUpperCase() + currentGameMode.slice(1) : '';
+    const categoryName = lastLessonCategory.charAt(0).toUpperCase() + lastLessonCategory.slice(1);
+    return `${modeName} - ${categoryName}`;
+  }
+};
+
+//=============================
+// Função: Carrega e Processa o SRT
+//=============================
+async function loadSrt(url) {
+    const res = await fetch(url);
+    const text = await res.text();
+    return parseSRT(text);
+}
+
+//=============================
+// Função: Parser SRT simples
+//=============================
+function parseSRT(srt) {
+    const regex = /(\d+)\s+(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\s+([\s\S]*?)(?=\n{2,}|$)/g;
+    let result = [];
+    let match;
+    while ((match = regex.exec(srt)) !== null) {
+        result.push({
+            index: Number(match[1]),
+            start: timeToSeconds(match[2]),
+            end: timeToSeconds(match[3]),
+            text: match[4].replace(/\n/g, ' ').trim()
+        });
+    }
+    return result;
+}
+
+//=============================
+// Função: Converte tempo SRT para segundos
+//=============================
+function timeToSeconds(time) {
+    const [h, m, s] = time.replace(',', '.').split(':');
+    return parseFloat(h) * 3600 + parseFloat(m) * 60 + parseFloat(s);
+}
+
+//=============================
+// Lógica do jogo
+//=============================
+function shuffleWords(text) {
+    const words = text.split(' ');
+    for (let i = words.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [words[i], words[j]] = [words[j], words[i]];
+    }
+    return words;
+}
+
+function displayShuffledWords(words, original) {
+    const container = document.getElementById('shuffledWords');
+    container.innerHTML = '';
+    formedWords = [];
+    words.forEach(word => {
+        const span = document.createElement('span');
+        span.className = 'word';
+        span.textContent = word;
+        span.onclick = () => handleWordClick(word, span, original);
+        container.appendChild(span);
+    });
+    updateFormedSentence();
+}
+
+function handleWordClick(word, element, original) {
+    const expectedWords = original.split(' ');
+    if (word === expectedWords[formedWords.length]) {
+        formedWords.push(word);
+        element.classList.add('correct');
+        element.onclick = null;
+        clearIncorrectWords();
+    } else {
+        element.classList.add('incorrect');
+    }
+    updateFormedSentence();
+    checkIfSentenceIsComplete(original);
+}
+
+function clearIncorrectWords() {
+    document.querySelectorAll('.word.incorrect').forEach(el => el.classList.remove('incorrect'));
+}
+
+async function checkIfSentenceIsComplete(original) {
+    if (formedWords.join(' ') === original) {
+        NavigationController.pauseAllResources();
+        const timeUsed = stopTimerAndGetElapsed();
+        console.log(`Tempo para essa frase: ${timeUsed.toFixed(2)}s`);
+        await playCurrentSubtitleAndWait();
+        if (currentIndex < subtitles.length - 1) {
+            nextPhrase();
+        } else {
+            alert('Lição finalizada!');
+            displayTotalTime();
+            NavigationController.goHome();
+        }
+    }
+}
+
+function updateFormedSentence() {
+    document.getElementById('formedSentence').textContent = formedWords.join(' ');
+}
+
+async function nextPhrase() {
+    currentIndex++;
+    NavigationController.updateProgressBadge();
+    await prepareCurrentSubtitle();
+}
+
+async function prepareCurrentSubtitle() {
+    if (NavigationController.currentSection !== 'lesson') return;
+    
+    const sub = subtitles[currentIndex];
+    NavigationController.resetExerciseState();
+    const shuffled = shuffleWords(sub.text);
+    displayShuffledWords(shuffled, sub.text);
+    
+    await playCurrentSubtitleAndWait();
+    
+    if (NavigationController.currentSection !== 'lesson') return;
+    startTimer();
+    startPerformanceUpdate();
+}
+
+function startPerformanceUpdate() {
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      updatePerformanceDisplay();
+    }, 1000);
+}
+
+function updatePerformanceDisplay() {
+    const performanceBadge = document.getElementById('performance');
+    if (!performanceBadge) return;
+    const elapsed = (performance.now() - startTime) / 1000;
+    performanceBadge.textContent = `Tempo: ${elapsed.toFixed(1)}s`;
+}
+
+function playCurrentSubtitleAndWait() {
+    const video = document.getElementById('video');
+    const sub = subtitles[currentIndex];
+    
+    if (!video || !sub) return Promise.resolve();
+
+    return new Promise(resolve => {
+        video.pause();
+        video.currentTime = sub.start;
+        const playPromise = video.play();
+        
+        function checkVideoEnd() {
+            if (video.currentTime >= sub.end) {
+                video.pause();
+                resolve();
+            } else {
+                requestAnimationFrame(checkVideoEnd);
+            }
+        }
+        
+        if (playPromise !== undefined) {
+            playPromise.then(() => checkVideoEnd()).catch(() => resolve());
+        } else {
+            checkVideoEnd();
+        }
+    });
+}
+
+function playCurrentSubtitle() {
+    playCurrentSubtitleAndWait();
+}
+
+function startTimer() {
+    startTime = performance.now();
+}
+
+function stopTimerAndGetElapsed() {
+    const elapsed = (performance.now() - startTime) / 1000;
+    totalElapsedTime += elapsed;
+    return elapsed;
+}
+
+function displayTotalTime() {
+    const totalPerformance = (totalEstimatedTime / totalElapsedTime) * 100;
+    alert(`Lição completa! Tempo total: ${totalElapsedTime.toFixed(2)}s. Desempenho: ${totalPerformance.toFixed(2)}%`);
+}
+
+//=============================
+// Manipulação de Cards
+//=============================
+function createVideoCard(lesson, onClick) {
+    const card = document.createElement('div');
+    card.className = 'video-card';
+    card.textContent = lesson.name;
+    card.onclick = () => onClick(lesson);
+    return card;
+}
+
+function generateVideoCards(lessons, containerId, onClick) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '';
+    lessons.forEach(lesson => {
+        const card = createVideoCard(lesson, onClick);
+        container.appendChild(card);
+    });
+}
+
+async function handleLessonClick(lesson) {
+    NavigationController.resetExerciseState();
+    NavigationController.navigateTo('lesson');
+    NavigationController.showExerciseStatus();
+    
+    const video = document.getElementById('video');
+    video.src = lesson.videoUrl;
+    
+    try {
+        subtitles = await loadSrt(lesson.srtUrl);
+        if (subtitles.length === 0) {
+            alert("Erro: Não foi possível carregar as legendas.");
+            NavigationController.goHome();
+            return;
+        }
+    } catch (error) {
+        console.error("Falha ao carregar o SRT:", error);
+        alert("Ocorreu um erro ao carregar os dados da lição.");
+        NavigationController.goHome();
+        return;
+    }
+    totalEstimatedTime = subtitles.reduce((sum, sub) => sum + (sub.end - sub.start), 0);
+    currentIndex = 0;
+    await prepareCurrentSubtitle();
+}
+
+function handleCreateGameClick(lesson) {
+    // Lógica para criar uma partida.
+    const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+    document.getElementById('roomCode').textContent = roomCode;
+    document.getElementById('waitingStatus').textContent = 'Aguardando oponente entrar na sala...';
+    NavigationController.navigateTo('waitingRoom');
+    console.log(`Partida criada para a lição "${lesson.name}" com o código "${roomCode}"`);
+}
+
+function cancelWaitingRoom() {
+    console.log('Partida cancelada.');
+    NavigationController.goHome();
+}
+
+function searchLessons(query) {
+    const resultsContainer = document.getElementById('search-results');
+    resultsContainer.innerHTML = '';
+    if (query.trim() === '') {
+      resultsContainer.textContent = '';
+      return;
+    }
+
+    const allLessons = [...AppData.lessons.avulsas, ...AppData.lessons.trilha];
+    const filteredLessons = allLessons.filter(lesson =>
+      lesson.name.toLowerCase().includes(query.toLowerCase())
+    );
+    
+    if (filteredLessons.length > 0) {
+      generateVideoCards(filteredLessons, 'search-results', handleLessonClick);
+    } else {
+      resultsContainer.textContent = 'Nenhum resultado encontrado.';
+    }
+}
+
+
+//=============================
+// Inicialização
+//=============================
+document.addEventListener('DOMContentLoaded', () => {
+    NavigationController.navigateTo('home', false);
+    document.getElementById('homeBtn').onclick = () => NavigationController.goHome();
+    document.getElementById('backBtn').onclick = () => NavigationController.goBack();
+});
+
+</script>
+</body>
+</html>
