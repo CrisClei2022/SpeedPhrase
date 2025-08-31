@@ -167,20 +167,20 @@
 
   <!-- Seção para ENTRAR em partidas existentes (visível por padrão) -->
   <div id="joinGameView">
-    <button onclick="NavigationController.toggleLobbyView()">Ou, Crie Sua Própria Partida</button>
     <h2>Partidas Abertas</h2>
     <p>Entre em uma partida para desafiar outro jogador.</p>
     <div id="waitingGamesList" class="video-grid" style="margin-bottom: 20px;">
       <!-- Partidas abertas serão injetadas aqui -->
     </div>
+    <button onclick="NavigationController.toggleLobbyView()">Ou, Crie Sua Própria Partida</button>
   </div>
 
   <!-- Seção para CRIAR uma nova partida (oculta por padrão) -->
   <div id="createGameView" style="display: none;">
-    <button onclick="NavigationController.toggleLobbyView()">Ver Partidas Abertas</button>
     <h2>Criar Nova Partida</h2>
     <p>Escolha uma lição e aguarde um oponente.</p>
     <!-- As seções de lições existentes (avulsas/trilha) serão mostradas aqui -->
+    <button onclick="NavigationController.toggleLobbyView()">Ver Partidas Abertas</button>
   </div>
 
 </section>
