@@ -246,19 +246,22 @@ let totalEstimatedTime = 0;
 let timerInterval = null;
 
 //=============================
-// Lessons
+// AppData - Dados Centralizados
 //=============================
-const avulsasLessons = [{
-    name: "Catbox - I'm Gonna Be - 500 Miles.mp4",
-    srtUrl: "https://files.catbox.moe/wt145j.srt",
-    videoUrl: "https://files.catbox.moe/8pzqza.mp4"
-}];
-
-const trilhaLessons = [{
-    name: "B.B. Chapter 1 - Welcome & Nationalities",
-    videoUrl: "https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.mp4",
-    srtUrl: "https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.srt"
-}];
+const AppData = {
+    lessons: {
+        avulsas: [{
+            name: "Catbox - I'm Gonna Be - 500 Miles.mp4",
+            srtUrl: "https://files.catbox.moe/wt145j.srt",
+            videoUrl: "https://files.catbox.moe/8pzqza.mp4"
+        }],
+        trilha: [{
+            name: "B.B. Chapter 1 - Welcome & Nationalities",
+            videoUrl: "https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.mp4",
+            srtUrl: "https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.srt"
+        }]
+    }
+};
 
 //=============================
 // Game Mode Selection
@@ -929,7 +932,7 @@ function goToAvulsas() {
     
     hideAllSections();
     document.getElementById('avulsas-section').style.display = '';
-    generateVideoCards(avulsasLessons, 'avulsas-grid', handleLessonClick);
+    generateVideoCards(AppData.lessons.avulsas, 'avulsas-grid', handleLessonClick);
     
     localStorage.setItem('lastLessonCategory', 'avulsas');
     NavigationController.updateHeader();
@@ -948,7 +951,7 @@ function goToTrilha() {
     
     hideAllSections();
     document.getElementById('trilha-section').style.display = '';
-    generateVideoCards(trilhaLessons, 'trilha-grid', handleLessonClick);
+    generateVideoCards(AppData.lessons.trilha, 'trilha-grid', handleLessonClick);
     
     localStorage.setItem('lastLessonCategory', 'trilha');
     NavigationController.updateHeader();
@@ -1006,8 +1009,8 @@ function generateVideoCards(lessons, containerId, onClick) {
 // Carrega lições nas seções correspondentes
 //==========================================
 function loadAllLessons() {
-    generateVideoCards(avulsasLessons, 'avulsas-grid', handleLessonClick);
-    generateVideoCards(trilhaLessons, 'trilha-grid', handleLessonClick);
+    generateVideoCards(AppData.lessons.avulsas, 'avulsas-grid', handleLessonClick);
+    generateVideoCards(AppData.lessons.trilha, 'trilha-grid', handleLessonClick);
 }
 
 //=============================
@@ -1116,11 +1119,11 @@ const MultiplayerPlugin = {
     pluginInitialized: false,
     isCreateViewVisible: false,
     
-    // Simulação de partidas
-    mockWaitingGames: [
-        { name: "I'm Gonna Be - 500 Miles.mp4", srtUrl: "https://files.catbox.moe/wt145j.srt", videoUrl: "https://files.catbox.moe/8pzqza.mp4" }
-    ],
-
+    // Usar AppData ao invés de mock
+    get mockWaitingGames() {
+        return AppData.lessons.avulsas; // ou uma combinação das categorias
+    },
+    
     /**
      * Ponto de entrada do plugin.
      */
