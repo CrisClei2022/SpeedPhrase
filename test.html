@@ -714,12 +714,12 @@ function updateDisplay() {
     const display = document.getElementById('timer');
     if (!display) return;
 
-    const sub = subtitles[currentIndex];
+    const sub = GameState.subtitles[GameState.currentIndex];
     const sentenceEstimatedTime = getTimeLimitForSentence(sub.text);
-    const elapsed = (performance.now() - startTime) / 1000;
+    const elapsed = (performance.now() - GameState.timer.startTime) / 1000;
     
     // Calcula a projeção: tempo já gasto + tempo restante baseado na performance atual
-    const wordsCompleted = formedWords.length;
+    const wordsCompleted = GameState.formedWords.length;
     const totalWords = sub.text.split(' ').length;
     
     let projectedTotalTime;
@@ -757,7 +757,7 @@ function updateDisplay() {
 //=============================
 function playCurrentSubtitleAndWait() {
     const video = document.getElementById('video');
-    const sub = subtitles[currentIndex];
+    const sub = GameState.subtitles[GameState.currentIndex];
     
     if (!video || !sub) {
         console.error('❌ Vídeo ou legenda não encontrados');
