@@ -163,11 +163,11 @@
 <!-- ========================================================= -->
 <!-- Bloco HTML para o Plugin Multiplayer (Lobby Unificado v3) -->
 <!-- ========================================================= -->
-<section id="multiplayerLobbySection" style="display: none; text-align: center;">
+<section id="multiplayerLobbySection" style="text-align: center;">
 
   <!-- Seção para ENTRAR em partidas existentes (visível por padrão) -->
   <div id="joinGameView">
-    <button onclick="MultiplayerPlugin.toggleLobbyView()">Ou, Crie Sua Própria Partida</button>
+    <button onclick="NavigationController.toggleLobbyView()">Ou, Crie Sua Própria Partida</button>
     <h2>Partidas Abertas</h2>
     <p>Entre em uma partida para desafiar outro jogador.</p>
     <div id="waitingGamesList" class="video-grid" style="margin-bottom: 20px;">
@@ -177,7 +177,7 @@
 
   <!-- Seção para CRIAR uma nova partida (oculta por padrão) -->
   <div id="createGameView" style="display: none;">
-    <button onclick="MultiplayerPlugin.toggleLobbyView()">Ver Partidas Abertas</button>
+    <button onclick="NavigationController.toggleLobbyView()">Ver Partidas Abertas</button>
     <h2>Criar Nova Partida</h2>
     <p>Escolha uma lição e aguarde um oponente.</p>
     <!-- As seções de lições existentes (avulsas/trilha) serão mostradas aqui -->
@@ -270,8 +270,13 @@ function selectGameMode(mode) {
     currentGameMode = mode;
     console.log(`Modo selecionado: ${mode}`);
     
-    NavigationController.navigateTo('lessonSelection');
-    NavigationController.showLessonSelection();
+    if (mode === 'multiplayer') {
+        NavigationController.navigateTo('multiplayerLobby');
+        NavigationController.showMultiplayerLobby();
+    } else {
+        NavigationController.navigateTo('lessonSelection');
+        NavigationController.showLessonSelection();
+    }
 }
 
 //=============================
@@ -279,6 +284,7 @@ function selectGameMode(mode) {
 //=============================
 const NavigationController = {
   currentSection: 'gameMode',
+  currentLobbyView: 'joinGame',
   navigationStack: [],
   
   // Simplificar configurações - tratar lições como estado único
@@ -297,6 +303,12 @@ const NavigationController = {
     },
     exercise: {
       title: 'Exercício',
+      showBack: true,
+      showHome: true,
+      showFooter: false
+    },
+    multiplayerLobby: {
+      title: 'Sala Multiplayer',
       showBack: true,
       showHome: true,
       showFooter: false
@@ -425,6 +437,34 @@ const NavigationController = {
     hideAllSections();
     hideFooter();
     document.getElementById('gameModeSection').style.display = '';
+  },
+  
+  // Dentro do objeto NavigationController
+  toggleLobbyView() {
+      const joinGameView = document.getElementById('joinGameView');
+      const createGameView = document.getElementById('createGameView');
+
+      // Altera o estado interno
+      if (this.currentLobbyView === 'joinGame') {
+          this.currentLobbyView = 'createGame';
+          joinGameView.style.display = 'none';
+          createGameView.style.display = 'block';
+      } else {
+          this.currentLobbyView = 'joinGame';
+          joinGameView.style.display = 'block';
+          createGameView.style.display = 'none';
+      }
+  },
+  
+  // Dentro do objeto NavigationController
+  showMultiplayerLobby() {
+      // Esconde todas as outras seções
+      hideAllSections();
+      // Exibe a seção de lobby
+      document.getElementById('multiplayerLobbySection').style.display = 'block';
+      // Garante que o estado inicial esteja correto
+      this.currentLobbyView = 'joinGame';
+      this.toggleLobbyView(); // Exibe a visualização inicial correta
   },
   
     showExerciseStatus() {
@@ -971,7 +1011,8 @@ function hideAllSections() {
         'trilha-section',
         'videoSection',
         'formedSentenceSection',
-        'shuffledWordsSection'
+        'shuffledWordsSection',
+        'multiplayerLobbySection'
     ];
 
     sectionsToHide.forEach(id => {
@@ -1101,236 +1142,6 @@ document.addEventListener('visibilitychange', () => {
         NavigationController.pauseVideo();
     }
 });
-</script>
-<script>
-/**
- * =================================================================
- *  PLUGIN MULTIPLAYER - v5 (O Co-Piloto Profissional)
- * =================================================================
- *  Autor: Manus AI
- *  Descrição: Assume controle total do fluxo multiplayer interceptando
- *             funções de navegação para uma integração perfeita e robusta.
- *             Utiliza "Monkey Patching" para compatibilidade total.
- * =================================================================
- */
-const MultiplayerPlugin = {
-    
-    // --- Estado Interno do Plugin ---
-    pluginInitialized: false,
-    isCreateViewVisible: false,
-    
-    // Usar AppData ao invés de mock
-    get mockWaitingGames() {
-        return AppData.lessons.avulsas; // ou uma combinação das categorias
-    },
-    
-    /**
-     * Ponto de entrada do plugin.
-     */
-    initialize: function() {
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('🔌 Plugin Multiplayer v5: Inicializando...');
-            
-            // 1. Intercepta todas as funções necessárias para o controle do fluxo.
-            this.overrideCoreFunctions();
-            
-            // 2. Prepara a lista de jogos em espera.
-            this.populateWaitingGames();
-            
-            this.pluginInitialized = true;
-            console.log('🔌 Plugin Multiplayer v5: Pronto e operando como co-piloto.');
-        });
-    },
-
-    // VERSÃO FINAL E DEFINITIVA - SEM INTERFERÊNCIA NO MODO SOLO
-    overrideCoreFunctions: function() {
-        // --- Intercepta APENAS o botão "Multiplayer" ---
-        const buttons = document.querySelectorAll('.mode-button');
-        buttons.forEach(button => {
-            const onClickAttr = button.getAttribute('onclick');
-            if (onClickAttr && onClickAttr.includes("selectGameMode('multiplayer')")) {
-                button.setAttribute('onclick', 'MultiplayerPlugin.showLobby()');
-            }
-        });
-    
-        // --- Guarda uma referência das funções originais ---
-        const originalGoToAvulsas = window.goToAvulsas;
-        const originalGoToTrilha = window.goToTrilha;
-        const originalGoBack = NavigationController.goBack;
-        const originalGoHome = NavigationController.goHome;
-    
-        // --- Embrulha as funções de navegação ---
-    
-        window.goToAvulsas = () => {
-            if (window.currentGameMode === 'multiplayer') {
-                this.showLessonsInCategory('avulsas');
-            } else {
-                originalGoToAvulsas(); 
-            }
-        };
-    
-        window.goToTrilha = () => {
-            if (window.currentGameMode === 'multiplayer') {
-                this.showLessonsInCategory('trilha');
-            } else {
-                originalGoToTrilha();
-            }
-        };
-        
-        // 3. Intercepta "Voltar" - LÓGICA CORRIGIDA
-        NavigationController.goBack = () => {
-            // AÇÃO DO PLUGIN: Apenas se o lobby estiver visível.
-            if (document.getElementById('multiplayerLobbySection').style.display === 'block') {
-                console.log('🔌 Plugin: "Voltar" acionado a partir do Lobby. Retornando para seleção de modo.');
-                this.hideLobby();
-                NavigationController.showGameModeSelection();
-                NavigationController.navigationStack = [];
-                NavigationController.updateHeader();
-            } 
-            // AÇÃO PADRÃO: Para todos os outros casos (incluindo TODO o modo Solo).
-            else {
-                console.log('🔌 Plugin: "Voltar" acionado fora do Lobby. Devolvendo controle ao sistema original.');
-                // Devolve o controle para a função original, que já tem a lógica de limpeza.
-                originalGoBack.call(NavigationController);
-            }
-        };
-        
-        // 4. Intercepta "Home" - LÓGICA CORRIGIDA
-        NavigationController.goHome = () => {
-            // Ação do plugin: esconder o lobby se ele estiver visível.
-            const lobbyWasVisible = document.getElementById('multiplayerLobbySection').style.display === 'block';
-            if (lobbyWasVisible) {
-                console.log('🔌 Plugin: "Home" acionado. Escondendo o lobby.');
-                this.hideLobby();
-            }
-            
-            // Ação padrão: SEMPRE chama a função original, que já faz a limpeza robusta.
-            console.log('🔌 Plugin: Devolvendo controle ao sistema original para navegação "Home".');
-            originalGoHome.call(NavigationController);
-        };
-        
-        console.log('🔌 Plugin Multiplayer: Funções de navegação interceptadas com separação de contexto.');
-    },
-
-    /**
-     * Ação principal: exibe o lobby.
-     */
-    showLobby: function() {
-        if (!this.pluginInitialized) return;
-        selectGameMode('multiplayer');
-        hideAllSections();
-        document.getElementById('multiplayerLobbySection').style.display = 'block';
-        
-        if (typeof NavigationController !== 'undefined') {
-            document.getElementById('headerTitle').textContent = 'Lobby Multiplayer';
-            document.getElementById('backBtn').classList.remove('hidden');
-            NavigationController.navigationStack.push('gameMode');
-        }
-        this.updateLobbyView();
-    },
-    
-    // VERSÃO CORRIGIDA E ROBUSTA - COM RESTAURAÇÃO DO DOM
-    hideLobby: function() {
-        const lobbySection = document.getElementById('multiplayerLobbySection');
-        if (!lobbySection || lobbySection.style.display === 'none') {
-            return; // Se o lobby já está oculto, não faz nada.
-        }
-    
-        console.log('🔌 Plugin: Escondendo o lobby e restaurando o DOM original.');
-    
-        // 1. Esconde o lobby e o footer.
-        lobbySection.style.display = 'none';
-        hideFooter();
-    
-        // 2. **A LÓGICA DE RESTAURAÇÃO:** Move as seções de lições de volta para o <main>.
-        // Isso garante que o modo Solo as encontrará no lugar certo.
-        const mainElement = document.querySelector('main');
-        const avulsasSection = document.getElementById('avulsas-section');
-        const trilhaSection = document.getElementById('trilha-section');
-    
-        if (mainElement && avulsasSection) {
-            mainElement.appendChild(avulsasSection);
-        }
-        if (mainElement && trilhaSection) {
-            mainElement.appendChild(trilhaSection);
-        }
-    },
-
-
-    /**
-     * Alterna entre a visão de "Entrar" e "Criar".
-     */
-    toggleLobbyView: function() {
-        this.isCreateViewVisible = !this.isCreateViewVisible;
-        this.updateLobbyView();
-    },
-    
-    /**
-     * Atualiza a UI do lobby, movendo as seções de lições para o lugar certo.
-     */
-    updateLobbyView: function() {
-        const createView = document.getElementById('createGameView');
-        const joinView = document.getElementById('joinGameView');
-        
-        if (this.isCreateViewVisible) {
-            joinView.style.display = 'none';
-            createView.style.display = 'block';
-            this.showLessonsInCategory('avulsas'); // Mostra 'avulsas' por padrão
-            showFooter();
-        } else {
-            createView.style.display = 'none';
-            joinView.style.display = 'block';
-            document.getElementById('avulsas-section').style.display = 'none';
-            document.getElementById('trilha-section').style.display = 'none';
-            hideFooter();
-        }
-    },
-    
-    /**
-     * LÓGICA CORRIGIDA: Mostra a categoria de lição DENTRO do lobby.
-     */
-    showLessonsInCategory: function(category) {
-        const createView = document.getElementById('createGameView');
-        const avulsasSection = document.getElementById('avulsas-section');
-        const trilhaSection = document.getElementById('trilha-section');
-
-        // Garante que ambas as seções de lições estejam dentro do contêiner do lobby
-        createView.appendChild(avulsasSection);
-        createView.appendChild(trilhaSection);
-
-        if (category === 'avulsas') {
-            avulsasSection.style.display = 'block';
-            trilhaSection.style.display = 'none';
-        } else {
-            avulsasSection.style.display = 'none';
-            trilhaSection.style.display = 'block';
-        }
-    },
-
-    /**
-     * Popula a lista de partidas abertas.
-     */
-    populateWaitingGames: function() {
-        const container = document.getElementById('waitingGamesList');
-        container.innerHTML = '';
-        if (this.mockWaitingGames.length === 0) {
-            container.innerHTML = '<p>Nenhuma partida aberta.</p>';
-            return;
-        }
-        this.mockWaitingGames.forEach(lesson => {
-            if (typeof createVideoCard === 'function') {
-                const card = createVideoCard(lesson, (lessonData) => {
-                    handleLessonClick(lessonData);
-                });
-                container.appendChild(card);
-            }
-        });
-    }
-};
-
-// Inicia o plugin.
-MultiplayerPlugin.initialize();
-
 </script>
 </body>
 </html>
