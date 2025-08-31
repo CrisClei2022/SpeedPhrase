@@ -478,7 +478,6 @@
   </style>
 </head>
 <body>
-
 <!-- ========== HEADER ========== -->
 <header id="mainHeader" class="main-header">
   <nav class="header-nav">
@@ -494,12 +493,12 @@
       <div id="exerciseStatus" class="exercise-status hidden">
         <div id="playerStatus" class="status-line">
           <span id="progressBadge" class="progress-badge"></span>
-          <span id="timer" class="timer-badge"></span>
+          <span id="performance" class="performance-badge"></span>
         </div>
         
         <div id="opponentStatus" class="status-line hidden">
           <span id="opponentProgressBadge" class="progress-badge"></span>
-          <span id="opponentTimer" class="timer-badge"></span>
+          <span id="opponentPerformance" class="performance-badge"></span>
         </div>
       </div>
     </div>
@@ -530,156 +529,62 @@
       </button>
     </div>
   </section>
-
-  <!-- ========== MODO SOLO ========== -->
-  <section id="soloModeSection" class="section-container hidden">
-    <h2>Modo Solo</h2>
-    <p style="margin-bottom: 20px; color: #666;">Escolha o tipo de lição:</p>
-    
-    <!-- Botões de opção (sempre visíveis no modo solo) -->
-    <div class="option-buttons">
-      <button class="option-button" onclick="NavigationController.goToSoloOption('avulsas')">
-        <span class="mode-icon">📂</span>
-        <span class="mode-title">Avulsas</span>
-      </button>
-      <button class="option-button" onclick="NavigationController.goToSoloOption('trilha')">
-        <span class="mode-icon">🛤️</span>
-        <span class="mode-title">Trilha</span>
-      </button>
-      <button class="option-button" onclick="NavigationController.goToSoloOption('pesquisar')">
-        <span class="mode-icon">🔍</span>
-        <span class="mode-title">Pesquisar</span>
-      </button>
-    </div>
-
-    <!-- Subseções das lições -->
-    <div id="avulsas-section" class="video-grid-container hidden">
-      <h3 style="text-align: center; margin-bottom: 20px;">Lições Avulsas</h3>
+  
+  <!-- ========== LESSON SELECTION ========== -->
+  <section id="lessonSelection" class="section-container hidden">
+    <div id="avulsas-section" class="video-grid-container">
       <div id="avulsas-grid" class="video-grid">
         <!-- Lições serão injetadas aqui via JavaScript -->
-        <div class="video-card" onclick="startLesson('lesson1')">
-          <h4>500 Miles</h4>
-          <p>The Proclaimers</p>
-        </div>
-        <div class="video-card" onclick="startLesson('lesson2')">
-          <h4>Yesterday</h4>
-          <p>The Beatles</p>
-        </div>
       </div>
     </div>
 
     <div id="trilha-section" class="video-grid-container hidden">
-      <h3 style="text-align: center; margin-bottom: 20px;">Trilha de Aprendizado</h3>
       <div id="trilha-grid" class="video-grid">
         <!-- Trilha será injetada aqui via JavaScript -->
-        <div class="video-card" onclick="startLesson('trail1')">
-          <h4>Nível 1: Básico</h4>
-          <p>Frases simples</p>
-        </div>
-        <div class="video-card" onclick="startLesson('trail2')">
-          <h4>Nível 2: Intermediário</h4>
-          <p>Frases complexas</p>
-        </div>
       </div>
     </div>
 
     <div id="pesquisar-section" class="video-grid-container hidden">
-      <h3 style="text-align: center; margin-bottom: 20px;">Pesquisar Lições</h3>
       <div class="search-container">
-        <input type="search" class="search-input" placeholder="Digite para buscar lições..." />
+        <input type="search" class="search-input" placeholder="Digite para buscar lições..." oninput="searchLessons(this.value)" />
       </div>
       <div id="search-results" class="video-grid">
         <!-- Resultados da busca aparecerão aqui -->
+        <p style="text-align: center; color: #666; margin-top: 20px;"></p>
       </div>
     </div>
   </section>
 
+  <!-- ========== MODO SOLO ========== -->
+  <section id="soloModeSection" class="section-container hidden">
+    <!-- Vai direto para >LESSON SECTION >Avulsas por padrão -->
+  </section>
+
   <!-- ========== MODO MULTIPLAYER ========== -->
   <section id="multiModeSection" class="section-container hidden">
-    <h2>Multiplayer</h2>
-    <p style="margin-bottom: 20px; color: #666;">Entre em partidas ou crie a sua:</p>
-    
-    <!-- Opções iniciais do multiplayer -->
-    <div class="option-buttons">
-      <button class="option-button" onclick="NavigationController.goToMultiOption('abertas')">
-        <span class="mode-icon">🎮</span>
-        <span class="mode-title">Partidas Abertas</span>
-      </button>
-      <button class="option-button" onclick="NavigationController.goToMultiOption('criar')">
-        <span class="mode-icon">➕</span>
-        <span class="mode-title">Criar Partida</span>
-      </button>
-    </div>
-
-    <!-- Lista de partidas abertas -->
-    <div id="partidas-abertas-section" class="video-grid-container hidden">
-      <h3 style="text-align: center; margin-bottom: 20px;">Partidas Disponíveis</h3>
-      <div id="waitingGamesList" class="video-grid">
-        <!-- Partidas abertas serão injetadas aqui -->
-        <div class="video-card" onclick="joinGame('game1')">
-          <h4>500 Miles</h4>
-          <p>Jogador: Ana</p>
-          <small>Aguardando...</small>
-        </div>
-      </div>
-    </div>
+    <!-- Vai direto para Partidas Abertas por padrão -->    
+  </section>
+  
+  <!-- ========== PARTIDA ABERTAS ========== -->
+  <section id="partidas-abertas-section" class="video-grid-container hidden">
+    <!-- Partidas abertas serão injetadas aqui -->
+	<ul id="waitingGamesList" class="game-list">
+    <li class="game-item">
+      <span class="game-lesson-title"></span>
+    </li>
+	</ul> 
   </section>
 
   <!-- ========== CRIAR PARTIDA ========== -->
   <section id="createGameSection" class="section-container hidden">
     <h2>Criar Nova Partida</h2>
-    <p style="margin-bottom: 20px; color: #666;">Escolha uma lição para desafiar outros jogadores:</p>
-    
+    <p style="margin-bottom: 20px; color: #666;">Escolha uma lição para desafiar outros jogadores:</p>    
     <!-- Mesmas opções do solo, mas para criar partida -->
-    <div class="option-buttons">
-      <button class="option-button" onclick="NavigationController.goToCreateGame('avulsas')">
-        <span class="mode-icon">📂</span>
-        <span class="mode-title">Avulsas</span>
-      </button>
-      <button class="option-button" onclick="NavigationController.goToCreateGame('trilha')">
-        <span class="mode-icon">🛤️</span>
-        <span class="mode-title">Trilha</span>
-      </button>
-      <button class="option-button" onclick="NavigationController.goToCreateGame('pesquisar')">
-        <span class="mode-icon">🔍</span>
-        <span class="mode-title">Pesquisar</span>
-      </button>
-    </div>
-
-    <!-- Subseções para criar partida (reutilizam o mesmo conteúdo) -->
-    <div id="create-avulsas-section" class="video-grid-container hidden">
-      <h3 style="text-align: center; margin-bottom: 20px;">Escolha uma Lição Avulsa</h3>
-      <div id="create-avulsas-grid" class="video-grid">
-        <div class="video-card" onclick="createGameWithLesson('lesson1')">
-          <h4>500 Miles</h4>
-          <p>The Proclaimers</p>
-        </div>
-      </div>
-    </div>
-
-    <div id="create-trilha-section" class="video-grid-container hidden">
-      <h3 style="text-align: center; margin-bottom: 20px;">Escolha uma Lição da Trilha</h3>
-      <div id="create-trilha-grid" class="video-grid">
-        <div class="video-card" onclick="createGameWithLesson('trail1')">
-          <h4>Nível 1: Básico</h4>
-          <p>Frases simples</p>
-        </div>
-      </div>
-    </div>
-
-    <div id="create-pesquisar-section" class="video-grid-container hidden">
-      <h3 style="text-align: center; margin-bottom: 20px;">Pesquisar para Criar Partida</h3>
-      <div class="search-container">
-        <input type="search" class="search-input" placeholder="Busque uma lição para criar partida..." />
-      </div>
-      <div id="create-search-results" class="video-grid"></div>
-    </div>
   </section>
 
   <!-- ========== SALA DE ESPERA ========== -->
   <section id="waitingRoomSection" class="waiting-room hidden">
-    <h2>Sala de Espera</h2>
-    <p>Compartilhe o código com seus amigos:</p>
+    <p style="margin-bottom: 10px; color: #666;">Compartilhe o código com seus amigos:</p>
     <div class="room-code" id="roomCode">ABC123</div>
     
     <div class="waiting-animation">
@@ -697,31 +602,26 @@
   <!-- ========== TELA DA LIÇÃO ========== -->
   <section id="lessonSection" class="hidden">
     <!-- Vídeo -->
-    <div class="video-container">
-      <video id="video" controls>
-        <source src="https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.mp4" type="video/mp4" />
-      </video>
-    </div>
-    
-    <!-- Controles -->
-    <div class="controls">
-      <button onclick="playCurrentSubtitle()">▶️ Tocar trecho atual</button>
-    </div>
+    <section id="videoSection" style="margin-top: 0;">
+      <div class="video-container">
+        <video id="video" width="70%" height="340" controls>
+          <source src="https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.mp4" type="video/mp4" />
+        </video>
+      </div>
+      <div class="controls" style="margin-top: 10px;">
+        <button onclick="playCurrentSubtitle()">▶️ Tocar trecho</button>
+      </div>
+    </section>
 
-    <!-- Frase formada -->
-    <div class="formed-sentence" id="formedSentence">
-      Arraste as palavras aqui para formar a frase
-    </div>
+    <!-- Seção da frase formada -->
+    <section id="formedSentenceSection" style="margin-top: 20px;">
+      <div class="formed-sentence" id="formedSentence"></div>
+    </section>
 
-    <!-- Palavras embaralhadas -->
-    <div class="words-container" id="shuffledWords">
-      <!-- Palavras serão injetadas aqui -->
-      <div class="word" onclick="selectWord(this)">I'm</div>
-      <div class="word" onclick="selectWord(this)">gonna</div>
-      <div class="word" onclick="selectWord(this)">be</div>
-      <div class="word" onclick="selectWord(this)">the</div>
-      <div class="word" onclick="selectWord(this)">one</div>
-    </div>
+    <!-- Seção das palavras embaralhadas -->
+    <section id="shuffledWordsSection" style="margin-top: 20px;">
+      <div class="words-container" id="shuffledWords"></div>
+    </section>
   </section>
 
 </main>
@@ -731,301 +631,564 @@
 <!-- Footer para Lições (Solo + Criar Partida) -->
 <footer id="lessonsFooter" class="context-footer hidden">
   <nav class="footer-nav">
-    <button id="avulsasFooterBtn" class="footer-btn" onclick="NavigationController.switchLessonType('avulsas')">
-      <span class="footer-icon">📂</span>
-      <span class="footer-text">Avulsas</span>
-    </button>
-    <button id="trilhaFooterBtn" class="footer-btn" onclick="NavigationController.switchLessonType('trilha')">
-      <span class="footer-icon">🛤️</span>
-      <span class="footer-text">Trilha</span>
-    </button>
+    <li>
     <button id="pesquisarFooterBtn" class="footer-btn" onclick="NavigationController.switchLessonType('pesquisar')">
       <span class="footer-icon">🔍</span>
       <span class="footer-text">Pesquisar</span>
     </button>
+    </li>
+    <li>
+    <button id="avulsasFooterBtn" class="footer-btn" onclick="NavigationController.switchLessonType('avulsas')">
+      <span class="footer-icon">📂</span>
+      <span class="footer-text">Avulsas</span>
+    </button>
+	</li>
+	<li>
+    <button id="trilhaFooterBtn" class="footer-btn" onclick="NavigationController.switchLessonType('trilha')">
+      <span class="footer-icon">🛤️</span>
+      <span class="footer-text">Trilha</span>
+    </button>
+    </li>
   </nav>
 </footer>
 
 <!-- Footer para Multiplayer -->
 <footer id="multiFooter" class="context-footer hidden">
   <nav class="footer-nav">
-    <button id="abertasFooterBtn" class="footer-btn" onclick="NavigationController.switchMultiType('abertas')">
+  	<li>
+    <button id="abertasFooterBtn" class="footer-btn active" onclick="NavigationController.switchMultiType('abertas')">
       <span class="footer-icon">🎮</span>
       <span class="footer-text">Abertas</span>
     </button>
+    </li>
+    <li>
     <button id="criarFooterBtn" class="footer-btn" onclick="NavigationController.switchMultiType('criar')">
       <span class="footer-icon">➕</span>
       <span class="footer-text">Criar</span>
     </button>
+    </li>
   </nav>
 </footer>
-
 <script>
-// ========== NAVIGATION CONTROLLER ==========
-const NavigationController = {
-  currentSection: 'home',
-  navigationStack: [],
+//=============================
+// Estado da Aplicação
+//=============================
+let subtitles = [];
+let currentIndex = 0;
+let formedWords = [];
+let currentGameMode = null;
+let lastLessonCategory = 'avulsas';
 
-  // Utilitários
-  hideAllSections() {
-    document.querySelectorAll('main > section').forEach(section => {
-      section.classList.add('hidden');
-    });
-  },
+//=============================
+// Estado de Timer
+//=============================
+let startTime = 0;
+let totalElapsedTime = 0;
+let totalEstimatedTime = 0;
+let timerInterval = null;
 
-  hideAllFooters() {
-    document.querySelectorAll('.context-footer').forEach(footer => {
-      footer.classList.add('hidden');
-    });
-  },
-
-  updateHeader(title, showBack = false) {
-    document.getElementById('headerTitle').textContent = title;
-    document.getElementById('backBtn').classList.toggle('hidden', !showBack);
-  },
-
-  showFooter(footerType) {
-    this.hideAllFooters();
-    if (footerType) {
-      document.getElementById(footerType + 'Footer').classList.remove('hidden');
-    }
-  },
-
-  // Navegação principal
-  goHome() {
-    this.hideAllSections();
-    this.hideAllFooters();
-    document.getElementById('homeSection').classList.remove('hidden');
-    this.updateHeader('SpeedPhrase', false);
-    this.currentSection = 'home';
-    this.navigationStack = [];
-  },
-
-  goBack() {
-    if (this.navigationStack.length > 0) {
-      const previous = this.navigationStack.pop();
-      this[previous.method](...previous.args);
-    } else {
-      this.goHome();
-    }
-  },
-
-  // Modo Solo
-  goToMode(mode) {
-    this.navigationStack.push({ method: 'goHome', args: [] });
-    
-    if (mode === 'solo') {
-      this.hideAllSections();
-      document.getElementById('soloModeSection').classList.remove('hidden');
-      this.updateHeader('Modo Solo', true);
-      this.showFooter('lessons');
-      this.currentSection = 'solo';
-    } else if (mode === 'multiplayer') {
-      this.hideAllSections();
-      document.getElementById('multiModeSection').classList.remove('hidden');
-      this.updateHeader('Multiplayer', true);
-      this.showFooter('multi');
-      this.currentSection = 'multiplayer';
-    }
-  },
-
-  goToSoloOption(option) {
-    this.navigationStack.push({ method: 'goToMode', args: ['solo'] });
-    
-    // Esconde todas as subseções do solo
-    document.querySelectorAll('#soloModeSection .video-grid-container').forEach(section => {
-      section.classList.add('hidden');
-    });
-
-    // Mostra a subseção específica
-    document.getElementById(option + '-section').classList.remove('hidden');
-    
-    // Atualiza header
-    const titles = {
-      'avulsas': 'Lições Avulsas',
-      'trilha': 'Trilha de Aprendizado', 
-      'pesquisar': 'Pesquisar Lições'
-    };
-    this.updateHeader(titles[option], true);
-
-    // Atualiza footer ativo
-    this.updateFooterActive('lessons', option);
-  },
-
-  // Modo Multiplayer
-  goToMultiOption(option) {
-    this.navigationStack.push({ method: 'goToMode', args: ['multiplayer'] });
-
-    if (option === 'abertas') {
-      // Esconde seção principal do multi, mostra partidas abertas
-      document.querySelectorAll('#multiModeSection .video-grid-container').forEach(section => {
-        section.classList.add('hidden');
-      });
-      document.getElementById('partidas-abertas-section').classList.remove('hidden');
-      this.updateHeader('Partidas Abertas', true);
-      this.updateFooterActive('multi', 'abertas');
-      
-    } else if (option === 'criar') {
-      this.hideAllSections();
-      document.getElementById('createGameSection').classList.remove('hidden');
-      this.updateHeader('Criar Partida', true);
-      this.showFooter('lessons'); // Usa o mesmo footer de lições
-    }
-  },
-
-  goToCreateGame(option) {
-    this.navigationStack.push({ method: 'goToMultiOption', args: ['criar'] });
-    
-    // Esconde todas as subseções de criar partida
-    document.querySelectorAll('#createGameSection .video-grid-container').forEach(section => {
-      section.classList.add('hidden');
-    });
-
-    // Mostra a subseção específica
-    document.getElementById('create-' + option + '-section').classList.remove('hidden');
-    
-    // Atualiza header
-    const titles = {
-      'avulsas': 'Criar: Lições Avulsas',
-      'trilha': 'Criar: Trilha de Aprendizado',
-      'pesquisar': 'Criar: Pesquisar Lições'
-    };
-    this.updateHeader(titles[option], true);
-
-    // Atualiza footer ativo
-    this.updateFooterActive('lessons', option);
-  },
-
-  // Funções de troca rápida via footer
-  switchLessonType(type) {
-    if (this.currentSection === 'solo') {
-      this.goToSoloOption(type);
-    } else if (document.getElementById('createGameSection').classList.contains('hidden') === false) {
-      this.goToCreateGame(type);
-    }
-  },
-
-  switchMultiType(type) {
-    this.goToMultiOption(type);
-  },
-
-  updateFooterActive(footerType, activeOption) {
-    // Remove active de todos os botões do footer
-    document.querySelectorAll(`#${footerType}Footer .footer-btn`).forEach(btn => {
-      btn.classList.remove('active');
-    });
-
-    // Adiciona active ao botão correto
-    const buttonMap = {
-      'lessons': {
-        'avulsas': 'avulsasFooterBtn',
-        'trilha': 'trilhaFooterBtn', 
-        'pesquisar': 'pesquisarFooterBtn'
-      },
-      'multi': {
-        'abertas': 'abertasFooterBtn',
-        'criar': 'criarFooterBtn'
-      }
-    };
-
-    const buttonId = buttonMap[footerType]?.[activeOption];
-    if (buttonId) {
-      document.getElementById(buttonId)?.classList.add('active');
-    }
-  },
-
-  // Sala de espera
-  goToWaitingRoom(lessonData) {
-    this.navigationStack.push({ method: 'goToCreateGame', args: [lessonData.type] });
-    
-    this.hideAllSections();
-    this.hideAllFooters();
-    document.getElementById('waitingRoomSection').classList.remove('hidden');
-    this.updateHeader('Aguardando Oponente', true);
-    
-    // Gera código da sala
-    const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-    document.getElementById('roomCode').textContent = roomCode;
-  },
-
-  cancelWaitingRoom() {
-    this.goBack();
-  },
-
-  // Iniciar lição
-  startLesson(lessonId, isMultiplayer = false) {
-    this.hideAllSections();
-    this.hideAllFooters();
-    document.getElementById('lessonSection').classList.remove('hidden');
-    
-    if (isMultiplayer) {
-      this.updateHeader('Lição: Multiplayer', true);
-      document.getElementById('exerciseStatus').classList.remove('hidden');
-      document.getElementById('opponentStatus').classList.remove('hidden');
-    } else {
-      this.updateHeader('Lição: Solo', true);
-      document.getElementById('exerciseStatus').classList.remove('hidden');
-      document.getElementById('opponentStatus').classList.add('hidden');
-    }
-
-    // Inicializa a lição
-    this.initializeLesson(lessonId);
-  }
+//=============================
+// AppData - Dados Centralizados
+//=============================
+const AppData = {
+    lessons: {
+        avulsas: [{
+            name: "Catbox - I'm Gonna Be - 500 Miles",
+            srtUrl: "https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.srt",
+            videoUrl: "https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.mp4"
+        }],
+        trilha: [{
+            name: "B.B. Chapter 1 - Welcome & Nationalities",
+            srtUrl: "https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.srt",
+            videoUrl: "https://f005.backblazeb2.com/file/Avulsas/Im_Gonna_Be_-_500_Miles.mp4"
+        }]
+    }
 };
 
-// ========== LESSON FUNCTIONS ==========
-function startLesson(lessonId) {
-  NavigationController.startLesson(lessonId, false);
+//=============================
+// Game Mode Selection
+//=============================
+function selectGameMode(mode) {
+    currentGameMode = mode;
+    console.log(`Modo selecionado: ${mode}`);
+    
+    if (mode === 'solo') {
+      NavigationController.goToLessons();
+    } else if (mode === 'multiplayer') {
+      NavigationController.goToMultiplayer();
+    }
 }
 
-function createGameWithLesson(lessonId) {
-  // Simula criação da partida e vai para sala de espera
-  NavigationController.goToWaitingRoom({ lessonId, type: 'avulsas' });
+//=============================
+// Navigation Controller
+//=============================
+const NavigationController = {
+  currentSection: 'home',
+  navigationStack: [],
+  
+  navigateTo(section, pushToStack = true) {
+    this.hideAllSections();
+    
+    if (this.currentSection === 'lesson' && section !== 'lesson') {
+      this.pauseAllResources();
+      this.hideExerciseStatus();
+    }
+
+    if (pushToStack && this.currentSection !== section) {
+      this.navigationStack.push(this.currentSection);
+    }
+    
+    this.currentSection = section;
+    this.updateHeader();
+    this.updateFooterVisibility();
+    
+    switch(section) {
+      case 'home':
+        document.getElementById('homeSection').classList.remove('hidden');
+        break;
+      case 'lessonSelection':
+        document.getElementById('lessonSelection').classList.remove('hidden');
+        this.switchLessonType(lastLessonCategory, false);
+        break;
+      case 'multiplayer':
+        document.getElementById('multiModeSection').classList.remove('hidden');
+        this.switchMultiType('abertas', false);
+        break;
+      case 'waitingRoom':
+        document.getElementById('waitingRoomSection').classList.remove('hidden');
+        break;
+      case 'lesson':
+        document.getElementById('lessonSection').classList.remove('hidden');
+        break;
+    }
+  },
+  
+  updateFooterVisibility() {
+    document.getElementById('lessonsFooter').classList.add('hidden');
+    document.getElementById('multiFooter').classList.add('hidden');
+    
+    if (this.currentSection === 'lessonSelection') {
+      document.getElementById('lessonsFooter').classList.remove('hidden');
+    } else if (this.currentSection === 'multiplayer') {
+      document.getElementById('multiFooter').classList.remove('hidden');
+    }
+  },
+  
+  goBack() {
+    this.pauseAllResources();
+    this.hideExerciseStatus();
+    
+    if (this.navigationStack.length > 0) {
+      const previousSection = this.navigationStack.pop();
+      this.navigateTo(previousSection, false);
+    } else {
+      this.goHome();
+    }
+  },
+  
+  goHome() {
+    this.pauseAllResources();
+    this.hideExerciseStatus();
+    this.navigationStack = [];
+    this.navigateTo('home', false);
+  },
+  
+  updateHeader() {
+    const headerTitle = document.getElementById('headerTitle');
+    const backBtn = document.getElementById('backBtn');
+    
+    switch(this.currentSection) {
+      case 'home':
+        headerTitle.textContent = 'SpeedPhrase';
+        backBtn.classList.add('hidden');
+        break;
+      case 'lessonSelection':
+        headerTitle.textContent = this.getLessonSelectionTitle();
+        backBtn.classList.remove('hidden');
+        break;
+      case 'multiplayer':
+        headerTitle.textContent = 'Multiplayer';
+        backBtn.classList.remove('hidden');
+        break;
+      case 'lesson':
+        headerTitle.textContent = 'Exercício';
+        backBtn.classList.remove('hidden');
+        break;
+      default:
+        headerTitle.textContent = 'SpeedPhrase';
+        backBtn.classList.add('hidden');
+        break;
+    }
+  },
+
+  showExerciseStatus() {
+    document.getElementById('exerciseStatus').classList.remove('hidden');
+    this.updateProgressBadge();
+  },
+  
+  hideExerciseStatus() {
+    document.getElementById('exerciseStatus').classList.add('hidden');
+  },
+
+  updateProgressBadge() {
+    const badge = document.getElementById('progressBadge');
+    if (subtitles.length > 0) {
+      badge.textContent = `Você: ${currentIndex + 1}/${subtitles.length}`;
+    }
+  },
+  
+  // Novas funções de navegação
+  goToLessons() {
+    this.navigateTo('lessonSelection');
+    this.switchLessonType(lastLessonCategory);
+  },
+
+  goToMultiplayer() {
+    this.navigateTo('multiplayer');
+    this.switchMultiType('abertas');
+  },
+
+  switchLessonType(type, pushToStack = true) {
+    lastLessonCategory = type;
+    ['avulsas', 'trilha', 'pesquisar'].forEach(id => {
+      document.getElementById(`${id}-section`).classList.add('hidden');
+      document.getElementById(`${id}FooterBtn`).classList.remove('active');
+    });
+    document.getElementById(`${type}-section`).classList.remove('hidden');
+    document.getElementById(`${type}FooterBtn`).classList.add('active');
+    
+    if (type === 'avulsas') {
+      generateVideoCards(AppData.lessons.avulsas, 'avulsas-grid', handleLessonClick);
+    } else if (type === 'trilha') {
+      generateVideoCards(AppData.lessons.trilha, 'trilha-grid', handleLessonClick);
+    }
+    
+    this.updateHeader();
+  },
+  
+  switchMultiType(type, pushToStack = true) {
+    ['abertas', 'criar'].forEach(id => {
+      const section = document.getElementById(`${id}-section`);
+      if (section) section.classList.add('hidden');
+      document.getElementById(`${id}FooterBtn`).classList.remove('active');
+    });
+    const section = document.getElementById(type === 'abertas' ? 'partidas-abertas-section' : 'createGameSection');
+    if (section) section.classList.remove('hidden');
+    document.getElementById(`${type}FooterBtn`).classList.add('active');
+    
+    if (type === 'criar') {
+      generateVideoCards(AppData.lessons.avulsas, 'createGameSection', handleCreateGameClick);
+    }
+  },
+
+  hideAllSections() {
+    const sections = ['homeSection', 'lessonSelection', 'multiModeSection', 'waitingRoomSection', 'lessonSection'];
+    sections.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('hidden');
+    });
+  },
+
+  pauseAllResources() {
+    const video = document.getElementById('video');
+    if (video) video.pause();
+    if (timerInterval) clearInterval(timerInterval);
+  },
+
+  resetExerciseState() {
+    formedWords = [];
+    currentIndex = 0;
+    startTime = 0;
+    totalElapsedTime = 0;
+    totalEstimatedTime = 0;
+    if (document.getElementById('formedSentence')) {
+      document.getElementById('formedSentence').textContent = '';
+    }
+    if (document.getElementById('shuffledWords')) {
+      document.getElementById('shuffledWords').innerHTML = '';
+    }
+  },
+
+  getLessonSelectionTitle() {
+    const modeName = currentGameMode ?
+      currentGameMode.charAt(0).toUpperCase() + currentGameMode.slice(1) : '';
+    const categoryName = lastLessonCategory.charAt(0).toUpperCase() + lastLessonCategory.slice(1);
+    return `${modeName} - ${categoryName}`;
+  }
+};
+
+//=============================
+// Função: Carrega e Processa o SRT
+//=============================
+async function loadSrt(url) {
+    const res = await fetch(url);
+    const text = await res.text();
+    return parseSRT(text);
 }
 
-function joinGame(gameId) {
-  NavigationController.startLesson(gameId, true);
+//=============================
+// Função: Parser SRT simples
+//=============================
+function parseSRT(srt) {
+    const regex = /(\d+)\s+(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\s+([\s\S]*?)(?=\n{2,}|$)/g;
+    let result = [];
+    let match;
+    while ((match = regex.exec(srt)) !== null) {
+        result.push({
+            index: Number(match[1]),
+            start: timeToSeconds(match[2]),
+            end: timeToSeconds(match[3]),
+            text: match[4].replace(/\n/g, ' ').trim()
+        });
+    }
+    return result;
+}
+
+//=============================
+// Função: Converte tempo SRT para segundos
+//=============================
+function timeToSeconds(time) {
+    const [h, m, s] = time.replace(',', '.').split(':');
+    return parseFloat(h) * 3600 + parseFloat(m) * 60 + parseFloat(s);
+}
+
+//=============================
+// Lógica do jogo
+//=============================
+function shuffleWords(text) {
+    const words = text.split(' ');
+    for (let i = words.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [words[i], words[j]] = [words[j], words[i]];
+    }
+    return words;
+}
+
+function displayShuffledWords(words, original) {
+    const container = document.getElementById('shuffledWords');
+    container.innerHTML = '';
+    formedWords = [];
+    words.forEach(word => {
+        const span = document.createElement('span');
+        span.className = 'word';
+        span.textContent = word;
+        span.onclick = () => handleWordClick(word, span, original);
+        container.appendChild(span);
+    });
+    updateFormedSentence();
+}
+
+function handleWordClick(word, element, original) {
+    const expectedWords = original.split(' ');
+    if (word === expectedWords[formedWords.length]) {
+        formedWords.push(word);
+        element.classList.add('correct');
+        element.onclick = null;
+        clearIncorrectWords();
+    } else {
+        element.classList.add('incorrect');
+    }
+    updateFormedSentence();
+    checkIfSentenceIsComplete(original);
+}
+
+function clearIncorrectWords() {
+    document.querySelectorAll('.word.incorrect').forEach(el => el.classList.remove('incorrect'));
+}
+
+async function checkIfSentenceIsComplete(original) {
+    if (formedWords.join(' ') === original) {
+        NavigationController.pauseAllResources();
+        const timeUsed = stopTimerAndGetElapsed();
+        console.log(`Tempo para essa frase: ${timeUsed.toFixed(2)}s`);
+        await playCurrentSubtitleAndWait();
+        if (currentIndex < subtitles.length - 1) {
+            nextPhrase();
+        } else {
+            alert('Lição finalizada!');
+            displayTotalTime();
+            NavigationController.goHome();
+        }
+    }
+}
+
+function updateFormedSentence() {
+    document.getElementById('formedSentence').textContent = formedWords.join(' ');
+}
+
+async function nextPhrase() {
+    currentIndex++;
+    NavigationController.updateProgressBadge();
+    await prepareCurrentSubtitle();
+}
+
+async function prepareCurrentSubtitle() {
+    if (NavigationController.currentSection !== 'lesson') return;
+    
+    const sub = subtitles[currentIndex];
+    NavigationController.resetExerciseState();
+    const shuffled = shuffleWords(sub.text);
+    displayShuffledWords(shuffled, sub.text);
+    
+    await playCurrentSubtitleAndWait();
+    
+    if (NavigationController.currentSection !== 'lesson') return;
+    startTimer();
+    startPerformanceUpdate();
+}
+
+function startPerformanceUpdate() {
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      updatePerformanceDisplay();
+    }, 1000);
+}
+
+function updatePerformanceDisplay() {
+    const performanceBadge = document.getElementById('performance');
+    if (!performanceBadge) return;
+    const elapsed = (performance.now() - startTime) / 1000;
+    performanceBadge.textContent = `Tempo: ${elapsed.toFixed(1)}s`;
+}
+
+function playCurrentSubtitleAndWait() {
+    const video = document.getElementById('video');
+    const sub = subtitles[currentIndex];
+    
+    if (!video || !sub) return Promise.resolve();
+
+    return new Promise(resolve => {
+        video.pause();
+        video.currentTime = sub.start;
+        const playPromise = video.play();
+        
+        function checkVideoEnd() {
+            if (video.currentTime >= sub.end) {
+                video.pause();
+                resolve();
+            } else {
+                requestAnimationFrame(checkVideoEnd);
+            }
+        }
+        
+        if (playPromise !== undefined) {
+            playPromise.then(() => checkVideoEnd()).catch(() => resolve());
+        } else {
+            checkVideoEnd();
+        }
+    });
 }
 
 function playCurrentSubtitle() {
-  const video = document.getElementById('video');
-  video.currentTime = 10; // Exemplo: vai para 10 segundos
-  video.play();
+    playCurrentSubtitleAndWait();
 }
 
-function selectWord(wordElement) {
-  const formedSentence = document.getElementById('formedSentence');
-  
-  // Se é a primeira palavra, limpa o placeholder
-  if (formedSentence.textContent === 'Arraste as palavras aqui para formar a frase') {
-    formedSentence.textContent = '';
-  }
-  
-  // Adiciona a palavra à frase
-  formedSentence.textContent += (formedSentence.textContent ? ' ' : '') + wordElement.textContent;
-  
-  // Remove a palavra das opções
-  wordElement.style.display = 'none';
-  
-  // Verifica se a frase está completa (exemplo simples)
-  checkSentence();
+function startTimer() {
+    startTime = performance.now();
 }
 
-function checkSentence() {
-  const formed = document.getElementById('formedSentence').textContent;
-  const correct = "I'm gonna be the one"; // Exemplo
-  
-  if (formed === correct) {
-    alert('Correto! 🎉');
-    // Aqui você pode avançar para próxima frase ou finalizar lição
-  }
+function stopTimerAndGetElapsed() {
+    const elapsed = (performance.now() - startTime) / 1000;
+    totalElapsedTime += elapsed;
+    return elapsed;
 }
 
+function displayTotalTime() {
+    const totalPerformance = (totalEstimatedTime / totalElapsedTime) * 100;
+    alert(`Lição completa! Tempo total: ${totalElapsedTime.toFixed(2)}s. Desempenho: ${totalPerformance.toFixed(2)}%`);
+}
+
+//=============================
+// Manipulação de Cards
+//=============================
+function createVideoCard(lesson, onClick) {
+    const card = document.createElement('div');
+    card.className = 'video-card';
+    card.textContent = lesson.name;
+    card.onclick = () => onClick(lesson);
+    return card;
+}
+
+function generateVideoCards(lessons, containerId, onClick) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '';
+    lessons.forEach(lesson => {
+        const card = createVideoCard(lesson, onClick);
+        container.appendChild(card);
+    });
+}
+
+async function handleLessonClick(lesson) {
+    NavigationController.resetExerciseState();
+    NavigationController.navigateTo('lesson');
+    NavigationController.showExerciseStatus();
+    
+    const video = document.getElementById('video');
+    video.src = lesson.videoUrl;
+    
+    try {
+        subtitles = await loadSrt(lesson.srtUrl);
+        if (subtitles.length === 0) {
+            alert("Erro: Não foi possível carregar as legendas.");
+            NavigationController.goHome();
+            return;
+        }
+    } catch (error) {
+        console.error("Falha ao carregar o SRT:", error);
+        alert("Ocorreu um erro ao carregar os dados da lição.");
+        NavigationController.goHome();
+        return;
+    }
+    totalEstimatedTime = subtitles.reduce((sum, sub) => sum + (sub.end - sub.start), 0);
+    currentIndex = 0;
+    await prepareCurrentSubtitle();
+}
+
+function handleCreateGameClick(lesson) {
+    // Lógica para criar uma partida.
+    const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+    document.getElementById('roomCode').textContent = roomCode;
+    document.getElementById('waitingStatus').textContent = 'Aguardando oponente entrar na sala...';
+    NavigationController.navigateTo('waitingRoom');
+    console.log(`Partida criada para a lição "${lesson.name}" com o código "${roomCode}"`);
+}
+
+function cancelWaitingRoom() {
+    console.log('Partida cancelada.');
+    NavigationController.goHome();
+}
+
+function searchLessons(query) {
+    const resultsContainer = document.getElementById('search-results');
+    resultsContainer.innerHTML = '';
+    if (query.trim() === '') {
+      resultsContainer.textContent = '';
+      return;
+    }
+
+    const allLessons = [...AppData.lessons.avulsas, ...AppData.lessons.trilha];
+    const filteredLessons = allLessons.filter(lesson =>
+      lesson.name.toLowerCase().includes(query.toLowerCase())
+    );
+    
+    if (filteredLessons.length > 0) {
+      generateVideoCards(filteredLessons, 'search-results', handleLessonClick);
+    } else {
+      resultsContainer.textContent = 'Nenhum resultado encontrado.';
+    }
+}
+
+
+//=============================
 // Inicialização
-document.addEventListener('DOMContentLoaded', function() {
-  NavigationController.goHome();
+//=============================
+document.addEventListener('DOMContentLoaded', () => {
+    NavigationController.navigateTo('home', false);
+    document.getElementById('homeBtn').onclick = () => NavigationController.goHome();
+    document.getElementById('backBtn').onclick = () => NavigationController.goBack();
 });
-</script>
 
+</script>
 </body>
 </html>
