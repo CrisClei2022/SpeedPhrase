@@ -480,9 +480,10 @@ const NavigationController = {
 
   // Parar todos os timers
   stopTimers() {
-    if (timerInterval) {
-      clearInterval(timerInterval);
-      console.log('⏱️ Timer de performance interrompido');
+    if (GameState.timer.intervalId) {
+        clearInterval(GameState.timer.intervalId);
+        GameState.timer.intervalId = null; // Boa prática: zera a ID
+        console.log('⏱️ Timer de performance interrompido');
     }
   },
 
@@ -501,16 +502,15 @@ const NavigationController = {
       }
   },
   
-    getLessonSelectionTitle() {
-      const mode = currentGameMode ? 
-        currentGameMode.charAt(0).toUpperCase() + currentGameMode.slice(1) : 
+getLessonSelectionTitle() {
+    const mode = GameState.currentGameMode ?
+        GameState.currentGameMode.charAt(0).toUpperCase() + GameState.currentGameMode.slice(1) :
         '';
-      const category = localStorage.getItem('lastLessonCategory') || 'avulsas';
-      const categoryName = category.charAt(0).toUpperCase() + category.slice(1);
-      
-      return `${mode} - ${categoryName}`;
-    }
-};
+    const category = localStorage.getItem('lastLessonCategory') || 'avulsas';
+    const categoryName = category.charAt(0).toUpperCase() + category.slice(1);
+    
+    return `${mode} - ${categoryName}`;
+},
 
 //=============================
 // Função: Carrega e Processa o SRT
@@ -565,7 +565,9 @@ function shuffleWords(text) {
 function displayShuffledWords(words, original) {
     const container = document.getElementById('shuffledWords');
     container.innerHTML = '';
-    formedWords = [];
+    
+    // CORREÇÃO: Limpa o array de palavras formadas no GameState
+    GameState.formedWords = [];
 
     words.forEach(word => {
         const span = document.createElement('span');
@@ -577,7 +579,7 @@ function displayShuffledWords(words, original) {
 
     updateFormedSentence();
 }
-
+  
 //=============================
 // Função principal de clique
 //=============================
