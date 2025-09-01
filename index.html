@@ -159,11 +159,10 @@
     <div id="trilha-grid" class="video-grid"></div>
   </section>
 
-<!-- ========================================================= -->
-<!-- Bloco HTML para o Plugin Multiplayer (SIMPLIFICADO)      -->
-<!-- ========================================================= -->
+<!-- ====================== -->
+<!-- Bloco HTML Multiplayer -->
+<!-- ====================== -->
 <section id="multiplayerLobbySection" style="text-align: center;">
-
   <!-- Apenas a visualização de partidas abertas -->
   <div id="joinGameView">
     <h2>Partidas Abertas</h2>
@@ -172,10 +171,11 @@
       <!-- Partidas abertas serão injetadas aqui -->
     </div>
   </div>
-
 </section>
 
-  <!-- Seção do vídeo e controles -->
+<!-- ========================== -->
+<!-- Seção do vídeo e controles -->
+<!-- ========================== -->
   <section id="videoSection" style="margin-top: 0;">
     <div class="video-container">
       <video id="video" width="70%" height="340" controls>
@@ -211,8 +211,8 @@
 ">
   <nav>
     <button onclick="goToSearch()">🔍 Pesquisar</button>
-    <button onclick="goToAvulsas()">📂 Avulsas</button>
-    <button onclick="goToTrilha()">🛤️ Trilha</button>
+    <button onclick="goToLessonCategory('avulsas')">📂 Avulsas</button>
+    <button onclick="goToLessonCategory('trilha')">🛤️ Trilha</button>
   </nav>
 </footer>
 
@@ -369,9 +369,9 @@ const NavigationController = {
         console.log(`↩️ Voltando de um exercício para a categoria: ${lastCategory}`);
         
         if (lastCategory === 'trilha') {
-          goToTrilha();
+          goToLessonCategory('trilha');
         } else {
-          goToAvulsas();
+          goToLessonCategory('avulsas');
         }
         return;
       }
@@ -601,7 +601,12 @@ function displayShuffledWords(words, original) {
         const span = document.createElement('span');
         span.className = 'word';
         span.textContent = word;
-        span.onclick = () => handleWordClick(word, span, original);
+        
+        // Altera de .onclick para .addEventListener
+        span.addEventListener('click', () => {
+            handleWordClick(word, span, original);
+        });
+        
         container.appendChild(span);
     });
 
@@ -956,37 +961,22 @@ function goToSearch() {
     alert('🔍 Função de pesquisa em desenvolvimento');
 }
 
-function goToAvulsas() {
+function goToLessonCategory(category) {
     if (!currentGameMode) return;
-    
-    if (NavigationController.currentSection === 'exercise') {
-        NavigationController.pauseAllResources();
-    }
-    
-    hideAllSections();
-    document.getElementById('avulsas-section').style.display = '';
-    generateVideoCards(AppData.lessons.avulsas, 'avulsas-grid', handleLessonClick);
-    
-    localStorage.setItem('lastLessonCategory', 'avulsas');
-    NavigationController.updateHeader();
-    
-    if (NavigationController.currentSection !== 'lessonSelection') {
-        NavigationController.navigateTo('lessonSelection', false);
-    }
-}
 
-function goToTrilha() {
-    if (!currentGameMode) return;
-    
     if (NavigationController.currentSection === 'exercise') {
         NavigationController.pauseAllResources();
     }
     
     hideAllSections();
-    document.getElementById('trilha-section').style.display = '';
-    generateVideoCards(AppData.lessons.trilha, 'trilha-grid', handleLessonClick);
     
-    localStorage.setItem('lastLessonCategory', 'trilha');
+    const containerId = category === 'trilha' ? 'trilha-grid' : 'avulsas-grid';
+    const lessonsData = category === 'trilha' ? AppData.lessons.trilha : AppData.lessons.avulsas;
+    
+    document.getElementById(`${category}-section`).style.display = '';
+    generateVideoCards(lessonsData, containerId, handleLessonClick);
+    
+    localStorage.setItem('lastLessonCategory', category);
     NavigationController.updateHeader();
     
     if (NavigationController.currentSection !== 'lessonSelection') {
@@ -996,7 +986,7 @@ function goToTrilha() {
 
 function handleCreateGameClick() {
   // 1. Navega para a seção de lições avulsas (lessonSelection)
-  goToAvulsas();
+  goToLessonCategory('avulsas');
 
   // 2. Esconde o botão de "Criar Partida"
   const createGameButton = document.getElementById('toggleLobbyViewBtn');
@@ -1038,7 +1028,12 @@ function createVideoCard(lesson, onClick) {
     const card = document.createElement('div');
     card.className = 'video-card';
     card.textContent = lesson.name;
-    card.onclick = () => onClick(lesson);
+    
+    // Altera de .onclick para .addEventListener
+    card.addEventListener('click', () => {
+        onClick(lesson);
+    });
+
     return card;
 }
 
@@ -1064,17 +1059,44 @@ function loadAllLessons() {
     generateVideoCards(AppData.lessons.trilha, 'trilha-grid', handleLessonClick);
 }
 
-//=============================
-// Clique no card de lição
-//=============================
-async function handleLessonClick(lesson) {
-    console.log(`Iniciando lição "${lesson.name}" no modo: ${currentGameMode}`);
+//==============================================
+// Gerencia a visibilidade do status do oponente
+//==============================================
+const ExerciseUIConfig = {
+    solo: {
+        showOpponentStatus: false,
+        playerIsActive: true
+    },
+    multiplayer: {
+        showOpponentStatus: true,
+        playerIsActive: false
+    }
+};
 
-    // CORREÇÃO: Limpa o estado do exercício IMEDIATAMENTE ao entrar na lição.
-    NavigationController.resetExerciseState();
-    NavigationController.updateProgressBadge(); // E atualiza o display
+function updateExerciseUI() {
+    // Altere 'UIConfig' para 'ExerciseUIConfig' aqui
+    const config = ExerciseUIConfig[currentGameMode] || ExerciseUIConfig.solo; 
     
-    // 1. Prepara a interface para o modo de exercício
+    const opponentStatusEl = document.getElementById('opponentStatus');
+    if (opponentStatusEl) {
+        if (config.showOpponentStatus) {
+            opponentStatusEl.classList.remove('hidden');
+        } else {
+            opponentStatusEl.classList.add('hidden');
+        }
+    }
+    
+    updateTurnStatus(config.playerIsActive);
+}
+
+//=============================
+// Função de inicialização comum
+//=============================
+async function prepareExerciseEnvironment(lesson) {
+    // 1. Limpa o estado e prepara a interface
+    NavigationController.resetExerciseState();
+    NavigationController.updateProgressBadge();
+    
     hideAllSections();
     hideFooter();
     
@@ -1092,16 +1114,7 @@ async function handleLessonClick(lesson) {
     NavigationController.navigateTo('exercise');
     NavigationController.showExerciseStatus();
 
-    // 3. Gerencia a visibilidade do status do oponente (lógica que já corrigimos)
-    if (currentGameMode === 'multiplayer') {
-        document.getElementById('opponentStatus').classList.remove('hidden');
-        updateTurnStatus(false); 
-    } else {
-        document.getElementById('opponentStatus').classList.add('hidden');
-        updateTurnStatus(true);
-    }
-
-    // 4. Carrega os recursos da lição
+    // 3. Carrega os recursos da lição
     const video = document.getElementById('video');
     video.src = lesson.videoUrl;
     
@@ -1110,26 +1123,71 @@ async function handleLessonClick(lesson) {
         if (subtitles.length === 0) {
             alert("Erro: Não foi possível carregar as legendas.");
             NavigationController.goHome();
-            return;
+            return false; // Indica falha no carregamento
         }
     } catch (error) {
         console.error("Falha ao carregar ou processar o SRT:", error);
         alert("Ocorreu um erro ao carregar os dados da lição.");
         NavigationController.goHome();
-        return;
+        return false; // Indica falha no carregamento
     }
 
     totalEstimatedTime = subtitles.reduce((sum, sub) => sum + getTimeLimitForSentence(sub.text), 0);
     totalElapsedTime = 0;
-    console.log(`⏱️ Tempo total estimado para a lição: ${totalEstimatedTime.toFixed(2)}s`);
     
     currentIndex = 0;
     
-    // 5. **A CORREÇÃO:** Aguarda a preparação da primeira frase antes de concluir.
+    return true; // Indica sucesso
+}
+
+
+//==================================================
+// Roteador principal para o clique no card de lição
+//==================================================
+async function handleLessonClick(lesson) {
+    console.log(`Iniciando lição "${lesson.name}" no modo: ${currentGameMode}`);
+    
+    if (currentGameMode === 'multiplayer') {
+        initMultiplayerGame(lesson);
+    } else {
+        initSoloGame(lesson);
+    }
+}
+
+//=============================
+// Inicia o jogo no modo Solo
+//=============================
+async function initSoloGame(lesson) {
+    console.log(`Iniciando lição "${lesson.name}" no modo Solo`);
+    
+    // 1. Prepara o ambiente e carrega os recursos da lição
+    const environmentReady = await prepareExerciseEnvironment(lesson);
+    if (!environmentReady) {
+        return; // Retorna se houver um erro de carregamento
+    }
+    
+    // 2. Inicia o fluxo específico do modo solo
+    console.log(`⏱️ Tempo total estimado para a lição: ${totalEstimatedTime.toFixed(2)}s`);
     await prepareCurrentSubtitle();
 }
 
 
+//================================================
+// Função para o modo Multiplayer (mock/esboço)
+//================================================
+async function initMultiplayerGame(lesson) {
+    console.log("Iniciando fluxo de criação de partida multiplayer...");
+    
+    // 1. Prepara o ambiente e carrega os recursos (reutilizando a mesma função!)
+    const environmentReady = await prepareExerciseEnvironment(lesson);
+    if (!environmentReady) {
+        return;
+    }
+    
+    // 2. Agora, adicione a lógica específica do multiplayer aqui
+    // Ex: conectar ao servidor, sincronizar estados, etc.
+    alert(`Fluxo multiplayer para a lição "${lesson.name}" em desenvolvimento. O ambiente de jogo já foi preparado.`);
+}
 
 //=============================
 // Inicialização
