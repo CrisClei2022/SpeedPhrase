@@ -798,11 +798,11 @@ const NavigationController = {
     },
 
     goBack() {
-        // Se estiver na tela de espera, cancele o matchmaking
+        // Se estiver na tela de espera, cancele o matchmaking E HIDE A TELA
         if (this.currentSection === 'waitingScreen' && currentGameMode === 'multiplayer') {
             MultiplayerService.cancelMatchmaking();
-            this.hideWaitingScreen(); // <--- NOVO: Esconde a tela
         }
+        this.hideWaitingScreen();
 
         if (this.currentSection === 'exercise') {
             this.pauseAllResources();
@@ -829,11 +829,11 @@ const NavigationController = {
     },
 
     goHome() {
-        // Se estiver em qualquer modo multiplayer e não estiver ocioso, cancele o matchmaking
+        // Se estiver em qualquer modo multiplayer, cancele o matchmaking E HIDE A TELA
         if (currentGameMode === 'multiplayer' && serverState.status !== 'idle') {
             MultiplayerService.cancelMatchmaking();
-            this.hideWaitingScreen(); // <--- NOVO: Esconde a tela
         }
+        this.hideWaitingScreen();
 
         this.pauseAllResources();
         this.hideExerciseStatus();
@@ -1657,9 +1657,12 @@ async function initMultiplayerGame(lesson) {
 
     // Se o serviço não estiver pronto, avise o usuário e saia.
     if (!MultiplayerService.isInitialized) {
-        alert("Aguarde, conectando ao servidor...");
+        NavigationController.showWaitingScreen(lesson.name);
+        NavigationController.updateWaitingScreenStatus("Aguarde, conectando ao servidor...");
         console.warn("MultiplayerService não está inicializado. Tente novamente em instantes.");
-        return; // Retorna para não continuar
+        // Não retorna, permitindo que a tela de espera seja exibida
+        // e o usuário tenha uma chance de tentar novamente.
+        return; 
     }
 
     // A partir daqui, sabemos que o serviço está pronto.
@@ -1672,7 +1675,10 @@ async function initMultiplayerGame(lesson) {
     } catch (error) {
         serverState.status = 'idle';
         console.error("Erro ao tentar entrar na partida:", error.message);
-        alert("Erro: " + error.message);
+        NavigationController.updateWaitingScreenStatus("Erro: " + error.message);
+        // Em vez de goHome() imediatamente, pode-se mostrar o erro na tela de espera
+        // e o usuário pode voltar para a tela inicial manualmente.
+        // Se preferir ir direto para a home, a linha abaixo está correta.
         NavigationController.goHome();
     }
 }
