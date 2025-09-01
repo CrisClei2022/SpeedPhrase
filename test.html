@@ -993,7 +993,12 @@ function displayShuffledWords(words, original) {
         const span = document.createElement('span');
         span.className = 'word';
         span.textContent = word;
-        span.onclick = () => handleWordClick(word, span, original);
+        
+        // Altera de .onclick para .addEventListener
+        span.addEventListener('click', () => {
+            handleWordClick(word, span, original);
+        });
+        
         container.appendChild(span);
     });
 
@@ -1415,7 +1420,12 @@ function createVideoCard(lesson, onClick) {
     const card = document.createElement('div');
     card.className = 'video-card';
     card.textContent = lesson.name;
-    card.onclick = () => onClick(lesson);
+    
+    // Altera de .onclick para .addEventListener
+    card.addEventListener('click', () => {
+        onClick(lesson);
+    });
+
     return card;
 }
 
