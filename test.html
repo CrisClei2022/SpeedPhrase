@@ -1482,16 +1482,13 @@ function updateExerciseUI() {
 }
 
 //=============================
-// Clique no card de lição
+// Função de inicialização comum
 //=============================
-async function handleLessonClick(lesson) {
-    console.log(`Iniciando lição "${lesson.name}" no modo: ${currentGameMode}`);
-
-    // CORREÇÃO: Limpa o estado do exercício IMEDIATAMENTE ao entrar na lição.
+async function prepareExerciseEnvironment(lesson) {
+    // 1. Limpa o estado e prepara a interface
     NavigationController.resetExerciseState();
-    NavigationController.updateProgressBadge(); // E atualiza o display
+    NavigationController.updateProgressBadge();
     
-    // 1. Prepara a interface para o modo de exercício
     hideAllSections();
     hideFooter();
     
@@ -1509,10 +1506,7 @@ async function handleLessonClick(lesson) {
     NavigationController.navigateTo('exercise');
     NavigationController.showExerciseStatus();
 
-    // 3. Gerencia a visibilidade do status do oponente
-    updateExerciseUI(); // Chama a nova função
-
-    // 4. Carrega os recursos da lição
+    // 3. Carrega os recursos da lição
     const video = document.getElementById('video');
     video.src = lesson.videoUrl;
     
@@ -1521,23 +1515,70 @@ async function handleLessonClick(lesson) {
         if (subtitles.length === 0) {
             alert("Erro: Não foi possível carregar as legendas.");
             NavigationController.goHome();
-            return;
+            return false; // Indica falha no carregamento
         }
     } catch (error) {
         console.error("Falha ao carregar ou processar o SRT:", error);
         alert("Ocorreu um erro ao carregar os dados da lição.");
         NavigationController.goHome();
-        return;
+        return false; // Indica falha no carregamento
     }
 
     totalEstimatedTime = subtitles.reduce((sum, sub) => sum + getTimeLimitForSentence(sub.text), 0);
     totalElapsedTime = 0;
-    console.log(`⏱️ Tempo total estimado para a lição: ${totalEstimatedTime.toFixed(2)}s`);
     
     currentIndex = 0;
     
-    // 5. **A CORREÇÃO:** Aguarda a preparação da primeira frase antes de concluir.
+    return true; // Indica sucesso
+}
+
+
+//==================================================
+// Roteador principal para o clique no card de lição
+//==================================================
+async function handleLessonClick(lesson) {
+    console.log(`Iniciando lição "${lesson.name}" no modo: ${currentGameMode}`);
+    
+    if (currentGameMode === 'multiplayer') {
+        initMultiplayerGame(lesson);
+    } else {
+        initSoloGame(lesson);
+    }
+}
+
+//=============================
+// Inicia o jogo no modo Solo
+//=============================
+async function initSoloGame(lesson) {
+    console.log(`Iniciando lição "${lesson.name}" no modo Solo`);
+    
+    // 1. Prepara o ambiente e carrega os recursos da lição
+    const environmentReady = await prepareExerciseEnvironment(lesson);
+    if (!environmentReady) {
+        return; // Retorna se houver um erro de carregamento
+    }
+    
+    // 2. Inicia o fluxo específico do modo solo
+    console.log(`⏱️ Tempo total estimado para a lição: ${totalEstimatedTime.toFixed(2)}s`);
     await prepareCurrentSubtitle();
+}
+
+
+//================================================
+// Função para o modo Multiplayer (mock/esboço)
+//================================================
+async function initMultiplayerGame(lesson) {
+    console.log("Iniciando fluxo de criação de partida multiplayer...");
+    
+    // 1. Prepara o ambiente e carrega os recursos (reutilizando a mesma função!)
+    const environmentReady = await prepareExerciseEnvironment(lesson);
+    if (!environmentReady) {
+        return;
+    }
+    
+    // 2. Agora, adicione a lógica específica do multiplayer aqui
+    // Ex: conectar ao servidor, sincronizar estados, etc.
+    alert(`Fluxo multiplayer para a lição "${lesson.name}" em desenvolvimento. O ambiente de jogo já foi preparado.`);
 }
 
 //=============================
