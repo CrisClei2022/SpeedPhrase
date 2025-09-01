@@ -1602,17 +1602,23 @@ async function prepareExerciseEnvironment(lesson) {
     return true; // Indica sucesso
 }
 
-
 //==================================================
 // Roteador principal para o clique no card de lição
 //==================================================
 async function handleLessonClick(lesson) {
     console.log(`Iniciando lição "${lesson.name}" no modo: ${currentGameMode}`);
     
+    // **(Novo)** Remove a chamada de prepareExerciseEnvironment daqui
+    // Essa função será chamada DENTRO do initMultiplayerGame ou initSoloGame
+    
     if (currentGameMode === 'multiplayer') {
         initMultiplayerGame(lesson);
     } else {
-        initSoloGame(lesson);
+        // A lógica do modo solo é diferente, pois não tem espera.
+        const environmentReady = await prepareExerciseEnvironment(lesson);
+        if (environmentReady) {
+             initSoloGame(lesson);
+        }
     }
 }
 
@@ -1638,17 +1644,16 @@ async function initSoloGame(lesson) {
 //================================================
 async function initMultiplayerGame(lesson) {
     console.log("Iniciando fluxo de criação de partida multiplayer...");
-    
-    // 1. Configura o estado inicial e exibe a tela de espera
+
+    // 1. **(Novo)** Exibe a tela de espera IMEDIATAMENTE
     serverState.status = 'connecting';
-    navigationController.showWaitingScreen(lesson.name);
-    navigationController.updateWaitingScreenStatus("Procurando um oponente...");
+    NavigationController.showWaitingScreen(lesson.name);
+    NavigationController.updateWaitingScreenStatus("Procurando um oponente...");
 
     try {
         // 2. Simulação de Matchmaking (a ser substituída pela lógica de rede)
         console.log("Conectando ao servidor de matchmaking...");
-        
-        // Simulação de resposta do servidor (3 segundos de espera)
+
         const serverResponse = await new Promise(resolve => setTimeout(() => {
             resolve({
                 success: true,
@@ -1662,15 +1667,15 @@ async function initMultiplayerGame(lesson) {
         if (!serverResponse.success) {
             throw new Error("Falha ao encontrar partida no servidor.");
         }
-        
+
         // 3. Atualiza o estado da partida e a UI
         serverState.status = 'waitingForOpponent';
         serverState.roomId = serverResponse.data.roomId;
         serverState.opponent = serverResponse.data.opponent;
 
-        navigationController.updateWaitingScreenStatus(`Oponente ${serverState.opponent.name} encontrado! Preparando a lição...`);
+        NavigationController.updateWaitingScreenStatus(`Oponente ${serverState.opponent.name} encontrado! Preparando a lição...`);
 
-        // 4. Prepara o ambiente e carrega os recursos da lição
+        // 4. **(Novo)** Prepara o ambiente e carrega os recursos da lição AGORA
         const environmentReady = await prepareExerciseEnvironment(lesson);
         if (!environmentReady) {
             throw new Error("Falha ao carregar os recursos da lição.");
@@ -1678,15 +1683,15 @@ async function initMultiplayerGame(lesson) {
 
         // 5. Sucesso: Transição para o estado 'inGame' e inicia o jogo
         serverState.status = 'inGame';
-        navigationController.hideWaitingScreen();
+        NavigationController.hideWaitingScreen();
         console.log("Partida iniciada!");
-        // await prepareCurrentSubtitle(); // Descomente esta linha para iniciar o jogo
-        
+        // await prepareCurrentSubtitle();
+
     } catch (error) {
-        // 6. Tratamento de Erros: Volta ao estado 'idle'
+        // 6. Tratamento de Erros: Volta ao estado 'idle' e esconde a tela de espera
         serverState.status = 'idle';
         console.error("Erro no fluxo multiplayer:", error.message);
-        navigationController.hideWaitingScreen();
+        NavigationController.hideWaitingScreen();
     }
 }
 
