@@ -34,6 +34,15 @@ Esta etapa é mais complexa, pois envolve dividir uma função grande em partes 
 3.  Altere a função `handleLessonClick` para apenas chamar `setupExercise(lesson)`.
 4.  **Teste:** Inicie uma lição e verifique se o vídeo, os textos e os timers funcionam perfeitamente. Verifique a navegação para voltar à tela inicial.
 
+```
+if (currentGameMode === 'multiplayer') {
+    document.getElementById('opponentStatus').classList.remove('hidden');
+    updateTurnStatus(false); 
+} else {
+    document.getElementById('opponentStatus').classList.add('hidden');
+    updateTurnStatus(true);
+}
+```
 ---
 
 ### Etapa 4: Converter para Classes
