@@ -551,11 +551,10 @@
     <div id="trilha-grid" class="video-grid"></div>
   </section>
 
-<!-- ========================================================= -->
-<!-- Bloco HTML para o Plugin Multiplayer (SIMPLIFICADO)      -->
-<!-- ========================================================= -->
+<!-- ====================== -->
+<!-- Bloco HTML Multiplayer -->
+<!-- ====================== -->
 <section id="multiplayerLobbySection" style="text-align: center;">
-
   <!-- Apenas a visualização de partidas abertas -->
   <div id="joinGameView">
     <h2>Partidas Abertas</h2>
@@ -564,10 +563,11 @@
       <!-- Partidas abertas serão injetadas aqui -->
     </div>
   </div>
-
 </section>
 
-  <!-- Seção do vídeo e controles -->
+<!-- ========================== -->
+<!-- Seção do vídeo e controles -->
+<!-- ========================== -->
   <section id="videoSection" style="margin-top: 0;">
     <div class="video-container">
       <video id="video" width="70%" height="340" controls>
@@ -603,8 +603,8 @@
 ">
   <nav>
     <button onclick="goToSearch()">🔍 Pesquisar</button>
-    <button onclick="goToAvulsas()">📂 Avulsas</button>
-    <button onclick="goToTrilha()">🛤️ Trilha</button>
+    <button onclick="goToLessonCategory('avulsas')">📂 Avulsas</button>
+    <button onclick="goToLessonCategory('trilha')">🛤️ Trilha</button>
   </nav>
 </footer>
 
@@ -761,9 +761,9 @@ const NavigationController = {
         console.log(`↩️ Voltando de um exercício para a categoria: ${lastCategory}`);
         
         if (lastCategory === 'trilha') {
-          goToTrilha();
+          goToLessonCategory('trilha');
         } else {
-          goToAvulsas();
+          goToLessonCategory('avulsas');
         }
         return;
       }
@@ -1348,37 +1348,22 @@ function goToSearch() {
     alert('🔍 Função de pesquisa em desenvolvimento');
 }
 
-function goToAvulsas() {
+function goToLessonCategory(category) {
     if (!currentGameMode) return;
-    
-    if (NavigationController.currentSection === 'exercise') {
-        NavigationController.pauseAllResources();
-    }
-    
-    hideAllSections();
-    document.getElementById('avulsas-section').style.display = '';
-    generateVideoCards(AppData.lessons.avulsas, 'avulsas-grid', handleLessonClick);
-    
-    localStorage.setItem('lastLessonCategory', 'avulsas');
-    NavigationController.updateHeader();
-    
-    if (NavigationController.currentSection !== 'lessonSelection') {
-        NavigationController.navigateTo('lessonSelection', false);
-    }
-}
 
-function goToTrilha() {
-    if (!currentGameMode) return;
-    
     if (NavigationController.currentSection === 'exercise') {
         NavigationController.pauseAllResources();
     }
     
     hideAllSections();
-    document.getElementById('trilha-section').style.display = '';
-    generateVideoCards(AppData.lessons.trilha, 'trilha-grid', handleLessonClick);
     
-    localStorage.setItem('lastLessonCategory', 'trilha');
+    const containerId = category === 'trilha' ? 'trilha-grid' : 'avulsas-grid';
+    const lessonsData = category === 'trilha' ? AppData.lessons.trilha : AppData.lessons.avulsas;
+    
+    document.getElementById(`${category}-section`).style.display = '';
+    generateVideoCards(lessonsData, containerId, handleLessonClick);
+    
+    localStorage.setItem('lastLessonCategory', category);
     NavigationController.updateHeader();
     
     if (NavigationController.currentSection !== 'lessonSelection') {
@@ -1388,7 +1373,7 @@ function goToTrilha() {
 
 function handleCreateGameClick() {
   // 1. Navega para a seção de lições avulsas (lessonSelection)
-  goToAvulsas();
+  goToLessonCategory('avulsas');
 
   // 2. Esconde o botão de "Criar Partida"
   const createGameButton = document.getElementById('toggleLobbyViewBtn');
