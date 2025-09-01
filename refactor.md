@@ -42,6 +42,79 @@ if (currentGameMode === 'multiplayer') {
     document.getElementById('opponentStatus').classList.add('hidden');
     updateTurnStatus(true);
 }
+// ==============
+// ==============
+//=============================
+// Clique no card de lição
+//=============================
+async function handleLessonClick(lesson) {
+    console.log(`Iniciando lição "${lesson.name}" no modo: ${currentGameMode}`);
+    if (currentGameMode === 'multiplayer') {
+    	// fluxo de funcoes multiplayer    
+    } else {
+    	// funcao que incia o modo solo    
+    }
+}
+
+function // nome para funcao mocking modo multiplayer {
+}
+
+function // nome para funcao que incia o modo solo (lesson) {
+    console.log(`Iniciando lição "${lesson.name}" no modo: ${currentGameMode}`);
+
+    // CORREÇÃO: Limpa o estado do exercício IMEDIATAMENTE ao entrar na lição.
+    NavigationController.resetExerciseState();
+    NavigationController.updateProgressBadge(); // E atualiza o display
+    
+    // 1. Prepara a interface para o modo de exercício
+    hideAllSections();
+    hideFooter();
+    
+    const main = document.querySelector('main');
+    main.style.maxWidth = '800px';
+    main.style.margin = '0 auto';
+    main.style.paddingTop = '20px';
+    
+    document.getElementById('videoSection').style.display = '';
+    document.getElementById('formedSentenceSection').style.display = '';
+    document.getElementById('shuffledWordsSection').style.display = '';
+
+    // 2. Configura o header e a navegação
+    NavigationController.sectionConfig.exercise.title = lesson.name;
+    NavigationController.navigateTo('exercise');
+    NavigationController.showExerciseStatus();
+
+    // 3. Gerencia a visibilidade do status do oponente
+    updateExerciseUI(); // Chama a nova função
+
+    // 4. Carrega os recursos da lição
+    const video = document.getElementById('video');
+    video.src = lesson.videoUrl;
+    
+    try {
+        subtitles = await loadSrt(lesson.srtUrl);
+        if (subtitles.length === 0) {
+            alert("Erro: Não foi possível carregar as legendas.");
+            NavigationController.goHome();
+            return;
+        }
+    } catch (error) {
+        console.error("Falha ao carregar ou processar o SRT:", error);
+        alert("Ocorreu um erro ao carregar os dados da lição.");
+        NavigationController.goHome();
+        return;
+    }
+
+    totalEstimatedTime = subtitles.reduce((sum, sub) => sum + getTimeLimitForSentence(sub.text), 0);
+    totalElapsedTime = 0;
+    console.log(`⏱️ Tempo total estimado para a lição: ${totalEstimatedTime.toFixed(2)}s`);
+    
+    currentIndex = 0;
+    
+    // 5. **A CORREÇÃO:** Aguarda a preparação da primeira frase antes de concluir.
+    await prepareCurrentSubtitle();
+}
+
 ```
 ---
 
