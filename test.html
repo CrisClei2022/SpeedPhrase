@@ -1451,10 +1451,10 @@ function loadAllLessons() {
     generateVideoCards(AppData.lessons.trilha, 'trilha-grid', handleLessonClick);
 }
 
-//=============================
-// Clique no card de lição
-//=============================
-const UIConfig = {
+//==============================================
+// Gerencia a visibilidade do status do oponente
+//==============================================
+const ExerciseUIConfig = {
     solo: {
         showOpponentStatus: false,
         playerIsActive: true
@@ -1465,8 +1465,9 @@ const UIConfig = {
     }
 };
 
-function updateUIForGameMode() {
-    const config = UIConfig[currentGameMode] || UIConfig.solo; // Usa solo como padrão se não houver um modo definido
+function updateExerciseUI() {
+    // Altere 'UIConfig' para 'ExerciseUIConfig' aqui
+    const config = ExerciseUIConfig[currentGameMode] || ExerciseUIConfig.solo; 
     
     const opponentStatusEl = document.getElementById('opponentStatus');
     if (opponentStatusEl) {
@@ -1480,6 +1481,9 @@ function updateUIForGameMode() {
     updateTurnStatus(config.playerIsActive);
 }
 
+//=============================
+// Clique no card de lição
+//=============================
 async function handleLessonClick(lesson) {
     console.log(`Iniciando lição "${lesson.name}" no modo: ${currentGameMode}`);
 
@@ -1505,8 +1509,8 @@ async function handleLessonClick(lesson) {
     NavigationController.navigateTo('exercise');
     NavigationController.showExerciseStatus();
 
-    // 3. Gerencia a visibilidade do status do oponente (lógica que já corrigimos)
-    updateUIForGameMode(); // Chama a nova função
+    // 3. Gerencia a visibilidade do status do oponente
+    updateExerciseUI(); // Chama a nova função
 
     // 4. Carrega os recursos da lição
     const video = document.getElementById('video');
