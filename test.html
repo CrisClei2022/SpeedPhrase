@@ -797,40 +797,52 @@ const NavigationController = {
         }
     },
 
-    goBack() {
-        if (this.currentSection === 'exercise') {
-            this.pauseAllResources();
-            this.hideExerciseStatus();
-            
-            const lastCategory = localStorage.getItem('lastLessonCategory') || 'avulsas';
-            console.log(`↩️ Voltando de um exercício para a categoria: ${lastCategory}`);
-            
-            if (lastCategory === 'trilha') {
-                goToLessonCategory('trilha');
-            } else {
-                goToLessonCategory('avulsas');
-            }
-            return;
-        }
+    goBack() {
+        // Se estiver na tela de espera, cancele o matchmaking
+        if (this.currentSection === 'waitingScreen' && currentGameMode === 'multiplayer') {
+            MultiplayerService.cancelMatchmaking();
+            this.hideWaitingScreen(); // <--- NOVO: Esconde a tela
+        }
 
-        if (this.navigationStack.length > 0) {
-            const previousSection = this.navigationStack.pop();
-            if (previousSection === 'gameMode' && window.MultiplayerPlugin) {
-                MultiplayerPlugin.hideLobby();
-            }
-            this.navigateToSection(previousSection);
-        }
-    },
+        if (this.currentSection === 'exercise') {
+            this.pauseAllResources();
+            this.hideExerciseStatus();
+            
+            const lastCategory = localStorage.getItem('lastLessonCategory') || 'avulsas';
+            console.log(`↩️ Voltando de um exercício para a categoria: ${lastCategory}`);
+            
+            if (lastCategory === 'trilha') {
+                goToLessonCategory('trilha');
+            } else {
+                goToLessonCategory('avulsas');
+            }
+            return;
+        }
 
-    goHome() {
-        this.pauseAllResources();
-        this.hideExerciseStatus();
-        this.navigationStack = [];
-        this.currentSection = 'gameMode';
-        localStorage.removeItem('lastLessonCategory');
-        this.showGameModeSelection();
-        this.updateHeader();
-    },
+        if (this.navigationStack.length > 0) {
+            const previousSection = this.navigationStack.pop();
+            if (previousSection === 'gameMode' && window.MultiplayerPlugin) {
+                MultiplayerPlugin.hideLobby();
+            }
+            this.navigateToSection(previousSection);
+        }
+    },
+
+    goHome() {
+        // Se estiver em qualquer modo multiplayer e não estiver ocioso, cancele o matchmaking
+        if (currentGameMode === 'multiplayer' && serverState.status !== 'idle') {
+            MultiplayerService.cancelMatchmaking();
+            this.hideWaitingScreen(); // <--- NOVO: Esconde a tela
+        }
+
+        this.pauseAllResources();
+        this.hideExerciseStatus();
+        this.navigationStack = [];
+        this.currentSection = 'gameMode';
+        localStorage.removeItem('lastLessonCategory');
+        this.showGameModeSelection();
+        this.updateHeader();
+    },
 
     openSettings() {
         alert('⚙️ Configurações em desenvolvimento');
@@ -1609,17 +1621,13 @@ async function prepareExerciseEnvironment(lesson) {
 //==================================================
 async function handleLessonClick(lesson) {
     console.log(`Iniciando lição "${lesson.name}" no modo: ${currentGameMode}`);
-    
-    // **(Novo)** Remove a chamada de prepareExerciseEnvironment daqui
-    // Essa função será chamada DENTRO do initMultiplayerGame ou initSoloGame
-    
+
     if (currentGameMode === 'multiplayer') {
         initMultiplayerGame(lesson);
     } else {
-        // A lógica do modo solo é diferente, pois não tem espera.
         const environmentReady = await prepareExerciseEnvironment(lesson);
         if (environmentReady) {
-             initSoloGame(lesson);
+            initSoloGame(lesson);
         }
     }
 }
@@ -1647,36 +1655,25 @@ async function initSoloGame(lesson) {
 async function initMultiplayerGame(lesson) {
     console.log("Iniciando fluxo de criação de partida multiplayer...");
 
+    // Se o serviço não estiver pronto, avise o usuário e saia.
+    if (!MultiplayerService.isInitialized) {
+        alert("Aguarde, conectando ao servidor...");
+        console.warn("MultiplayerService não está inicializado. Tente novamente em instantes.");
+        return; // Retorna para não continuar
+    }
+
+    // A partir daqui, sabemos que o serviço está pronto.
     serverState.status = 'connecting';
     NavigationController.showWaitingScreen(lesson.name);
     NavigationController.updateWaitingScreenStatus("Procurando um oponente...");
 
     try {
-        // **(Novo)** Agora, a lógica de busca é encapsulada no serviço
-        const serverResponse = await MultiplayerService.findMatch(lesson.id);
-
-        if (!serverResponse.success) {
-            throw new Error("Falha ao encontrar partida no servidor.");
-        }
-
-        serverState.status = 'waitingForOpponent';
-        serverState.roomId = serverResponse.data.roomId;
-        serverState.opponent = serverResponse.data.opponent;
-
-        NavigationController.updateWaitingScreenStatus(`Oponente ${serverState.opponent.name} encontrado! Preparando a lição...`);
-
-        // AQUI: A partir deste ponto, o jogo está pronto para começar.
-        // O próximo passo seria iniciar o exercício e a comunicação entre os jogadores.
-        
-        serverState.status = 'inGame';
-        NavigationController.hideWaitingScreen();
-        console.log("Partida iniciada!");
-        await prepareCurrentSubtitle(); // Descomente esta linha para iniciar o jogo
-        
+        await MultiplayerService.joinMatch(lesson.name);
     } catch (error) {
         serverState.status = 'idle';
-        console.error("Erro no fluxo multiplayer:", error.message);
-        NavigationController.hideWaitingScreen();
+        console.error("Erro ao tentar entrar na partida:", error.message);
+        alert("Erro: " + error.message);
+        NavigationController.goHome();
     }
 }
 
@@ -1686,74 +1683,86 @@ async function initMultiplayerGame(lesson) {
 const MultiplayerService = {
     client: null,
     realtime: null,
-    user: null, // O jogador local
+    user: null, 
     channel: null,
+    isInitialized: false,
 
     async init() {
-        // Inicializa o cliente do Appwrite
         this.client = new Appwrite.Client()
-            .setEndpoint('https://nyc.cloud.appwrite.io/v1') // Substitua pelo seu endpoint
-            .setProject('689f3d3a00095fde3112'); // 🚨 Substitua pelo seu ID de projeto
+            .setEndpoint('https://nyc.cloud.appwrite.io/v1')
+            .setProject('689f3d3a00095fde3112');
 
-        // Crie uma sessão anônima para o jogador
         try {
             this.user = await this.client.account.createAnonymousSession();
-            console.log('[Appwrite] Sessão anônima criada com sucesso!', this.user);
             this.realtime = new Appwrite.Realtime(this.client);
+            this.isInitialized = true;
         } catch (error) {
             console.error('[Appwrite] Erro ao criar sessão anônima:', error);
-            throw new Error("Falha ao conectar com o servidor.");
+            this.isInitialized = false;
+            throw new Error("Falha ao conectar com o servidor. Por favor, tente novamente mais tarde.");
         }
     },
-
-    // Simula a busca por uma partida, que agora cria e se junta a um canal
-    async findMatch(lessonId) {
-        // Criamos um canal com um ID previsível (por exemplo, baseado na lição)
-        // Isso permite que múltiplos clientes tentem se conectar ao mesmo canal.
-        this.channel = `lesson_${lessonId}_game_channel`;
-
+    
+    // **NOVO** Método para entrar em uma partida
+    async joinMatch(lessonName) {
+        // Usa o nome da lição para criar um canal único para a partida
+        this.channel = `lesson_${lessonName}_game_channel`;
+        
+        let opponentFound = false;
+        
         // Assina o canal para ouvir eventos
         this.realtime.subscribe(this.channel, response => {
-            // Lógica para receber mensagens do oponente
-            console.log('[Appwrite Realtime] Mensagem recebida:', response);
             const event = response.payload;
+            console.log('[Appwrite Realtime] Mensagem recebida:', event);
             
-            if (event.type === 'gameReady') {
-                // Oponente encontrado e jogo pronto
-                // Você pode usar event.data.opponentId para pegar o ID do outro jogador
-                // e iniciar o jogo aqui
+            // Verifica se a mensagem veio de outro jogador
+            if (event.type === 'playerJoined' && event.playerId !== this.user.$id) {
+                if (!opponentFound) {
+                    opponentFound = true;
+                    // Oponente encontrado! Inicia o jogo com a lição e o ID do oponente.
+                    serverState.opponent.id = event.playerId;
+                    serverState.opponent.name = "Oponente"; // Você pode adicionar mais dados no futuro
+                    
+                    console.log(`[Appwrite] Oponente ${serverState.opponent.id} encontrado! Iniciando jogo...`);
+                    
+                    // Lógica para iniciar o jogo
+                    NavigationController.hideWaitingScreen();
+                    initSoloGame(AppData.lessons.avulsas[0]); // Por enquanto, usa a primeira lição como placeholder
+                }
             }
         });
-        
-        // Simular a busca: A mensagem real é enviada aqui para o oponente se juntar.
-        console.log(`[Appwrite] Assinando o canal: ${this.channel}`);
+
+        // Envia uma mensagem para o canal para notificar outros jogadores sobre a sua chegada
         await this.sendMessage({
-            type: 'findMatch',
+            type: 'playerJoined',
             playerId: this.user.$id
         });
         
-        // A lógica de espera e resposta agora será tratada pelo evento de assinatura.
-        // Por enquanto, o `findMatch` pode retornar imediatamente ou esperar um timeout.
-        return { success: true };
+        console.log(`[Appwrite] Assinado e mensagem enviada para o canal: ${this.channel}`);
     },
 
     // Envia uma mensagem para o canal do jogo
     async sendMessage(message) {
-        if (!this.realtime) {
-            throw new Error("Realtime não está inicializado.");
+        if (!this.realtime || !this.channel) {
+            throw new Error("Realtime ou canal não está inicializado.");
         }
         await this.realtime.send(this.channel, message);
-        console.log('[Appwrite] Mensagem enviada:', message);
     },
 
-    // Ação para o jogador enviar quando completar a frase
-    async sendPhraseCompleted() {
-        await this.sendMessage({
-            type: 'phraseCompleted',
-            playerId: this.user.$id,
-            timestamp: Date.now()
-        });
-    }
+    async cancelMatchmaking() {
+        console.log('[Appwrite] Cancelando matchmaking...');
+        // Verifica se há uma conexão ativa para fechar
+        if (this.realtime && this.channel) {
+            this.realtime.unsubscribe(this.channel);
+            console.log(`[Appwrite] Desinscrito do canal: ${this.channel}`);
+        }
+        
+        // Reinicia o estado
+        this.channel = null;
+        this.user = null; // Opcional, mas útil para limpar o estado
+        this.realtime = null;
+        this.isInitialized = false; // <-- Adicione esta linha
+    },
 };
 
 //=============================
