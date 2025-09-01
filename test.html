@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SpeedPhrase</title>
+
   <style>
     * {
       margin: 0;
@@ -638,6 +639,7 @@
   </nav>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/appwrite@18.2.0"></script>
 <script>
 //=============================
 // Estado da Aplicação
@@ -1645,76 +1647,131 @@ async function initSoloGame(lesson) {
 async function initMultiplayerGame(lesson) {
     console.log("Iniciando fluxo de criação de partida multiplayer...");
 
-    // 1. **(Novo)** Exibe a tela de espera IMEDIATAMENTE
     serverState.status = 'connecting';
     NavigationController.showWaitingScreen(lesson.name);
     NavigationController.updateWaitingScreenStatus("Procurando um oponente...");
 
     try {
-        // 2. Simulação de Matchmaking (a ser substituída pela lógica de rede)
-        console.log("Conectando ao servidor de matchmaking...");
-
-        const serverResponse = await new Promise(resolve => setTimeout(() => {
-            resolve({
-                success: true,
-                data: {
-                    roomId: 'abc-123',
-                    opponent: { id: 'opp-456', name: 'Player 2' }
-                }
-            });
-        }, 3000));
+        // **(Novo)** Agora, a lógica de busca é encapsulada no serviço
+        const serverResponse = await MultiplayerService.findMatch(lesson.id);
 
         if (!serverResponse.success) {
             throw new Error("Falha ao encontrar partida no servidor.");
         }
 
-        // 3. Atualiza o estado da partida e a UI
         serverState.status = 'waitingForOpponent';
         serverState.roomId = serverResponse.data.roomId;
         serverState.opponent = serverResponse.data.opponent;
 
         NavigationController.updateWaitingScreenStatus(`Oponente ${serverState.opponent.name} encontrado! Preparando a lição...`);
 
-        // 4. **(Novo)** Prepara o ambiente e carrega os recursos da lição AGORA
-        const environmentReady = await prepareExerciseEnvironment(lesson);
-        if (!environmentReady) {
-            throw new Error("Falha ao carregar os recursos da lição.");
-        }
-
-        // 5. Sucesso: Transição para o estado 'inGame' e inicia o jogo
+        // AQUI: A partir deste ponto, o jogo está pronto para começar.
+        // O próximo passo seria iniciar o exercício e a comunicação entre os jogadores.
+        
         serverState.status = 'inGame';
         NavigationController.hideWaitingScreen();
         console.log("Partida iniciada!");
-        // await prepareCurrentSubtitle();
-
+        await prepareCurrentSubtitle(); // Descomente esta linha para iniciar o jogo
+        
     } catch (error) {
-        // 6. Tratamento de Erros: Volta ao estado 'idle' e esconde a tela de espera
         serverState.status = 'idle';
         console.error("Erro no fluxo multiplayer:", error.message);
         NavigationController.hideWaitingScreen();
     }
 }
 
+//================================================
+// Multiplayer Service - Módulo Appwrite Realtime
+//================================================
+const MultiplayerService = {
+    client: null,
+    realtime: null,
+    user: null, // O jogador local
+    channel: null,
+
+    async init() {
+        // Inicializa o cliente do Appwrite
+        this.client = new Appwrite.Client()
+            .setEndpoint('https://nyc.cloud.appwrite.io/v1') // Substitua pelo seu endpoint
+            .setProject('689f3d3a00095fde3112'); // 🚨 Substitua pelo seu ID de projeto
+
+        // Crie uma sessão anônima para o jogador
+        try {
+            this.user = await this.client.account.createAnonymousSession();
+            console.log('[Appwrite] Sessão anônima criada com sucesso!', this.user);
+            this.realtime = new Appwrite.Realtime(this.client);
+        } catch (error) {
+            console.error('[Appwrite] Erro ao criar sessão anônima:', error);
+            throw new Error("Falha ao conectar com o servidor.");
+        }
+    },
+
+    // Simula a busca por uma partida, que agora cria e se junta a um canal
+    async findMatch(lessonId) {
+        // Criamos um canal com um ID previsível (por exemplo, baseado na lição)
+        // Isso permite que múltiplos clientes tentem se conectar ao mesmo canal.
+        this.channel = `lesson_${lessonId}_game_channel`;
+
+        // Assina o canal para ouvir eventos
+        this.realtime.subscribe(this.channel, response => {
+            // Lógica para receber mensagens do oponente
+            console.log('[Appwrite Realtime] Mensagem recebida:', response);
+            const event = response.payload;
+            
+            if (event.type === 'gameReady') {
+                // Oponente encontrado e jogo pronto
+                // Você pode usar event.data.opponentId para pegar o ID do outro jogador
+                // e iniciar o jogo aqui
+            }
+        });
+        
+        // Simular a busca: A mensagem real é enviada aqui para o oponente se juntar.
+        console.log(`[Appwrite] Assinando o canal: ${this.channel}`);
+        await this.sendMessage({
+            type: 'findMatch',
+            playerId: this.user.$id
+        });
+        
+        // A lógica de espera e resposta agora será tratada pelo evento de assinatura.
+        // Por enquanto, o `findMatch` pode retornar imediatamente ou esperar um timeout.
+        return { success: true };
+    },
+
+    // Envia uma mensagem para o canal do jogo
+    async sendMessage(message) {
+        if (!this.realtime) {
+            throw new Error("Realtime não está inicializado.");
+        }
+        await this.realtime.send(this.channel, message);
+        console.log('[Appwrite] Mensagem enviada:', message);
+    },
+
+    // Ação para o jogador enviar quando completar a frase
+    async sendPhraseCompleted() {
+        await this.sendMessage({
+            type: 'phraseCompleted',
+            playerId: this.user.$id,
+            timestamp: Date.now()
+        });
+    }
+};
+
 //=============================
 // Inicialização
 //=============================
-document.addEventListener('DOMContentLoaded', () => {
-    loadAllLessons();
-    hideFooter();
-    NavigationController.showGameModeSelection();
-    NavigationController.updateHeader();
-});
+document.addEventListener('DOMContentLoaded', async () => {
+    // Inicializa o serviço do Appwrite Realtime
+    try {
+        await MultiplayerService.init();
+    } catch (error) {
+        console.error("Falha na inicialização do MultiplayerService:", error);
+        // Você pode adicionar aqui uma lógica para informar o usuário sobre o erro.
+    }
 
-// Adicionar listener para quando a página é fechada/recarregada
-window.addEventListener('beforeunload', () => {
-    NavigationController.pauseAllResources();
-});
-
-// Adicionar listener para visibilidade da página
-document.addEventListener('visibilitychange', () => {
-    if (document.hidden && NavigationController.currentSection === 'exercise') {
-        NavigationController.pauseVideo();
-    }
+    loadAllLessons();
+    hideFooter();
+    NavigationController.showGameModeSelection();
+    NavigationController.updateHeader();
 });
 </script>
 </body>
