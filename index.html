@@ -84,6 +84,38 @@
       content: '🔴'; /* Ícone vermelho para turno em espera */
     }
 
+    /* ========== FOOTER ========== */
+    footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: white;
+      padding: 15px;
+      text-align: center;
+      border-top: 2px solid #eee;
+      z-index: 1000;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+    
+    footer button {
+      background: #f5f5f5;
+      color: #333;
+      border: none;
+      padding: 10px 15px;
+      margin: 0 5px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9em;
+      transition: all 0.2s;
+    }
+    
+    footer button:hover {
+      background: #667eea;
+      color: white;
+    }
+    
+
   </style>
 </head>
 <body>
@@ -106,11 +138,6 @@
       <span class="nav-text">Voltar</span>
     </button>
     
-    <button id="homeBtn" class="nav-button home-button" onclick="NavigationController.goHome()">
-      <span class="nav-icon">🏠</span>
-      <span class="nav-text">Home</span>
-    </button>
-    
     <div class="header-center">
       <h1 id="headerTitle" class="header-title">SpeedPhrase</h1>
       
@@ -128,6 +155,11 @@
         
       </div>
     </div>
+    
+    <button id="homeBtn" class="nav-button home-button" onclick="NavigationController.goHome()">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-text">Home</span>
+    </button>
     
     <button id="settingsBtn" class="nav-button settings-button" onclick="NavigationController.openSettings()">
       <span class="nav-icon">⚙️</span>
@@ -239,15 +271,6 @@
 </main>
 
 <footer style="
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background-color: #eee;
-  padding: 10px;
-  text-align: center;
-  border-top: 1px solid #ccc;
-  z-index: 1000;
 ">
   <nav>
     <button onclick="goToSearch()">🔍 Pesquisar</button>
@@ -258,16 +281,6 @@
 
 <!-- NOVO RODAPÉ PARA O MULTIPLAYER -->
 <footer id="multiplayerFooter" style="
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background-color: #fff;
-  padding: 10px;
-  text-align: center;
-  border-top: 1px solid #ccc;
-  z-index: 1001;
-  display: none; /* Começa oculto */
 ">
   <nav>
     <!-- Este botão agora navega para a tela de seleção de lição -->
@@ -403,6 +416,19 @@ const NavigationController = {
         }
     },
 
+    showExerciseSection() {
+        hideAllSections(); // Esconde tudo primeiro
+        
+        // Mostra todas as partes da tela de exercício
+        document.getElementById('videoSection').style.display = '';
+        document.getElementById('formedSentenceSection').style.display = '';
+        document.getElementById('shuffledWordsSection').style.display = '';
+
+        // Opcional: Ajusta o layout do container principal para o modo de exercício
+        const main = document.querySelector('main');
+        main.style.maxWidth = '800px';
+    },
+
     updateMultiplayerFooterVisibility() {
         const config = this.sectionConfig[this.currentSection];
         const mpFooter = document.getElementById('multiplayerFooter');
@@ -524,6 +550,9 @@ const NavigationController = {
             case 'gameResults':
                 this.showGameResultsSection();
                 break;
+            case 'exercise':
+                this.showExerciseSection();
+                break;
             default:
                 this.showGameModeSelection();
         }
@@ -625,6 +654,17 @@ const NavigationController = {
         if (timerElement) {
             timerElement.innerHTML = '';
         }
+
+        // Limpa o conteúdo dos badges de progresso para evitar "vazamento" na UI
+        const playerProgressBadge = document.getElementById('progressBadge');
+        if (playerProgressBadge) {
+            playerProgressBadge.textContent = '';
+        }
+
+        const opponentProgressBadge = document.getElementById('opponentProgressBadge');
+        if (opponentProgressBadge) {
+            opponentProgressBadge.textContent = '';
+        }
     },
 
     getLessonSelectionTitle() {
@@ -1222,32 +1262,20 @@ function updateExerciseUI() {
     updateTurnStatus(config.playerIsActive);
 }
 
-//=============================
+//===============================
 // Função de inicialização comum
-//=============================
+//===============================
 async function prepareExerciseEnvironment(lesson) {
-    // 1. Limpa o estado e prepara a interface
+    // 1. Limpa o estado do exercício anterior
     NavigationController.resetExerciseState();
-    NavigationController.updateProgressBadge();
     
-    hideAllSections();
-    hideFooter();
-    
-    const main = document.querySelector('main');
-    main.style.maxWidth = '800px';
-    main.style.margin = '0 auto';
-    main.style.paddingTop = '20px';
-    
-    document.getElementById('videoSection').style.display = '';
-    document.getElementById('formedSentenceSection').style.display = '';
-    document.getElementById('shuffledWordsSection').style.display = '';
-
-    // 2. Configura o header e a navegação
+    // 2. Configura o header e NAVEGA para a seção de exercício.
+    // A navegação agora cuidará de mostrar as seções corretas.
     NavigationController.sectionConfig.exercise.title = lesson.name;
-    NavigationController.navigateTo('exercise');
+    NavigationController.navigateTo('exercise'); // Esta chamada agora funcionará corretamente
     NavigationController.showExerciseStatus();
 
-    // 3. Carrega os recursos da lição
+    // 3. Carrega os recursos da lição em segundo plano
     const video = document.getElementById('video');
     video.src = lesson.videoUrl;
     
@@ -1256,18 +1284,17 @@ async function prepareExerciseEnvironment(lesson) {
         if (subtitles.length === 0) {
             alert("Erro: Não foi possível carregar as legendas.");
             NavigationController.goHome();
-            return false; // Indica falha no carregamento
+            return false;
         }
     } catch (error) {
         console.error("Falha ao carregar ou processar o SRT:", error);
         alert("Ocorreu um erro ao carregar os dados da lição.");
         NavigationController.goHome();
-        return false; // Indica falha no carregamento
+        return false;
     }
 
     totalEstimatedTime = subtitles.reduce((sum, sub) => sum + getTimeLimitForSentence(sub.text), 0);
     totalElapsedTime = 0;
-    
     currentIndex = 0;
     
     return true; // Indica sucesso
