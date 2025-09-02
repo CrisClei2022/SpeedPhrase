@@ -89,6 +89,7 @@
 <body>
 
 <main style="padding-bottom: 80px;">
+<button id="testResultsBtn">Testar Tela de Resultados</button>
   <!-- Header fixo com navegação
   Por que esta abordagem é profissional:
   ✅ Separação de responsabilidades - Timer não mistura com título 
@@ -173,6 +174,45 @@
   </div>
 </section>
 
+<section id="waitingScreen" class="waiting-room hidden" style="display: none;">
+  <div class="waiting-message">
+    <h2>Aguardando Oponente</h2>
+    <p><strong id="waitingStatusMessage">Procurando um oponente...</strong></p>
+    <div class="waiting-animation">
+      <div class="pulse"></div>
+      <div class="pulse"></div>
+      <div class="pulse"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================== -->
+<!-- Seção de Resultados do Jogo -->
+<!-- ========================== -->
+<section id="gameResultsSection" class="section-container" style="display: none;">
+  <h2 id="resultsTitle">Partida Finalizada!</h2>
+  
+  <div class="results-summary">
+    <div id="playerResult" class="result-card">
+      <h3 id="playerResultName">Você</h3>
+      <p class="performance-score" id="playerPerformanceScore">0%</p>
+      <span id="playerWinnerBadge" class="winner-badge" style="display: none;">🏆 Vencedor</span>
+    </div>
+    
+    <div class="versus-divider">VS</div>
+    
+    <div id="opponentResult" class="result-card">
+      <h3 id="opponentResultName">Oponente</h3>
+      <p class="performance-score" id="opponentPerformanceScore">0%</p>
+      <span id="opponentWinnerBadge" class="winner-badge" style="display: none;">🏆 Vencedor</span>
+    </div>
+  </div>
+
+  <div class="results-actions">
+    <!-- Poderíamos adicionar um botão de "Jogar Novamente" no futuro -->
+  </div>
+</section>
+
 <!-- ========================== -->
 <!-- Seção do vídeo e controles -->
 <!-- ========================== -->
@@ -235,6 +275,7 @@
   </nav>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/appwrite@18.2.0"></script>
 <script>
 //=============================
 // Estado da Aplicação
@@ -251,6 +292,29 @@ let startTime = 0;
 let totalElapsedTime = 0;
 let totalEstimatedTime = 0;
 let timerInterval = null;
+
+//=============================
+// Estado de Multiplayer
+//=============================
+const serverState = {
+  // Estado da conexão do WebSocket
+  isConnected: false,
+  
+  // ID da sala (se houver)
+  roomId: null,
+  
+  // Dados do oponente
+  opponent: {
+    id: null,
+    name: null,
+  },
+  
+  // Status atual do jogo
+  status: 'idle', // Outros status: 'connecting', 'waitingForOpponent', 'inGame', 'disconnected'
+  
+  // Manipulador da conexão (WebSocket)
+  socket: null
+};
 
 //=============================
 // AppData - Dados Centralizados
@@ -290,257 +354,346 @@ function selectGameMode(mode) {
 // Navigation Controller
 //=============================
 const NavigationController = {
-  currentSection: 'gameMode',
-  currentLobbyView: 'joinGame',
-  navigationStack: [],
-  
-  sectionConfig: {
-    gameMode: {
-      title: 'SpeedPhrase',
-      showBack: false,
-      showHome: true,
-      showFooter: false
-    },
-    lessonSelection: {
-      title:'',
-      showBack: true,
-      showHome: true,
-      showFooter: true
-    },
-    exercise: {
-      title: 'Exercício',
-      showBack: true,
-      showHome: true,
-      showFooter: false
-    },
-    multiplayerLobby: {
-      title: 'Sala Multiplayer',
-      showBack: true,
-      showHome: true,
-      showFooter: false, // Footer principal fica oculto
-      showMultiplayerFooter: true // NOVA propriedade para o footer do multiplayer
-    }
-  },
+    currentSection: 'gameMode',
+    currentLobbyView: 'joinGame',
+    navigationStack: [],
 
-  // Função para controlar o footer do multiplayer
-  updateMultiplayerFooterVisibility() {
-    const config = this.sectionConfig[this.currentSection];
-    const mpFooter = document.getElementById('multiplayerFooter');
-    if (mpFooter) {
-      if (config && config.showMultiplayerFooter) {
-        mpFooter.style.display = 'block';
-      } else {
-        mpFooter.style.display = 'none';
-      }
-    }
-  },
+    sectionConfig: {
+        gameMode: {
+            title: 'SpeedPhrase',
+            showBack: false,
+            showHome: true,
+            showFooter: false,
+            showMultiplayerFooter: false
+        },
+        lessonSelection: {
+            title: '',
+            showBack: true,
+            showHome: true,
+            showFooter: true,
+            showMultiplayerFooter: false
+        },
+        exercise: {
+            title: 'Exercício',
+            showBack: true,
+            showHome: true,
+            showFooter: false,
+            showMultiplayerFooter: false
+        },
+        multiplayerLobby: {
+            title: 'Sala Multiplayer',
+            showBack: true,
+            showHome: true,
+            showFooter: false,
+            showMultiplayerFooter: true
+        },
+        waitingScreen: {
+            title: 'Aguardando Oponente',
+            showBack: true,
+            showHome: true,
+            showFooter: false,
+            showMultiplayerFooter: false
+        },
+        gameResults: {
+            title: 'Resultados da Partida',
+            showBack: true, // Queremos o botão "Voltar" para o teste
+            showHome: true,
+            showFooter: false,
+            showMultiplayerFooter: false
+        }
+    },
 
-  navigateTo(section, pushToStack = true) {
-    if (this.currentSection === 'exercise' && section !== 'exercise') {
-      this.pauseAllResources();
-      this.hideExerciseStatus();
-    }
+    updateMultiplayerFooterVisibility() {
+        const config = this.sectionConfig[this.currentSection];
+        const mpFooter = document.getElementById('multiplayerFooter');
+        if (mpFooter) {
+            if (config && config.showMultiplayerFooter) {
+                mpFooter.style.display = 'block';
+            } else {
+                mpFooter.style.display = 'none';
+            }
+        }
+    },
 
-    if (pushToStack && this.currentSection !== section) {
-      this.navigationStack.push(this.currentSection);
-    }
-    
-    this.currentSection = section;
-    this.updateHeader();
-    this.updateFooterVisibility();
-    this.updateMultiplayerFooterVisibility(); // Linha adicionada
-  },
-    
-  updateFooterVisibility() {
-    const config = this.sectionConfig[this.currentSection];
-    if (config && config.showFooter) {
-      showFooter();
-    } else {
-      hideFooter();
-    }
-  },
-  
-  goBack() {
-      if (this.currentSection === 'exercise') {
+    navigateTo(section, pushToStack = true) {
+        if (this.currentSection === 'exercise' && section !== 'exercise') {
+            this.pauseAllResources();
+            this.hideExerciseStatus();
+        }
+
+        if (pushToStack && this.currentSection !== section) {
+            this.navigationStack.push(this.currentSection);
+        }
+        
+        this.currentSection = section;
+        this.updateHeader();
+        this.updateFooterVisibility();
+        this.updateMultiplayerFooterVisibility();
+        
+        // A única responsabilidade dela é chamar a função que faz o trabalho pesado.
+        this.navigateToSection(section);
+    },
+
+    updateFooterVisibility() {
+        const config = this.sectionConfig[this.currentSection];
+        if (config && config.showFooter) {
+            showFooter();
+        } else {
+            hideFooter();
+        }
+    },
+
+    goBack() {
+        // Se estiver na tela de espera, cancele o matchmaking E HIDE A TELA
+        if (this.currentSection === 'waitingScreen' && currentGameMode === 'multiplayer') {
+            MultiplayerService.cancelMatchmaking();
+        }
+        this.hideWaitingScreen();
+
+        if (this.currentSection === 'exercise') {
+            this.pauseAllResources();
+            this.hideExerciseStatus();
+            
+            const lastCategory = localStorage.getItem('lastLessonCategory') || 'avulsas';
+            console.log(`↩️ Voltando de um exercício para a categoria: ${lastCategory}`);
+            
+            if (lastCategory === 'trilha') {
+                goToLessonCategory('trilha');
+            } else {
+                goToLessonCategory('avulsas');
+            }
+            return;
+        }
+
+        if (this.navigationStack.length > 0) {
+            const previousSection = this.navigationStack.pop();
+            if (previousSection === 'gameMode' && window.MultiplayerPlugin) {
+                MultiplayerPlugin.hideLobby();
+            }
+            this.navigateToSection(previousSection);
+        }
+    },
+
+    goHome() {
+        // Se estiver em qualquer modo multiplayer, cancele o matchmaking E HIDE A TELA
+        if (currentGameMode === 'multiplayer' && serverState.status !== 'idle') {
+            MultiplayerService.cancelMatchmaking();
+        }
+        this.hideWaitingScreen();
+
         this.pauseAllResources();
         this.hideExerciseStatus();
-        
-        const lastCategory = localStorage.getItem('lastLessonCategory') || 'avulsas';
-        console.log(`↩️ Voltando de um exercício para a categoria: ${lastCategory}`);
-        
-        if (lastCategory === 'trilha') {
-          goToLessonCategory('trilha');
-        } else {
-          goToLessonCategory('avulsas');
-        }
-        return;
-      }
-  
-      if (this.navigationStack.length > 0) {
-        const previousSection = this.navigationStack.pop();
-        if (previousSection === 'gameMode' && window.MultiplayerPlugin) {
-            MultiplayerPlugin.hideLobby();
-        }
-        this.navigateToSection(previousSection);
-      }
-  },
-
-  goHome() {
-    this.pauseAllResources();
-    this.hideExerciseStatus();
-    this.navigationStack = [];
-    this.currentSection = 'gameMode';
-    localStorage.removeItem('lastLessonCategory');
-    this.showGameModeSelection();
-    this.updateHeader();
-  },
-
-  openSettings() {
-    alert('⚙️ Configurações em desenvolvimento');
-  },
-
-  updateHeader() {
-    const config = this.sectionConfig[this.currentSection];
-    if (!config) return;
-  
-    let title = config.title;
-    if (this.currentSection === 'lessonSelection') {
-      title = this.getLessonSelectionTitle();
-    }
-  
-    document.getElementById('headerTitle').textContent = title;
-  
-    const backBtn = document.getElementById('backBtn');
-    if (config.showBack && this.navigationStack.length > 0) {
-      backBtn.classList.remove('hidden');
-    } else {
-      backBtn.classList.add('hidden');
-    }
-  },
-    
-  navigateToSection(section) {
-    switch(section) {
-      case 'gameMode':
+        this.navigationStack = [];
+        this.currentSection = 'gameMode';
+        localStorage.removeItem('lastLessonCategory');
         this.showGameModeSelection();
-        break;
-      case 'lessonSelection':
-        this.showLessonSelection();
-        break;
-      default:
-        this.showGameModeSelection();
-    }
-    this.currentSection = section;
-    this.updateHeader();
-    this.updateFooterVisibility();
-    this.updateMultiplayerFooterVisibility(); // Linha adicionada
-  },
-
-  showGameModeSelection() {
-    hideAllSections();
-    hideFooter();
-    document.getElementById('multiplayerFooter').style.display = 'none'; // Garante que o footer multi comece oculto
-    document.getElementById('gameModeSection').style.display = '';
-  },
-  
-  toggleLobbyView() {
-      const joinGameView = document.getElementById('joinGameView');
-      const createGameView = document.getElementById('createGameView');
-      const toggleBtn = document.getElementById('toggleLobbyViewBtn'); // Pega o botão do footer
-
-      if (this.currentLobbyView === 'joinGame') {
-          this.currentLobbyView = 'createGame';
-          joinGameView.style.display = 'none';
-          createGameView.style.display = 'block';
-          toggleBtn.textContent = 'Ver Partidas Abertas'; // Atualiza o texto
-      } else {
-          this.currentLobbyView = 'joinGame';
-          joinGameView.style.display = 'block';
-          createGameView.style.display = 'none';
-          toggleBtn.textContent = 'Criar Nova Partida'; // Atualiza o texto
-      }
-  },
-  
-  showMultiplayerLobby() {
-      hideAllSections();
-      document.getElementById('multiplayerLobbySection').style.display = 'block';
-      
-      // Garante que a visualização correta e o texto do botão estejam sincronizados
-      this.currentLobbyView = 'createGame'; // Força um estado para garantir que o toggle funcione
-      this.toggleLobbyView(); // Chama o toggle para definir o estado inicial correto (joinGame)
-  },
-  
-  goToCreateGame() {
-  	handleCreateGameClick();
-  },
-
-    showExerciseStatus() {
-      document.getElementById('exerciseStatus').classList.remove('hidden');
-      this.updateProgressBadge();
-    },
-    
-    hideExerciseStatus() {
-      document.getElementById('exerciseStatus').classList.add('hidden');
+        this.updateHeader();
     },
 
-    updateProgressBadge() {
-      const badge = document.getElementById('progressBadge');
-      if (subtitles.length > 0) {
-        badge.textContent = `Você: ${currentIndex + 1}/${subtitles.length}`;
-      }
+    openSettings() {
+        alert('⚙️ Configurações em desenvolvimento');
+    },
+
+    updateHeader() {
+        const config = this.sectionConfig[this.currentSection];
+        if (!config) return;
+
+        let title = config.title;
+        if (this.currentSection === 'lessonSelection') {
+            title = this.getLessonSelectionTitle();
+        }
+
+        document.getElementById('headerTitle').textContent = title;
+
+        const backBtn = document.getElementById('backBtn');
+        if (config.showBack && this.navigationStack.length > 0) {
+            backBtn.classList.remove('hidden');
+        } else {
+            backBtn.classList.add('hidden');
+        }
+    },
+
+    navigateToSection(section) {
+        switch (section) {
+            case 'gameMode':
+                this.showGameModeSelection();
+                break;
+            case 'lessonSelection':
+                this.showLessonSelection();
+                break;
+            case 'gameResults':
+                this.showGameResultsSection();
+                break;
+            default:
+                this.showGameModeSelection();
+        }
+        this.currentSection = section;
+        this.updateHeader();
+        this.updateFooterVisibility();
+        this.updateMultiplayerFooterVisibility();
     },
 
-    showLessonSelection() {
-      hideAllSections();
-      document.getElementById('avulsas-section').style.display = '';
-      generateVideoCards(AppData.lessons.avulsas, 'avulsas-grid', handleLessonClick);
-      showFooter();
+    showGameModeSelection() {
+        hideAllSections();
+        hideFooter();
+        document.getElementById('multiplayerFooter').style.display = 'none';
+        document.getElementById('gameModeSection').style.display = '';
+    },
+
+    toggleLobbyView() {
+        const joinGameView = document.getElementById('joinGameView');
+        const createGameView = document.getElementById('createGameView');
+        const toggleBtn = document.getElementById('toggleLobbyViewBtn');
+
+        if (this.currentLobbyView === 'joinGame') {
+            this.currentLobbyView = 'createGame';
+            joinGameView.style.display = 'none';
+            createGameView.style.display = 'block';
+            toggleBtn.textContent = 'Ver Partidas Abertas';
+        } else {
+            this.currentLobbyView = 'joinGame';
+            joinGameView.style.display = 'block';
+            createGameView.style.display = 'none';
+            toggleBtn.textContent = 'Criar Nova Partida';
+        }
+    },
+
+    showMultiplayerLobby() {
+        hideAllSections();
+        document.getElementById('multiplayerLobbySection').style.display = 'block';
+        this.currentLobbyView = 'createGame';
+        this.toggleLobbyView();
+    },
+
+    goToCreateGame() {
+        handleCreateGameClick();
+    },
+
+    showExerciseStatus() {
+        document.getElementById('exerciseStatus').classList.remove('hidden');
+        this.updateProgressBadge();
+    },
+
+    hideExerciseStatus() {
+        document.getElementById('exerciseStatus').classList.add('hidden');
+    },
+
+    updateProgressBadge() {
+        const badge = document.getElementById('progressBadge');
+        if (subtitles.length > 0) {
+            badge.textContent = `Você: ${currentIndex + 1}/${subtitles.length}`;
+        }
+    },
+
+    showLessonSelection() {
+        hideAllSections();
+        document.getElementById('avulsas-section').style.display = '';
+        generateVideoCards(AppData.lessons.avulsas, 'avulsas-grid', handleLessonClick);
+        showFooter();
+    },
+
+    pauseAllResources() {
+        this.pauseVideo();
+        this.stopTimers();
+        this.resetExerciseState();
+    },
+
+    pauseVideo() {
+        const video = document.getElementById('video');
+        if (video && !video.paused) {
+            video.pause();
+            console.log('🎬 Vídeo pausado pela navegação');
+        }
+    },
+
+    stopTimers() {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            console.log('⏱️ Timer de performance interrompido');
+        }
+    },
+
+    resetExerciseState() {
+        formedWords = [];
+        currentIndex = 0;
+        startTime = 0;
+        totalElapsedTime = 0;
+        totalEstimatedTime = 0;
+
+        const timerElement = document.getElementById('timer');
+        if (timerElement) {
+            timerElement.innerHTML = '';
+        }
+    },
+
+    getLessonSelectionTitle() {
+        const mode = currentGameMode ?
+            currentGameMode.charAt(0).toUpperCase() + currentGameMode.slice(1) :
+            '';
+        const category = localStorage.getItem('lastLessonCategory') || 'avulsas';
+        const categoryName = category.charAt(0).toUpperCase() + category.slice(1);
+
+        return `${mode} - ${categoryName}`;
+    },
+
+    // NOVO: Adicione um método para exibir a tela de espera.
+    showWaitingScreen(lessonName) {
+        this.navigateTo('waitingScreen', false);
+        hideAllSections();
+        const waitingScreen = document.getElementById('waitingScreen');
+        if (!waitingScreen) {
+            console.error("Elemento 'waitingScreen' não encontrado no HTML.");
+            return;
+        }
+        waitingScreen.style.display = 'flex';
+        this.updateWaitingScreenStatus(`Preparando a lição: <strong>${lessonName}</strong>`);
+    },
+    
+    // NOVO: Adicione um método para ocultar a tela de espera.
+    hideWaitingScreen() {
+        const waitingScreen = document.getElementById('waitingScreen');
+        if (waitingScreen) {
+            waitingScreen.style.display = 'none';
+        }
+    }, 
+
+    showGameResultsSection() {
+        hideAllSections(); // Usa nossa função auxiliar para esconder tudo
+        const resultsSection = document.getElementById('gameResultsSection');
+        if (resultsSection) {
+            resultsSection.style.display = ''; // Mostra a seção de resultados
+        }
     },
-    
-  pauseAllResources() {
-    this.pauseVideo();
-    this.stopTimers();
-    this.resetExerciseState();
-  },
 
-  pauseVideo() {
-    const video = document.getElementById('video');
-    if (video && !video.paused) {
-      video.pause();
-      console.log('🎬 Vídeo pausado pela navegação');
-    }
-  },
-
-  stopTimers() {
-    if (timerInterval) {
-      clearInterval(timerInterval);
-      timerInterval = null;
-      console.log('⏱️ Timer de performance interrompido');
-    }
-  },
-
-  resetExerciseState() {
-    formedWords = [];
-    currentIndex = 0;
-    startTime = 0;
-    totalElapsedTime = 0;
-    totalEstimatedTime = 0;
-    
-    const timerElement = document.getElementById('timer');
-    if (timerElement) {
-      timerElement.innerHTML = '';
-    }
-  },
-
-    getLessonSelectionTitle() {
-      const mode = currentGameMode ? 
-        currentGameMode.charAt(0).toUpperCase() + currentGameMode.slice(1) : 
-        '';
-      const category = localStorage.getItem('lastLessonCategory') || 'avulsas';
-      const categoryName = category.charAt(0).toUpperCase() + category.slice(1);
-      
-      return `${mode} - ${categoryName}`;
-    }
+    updateWaitingScreenStatus(message) {
+        const statusElement = document.getElementById('waitingStatusMessage');
+        if (statusElement) {
+            statusElement.innerHTML = message;
+        }
+    }
 };
+
+//=============================
+// Bloco de Ocultar/Mostrar seções
+//=============================
+function hideAllSections() {
+    const sectionsToHide = [
+        'gameModeSection',  // Adicionar esta linha
+        'avulsas-section',
+        'trilha-section',
+        'videoSection',
+        'formedSentenceSection',
+        'shuffledWordsSection',
+        'multiplayerLobbySection',
+        'gameResultsSection'
+    ];
+
+    sectionsToHide.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+}
 
 //=============================
 // Função: Carrega e Processa o SRT
@@ -1001,26 +1154,6 @@ function handleCreateGameClick() {
   }
 }
 
-//=============================
-// Bloco de Ocultar/Mostrar seções
-//=============================
-function hideAllSections() {
-    const sectionsToHide = [
-        'gameModeSection',  // Adicionar esta linha
-        'avulsas-section',
-        'trilha-section',
-        'videoSection',
-        'formedSentenceSection',
-        'shuffledWordsSection',
-        'multiplayerLobbySection'
-    ];
-
-    sectionsToHide.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = 'none';
-    });
-}
-
 //=========================
 // Bloco lessons cards
 //=========================
@@ -1140,17 +1273,19 @@ async function prepareExerciseEnvironment(lesson) {
     return true; // Indica sucesso
 }
 
-
 //==================================================
 // Roteador principal para o clique no card de lição
 //==================================================
 async function handleLessonClick(lesson) {
     console.log(`Iniciando lição "${lesson.name}" no modo: ${currentGameMode}`);
-    
+
     if (currentGameMode === 'multiplayer') {
         initMultiplayerGame(lesson);
     } else {
-        initSoloGame(lesson);
+        const environmentReady = await prepareExerciseEnvironment(lesson);
+        if (environmentReady) {
+            initSoloGame(lesson);
+        }
     }
 }
 
@@ -1171,44 +1306,155 @@ async function initSoloGame(lesson) {
     await prepareCurrentSubtitle();
 }
 
-
 //================================================
-// Função para o modo Multiplayer (mock/esboço)
+// Função para o modo Multiplayer
 //================================================
 async function initMultiplayerGame(lesson) {
     console.log("Iniciando fluxo de criação de partida multiplayer...");
-    
-    // 1. Prepara o ambiente e carrega os recursos (reutilizando a mesma função!)
-    const environmentReady = await prepareExerciseEnvironment(lesson);
-    if (!environmentReady) {
-        return;
+
+    // Se o serviço não estiver pronto, avise o usuário e saia.
+    if (!MultiplayerService.isInitialized) {
+        NavigationController.showWaitingScreen(lesson.name);
+        NavigationController.updateWaitingScreenStatus("Aguarde, conectando ao servidor...");
+        console.warn("MultiplayerService não está inicializado. Tente novamente em instantes.");
+        // Não retorna, permitindo que a tela de espera seja exibida
+        // e o usuário tenha uma chance de tentar novamente.
+        return; 
     }
-    
-    // 2. Agora, adicione a lógica específica do multiplayer aqui
-    // Ex: conectar ao servidor, sincronizar estados, etc.
-    alert(`Fluxo multiplayer para a lição "${lesson.name}" em desenvolvimento. O ambiente de jogo já foi preparado.`);
+
+    // A partir daqui, sabemos que o serviço está pronto.
+    serverState.status = 'connecting';
+    NavigationController.showWaitingScreen(lesson.name);
+    NavigationController.updateWaitingScreenStatus("Procurando um oponente...");
+
+    try {
+        await MultiplayerService.joinMatch(lesson.name);
+    } catch (error) {
+        serverState.status = 'idle';
+        console.error("Erro ao tentar entrar na partida:", error.message);
+        NavigationController.updateWaitingScreenStatus("Erro: " + error.message);
+        // Em vez de goHome() imediatamente, pode-se mostrar o erro na tela de espera
+        // e o usuário pode voltar para a tela inicial manualmente.
+        // Se preferir ir direto para a home, a linha abaixo está correta.
+        NavigationController.goHome();
+    }
 }
+
+//================================================
+// Multiplayer Service - Módulo Appwrite Realtime
+//================================================
+const MultiplayerService = {
+    client: null,
+    realtime: null,
+    user: null, 
+    channel: null,
+    isInitialized: false,
+
+    async init() {
+        this.client = new Appwrite.Client()
+            .setEndpoint('https://nyc.cloud.appwrite.io/v1')
+            .setProject('689f3d3a00095fde3112');
+
+        try {
+            this.user = await this.client.account.createAnonymousSession();
+            this.realtime = new Appwrite.Realtime(this.client);
+            this.isInitialized = true;
+        } catch (error) {
+            console.error('[Appwrite] Erro ao criar sessão anônima:', error);
+            this.isInitialized = false;
+            throw new Error("Falha ao conectar com o servidor. Por favor, tente novamente mais tarde.");
+        }
+    },
+    
+    // **NOVO** Método para entrar em uma partida
+    async joinMatch(lessonName) {
+        // Usa o nome da lição para criar um canal único para a partida
+        this.channel = `lesson_${lessonName}_game_channel`;
+        
+        let opponentFound = false;
+        
+        // Assina o canal para ouvir eventos
+        this.realtime.subscribe(this.channel, response => {
+            const event = response.payload;
+            console.log('[Appwrite Realtime] Mensagem recebida:', event);
+            
+            // Verifica se a mensagem veio de outro jogador
+            if (event.type === 'playerJoined' && event.playerId !== this.user.$id) {
+                if (!opponentFound) {
+                    opponentFound = true;
+                    // Oponente encontrado! Inicia o jogo com a lição e o ID do oponente.
+                    serverState.opponent.id = event.playerId;
+                    serverState.opponent.name = "Oponente"; // Você pode adicionar mais dados no futuro
+                    
+                    console.log(`[Appwrite] Oponente ${serverState.opponent.id} encontrado! Iniciando jogo...`);
+                    
+                    // Lógica para iniciar o jogo
+                    NavigationController.hideWaitingScreen();
+                    initSoloGame(AppData.lessons.avulsas[0]); // Por enquanto, usa a primeira lição como placeholder
+                }
+            }
+        });
+
+        // Envia uma mensagem para o canal para notificar outros jogadores sobre a sua chegada
+        await this.sendMessage({
+            type: 'playerJoined',
+            playerId: this.user.$id
+        });
+        
+        console.log(`[Appwrite] Assinado e mensagem enviada para o canal: ${this.channel}`);
+    },
+
+    // Envia uma mensagem para o canal do jogo
+    async sendMessage(message) {
+        if (!this.realtime || !this.channel) {
+            throw new Error("Realtime ou canal não está inicializado.");
+        }
+        await this.realtime.send(this.channel, message);
+    },
+
+    async cancelMatchmaking() {
+        console.log('[Appwrite] Cancelando matchmaking...');
+        // Verifica se há uma conexão ativa para fechar
+        if (this.realtime && this.channel) {
+            this.realtime.unsubscribe(this.channel);
+            console.log(`[Appwrite] Desinscrito do canal: ${this.channel}`);
+        }
+        
+        // Reinicia o estado
+        this.channel = null;
+        this.user = null; // Opcional, mas útil para limpar o estado
+        this.realtime = null;
+        this.isInitialized = false; // <-- Adicione esta linha
+    },
+};
 
 //=============================
 // Inicialização
 //=============================
-document.addEventListener('DOMContentLoaded', () => {
-    loadAllLessons();
-    hideFooter();
-    NavigationController.showGameModeSelection();
-    NavigationController.updateHeader();
-});
+document.addEventListener('DOMContentLoaded', async () => {
+    // Inicializa o serviço do Appwrite Realtime
+    try {
+        await MultiplayerService.init();
+    } catch (error) {
+        console.error("Falha na inicialização do MultiplayerService:", error);
+        // Você pode adicionar aqui uma lógica para informar o usuário sobre o erro.
+    }
 
-// Adicionar listener para quando a página é fechada/recarregada
-window.addEventListener('beforeunload', () => {
-    NavigationController.pauseAllResources();
-});
+    loadAllLessons();
+    hideFooter();
+    NavigationController.showGameModeSelection();
+    NavigationController.updateHeader();
 
-// Adicionar listener para visibilidade da página
-document.addEventListener('visibilitychange', () => {
-    if (document.hidden && NavigationController.currentSection === 'exercise') {
-        NavigationController.pauseVideo();
+    // ▼▼▼ ADICIONE ESTE BLOCO DE CÓDIGO NO FINAL ▼▼▼
+    const testButton = document.getElementById('testResultsBtn');
+    if (testButton) {
+        testButton.addEventListener('click', () => {
+            console.log('Botão de teste de resultados clicado. Navegando...');
+            // Usamos a função principal navigateTo, que cuida de tudo
+            NavigationController.navigateTo('gameResults'); 
+        });
     }
+    // ▲▲▲ FIM DO BLOCO NOVO ▲▲▲
 });
 </script>
 </body>
