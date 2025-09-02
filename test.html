@@ -481,6 +481,7 @@
 <body>
 
 <main style="padding-bottom: 80px;">
+<button id="testResultsBtn">Testar Tela de Resultados</button>
   <!-- Header fixo com navegação
   Por que esta abordagem é profissional:
   ✅ Separação de responsabilidades - Timer não mistura com título 
@@ -575,6 +576,33 @@
       <div class="pulse"></div>
     </div>
   </div>
+</section>
+
+<!-- ========================== -->
+<!-- Seção de Resultados do Jogo -->
+<!-- ========================== -->
+<section id="gameResultsSection" class="section-container" style="display: none;">
+  <h2 id="resultsTitle">Partida Finalizada!</h2>
+  
+  <div class="results-summary">
+    <div id="playerResult" class="result-card">
+      <h3 id="playerResultName">Você</h3>
+      <p class="performance-score" id="playerPerformanceScore">0%</p>
+      <span id="playerWinnerBadge" class="winner-badge" style="display: none;">🏆 Vencedor</span>
+    </div>
+    
+    <div class="versus-divider">VS</div>
+    
+    <div id="opponentResult" class="result-card">
+      <h3 id="opponentResultName">Oponente</h3>
+      <p class="performance-score" id="opponentPerformanceScore">0%</p>
+      <span id="opponentWinnerBadge" class="winner-badge" style="display: none;">🏆 Vencedor</span>
+    </div>
+  </div>
+
+  <div class="results-actions">
+    <!-- Poderíamos adicionar um botão de "Jogar Novamente" no futuro -->
+  </div>
 </section>
 
 <!-- ========================== -->
@@ -757,7 +785,14 @@ const NavigationController = {
             showHome: true,
             showFooter: false,
             showMultiplayerFooter: false
-        }
+        },
+        gameResults: {
+            title: 'Resultados da Partida',
+            showBack: true, // Queremos o botão "Voltar" para o teste
+            showHome: true,
+            showFooter: false,
+            showMultiplayerFooter: false
+        }
     },
 
     updateMultiplayerFooterVisibility() {
@@ -786,7 +821,10 @@ const NavigationController = {
         this.updateHeader();
         this.updateFooterVisibility();
         this.updateMultiplayerFooterVisibility();
-    },
+        
+        // A única responsabilidade dela é chamar a função que faz o trabalho pesado.
+        this.navigateToSection(section);
+    },
 
     updateFooterVisibility() {
         const config = this.sectionConfig[this.currentSection];
@@ -867,22 +905,25 @@ const NavigationController = {
         }
     },
 
-    navigateToSection(section) {
-        switch (section) {
-            case 'gameMode':
-                this.showGameModeSelection();
-                break;
-            case 'lessonSelection':
-                this.showLessonSelection();
-                break;
-            default:
-                this.showGameModeSelection();
-        }
-        this.currentSection = section;
-        this.updateHeader();
-        this.updateFooterVisibility();
-        this.updateMultiplayerFooterVisibility();
-    },
+    navigateToSection(section) {
+        switch (section) {
+            case 'gameMode':
+                this.showGameModeSelection();
+                break;
+            case 'lessonSelection':
+                this.showLessonSelection();
+                break;
+            case 'gameResults':
+                this.showGameResultsSection();
+                break;
+            default:
+                this.showGameModeSelection();
+        }
+        this.currentSection = section;
+        this.updateHeader();
+        this.updateFooterVisibility();
+        this.updateMultiplayerFooterVisibility();
+    },
 
     showGameModeSelection() {
         hideAllSections();
@@ -1007,9 +1048,16 @@ const NavigationController = {
         if (waitingScreen) {
             waitingScreen.style.display = 'none';
         }
-    },
-    
-    // NOVO: Adicione a função para atualizar o status da tela de espera.
+    }, 
+
+    showGameResultsSection() {
+        hideAllSections(); // Usa nossa função auxiliar para esconder tudo
+        const resultsSection = document.getElementById('gameResultsSection');
+        if (resultsSection) {
+            resultsSection.style.display = ''; // Mostra a seção de resultados
+        }
+    },
+
     updateWaitingScreenStatus(message) {
         const statusElement = document.getElementById('waitingStatusMessage');
         if (statusElement) {
@@ -1017,6 +1065,27 @@ const NavigationController = {
         }
     }
 };
+
+//=============================
+// Bloco de Ocultar/Mostrar seções
+//=============================
+function hideAllSections() {
+    const sectionsToHide = [
+        'gameModeSection',  // Adicionar esta linha
+        'avulsas-section',
+        'trilha-section',
+        'videoSection',
+        'formedSentenceSection',
+        'shuffledWordsSection',
+        'multiplayerLobbySection',
+        'gameResultsSection'
+    ];
+
+    sectionsToHide.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+}
 
 //=============================
 // Função: Carrega e Processa o SRT
@@ -1477,26 +1546,6 @@ function handleCreateGameClick() {
   }
 }
 
-//=============================
-// Bloco de Ocultar/Mostrar seções
-//=============================
-function hideAllSections() {
-    const sectionsToHide = [
-        'gameModeSection',  // Adicionar esta linha
-        'avulsas-section',
-        'trilha-section',
-        'videoSection',
-        'formedSentenceSection',
-        'shuffledWordsSection',
-        'multiplayerLobbySection'
-    ];
-
-    sectionsToHide.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = 'none';
-    });
-}
-
 //=========================
 // Bloco lessons cards
 //=========================
@@ -1787,6 +1836,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     hideFooter();
     NavigationController.showGameModeSelection();
     NavigationController.updateHeader();
+
+    // ▼▼▼ ADICIONE ESTE BLOCO DE CÓDIGO NO FINAL ▼▼▼
+    const testButton = document.getElementById('testResultsBtn');
+    if (testButton) {
+        testButton.addEventListener('click', () => {
+            console.log('Botão de teste de resultados clicado. Navegando...');
+            // Usamos a função principal navigateTo, que cuida de tudo
+            NavigationController.navigateTo('gameResults'); 
+        });
+    }
+    // ▲▲▲ FIM DO BLOCO NOVO ▲▲▲
 });
 </script>
 </body>
