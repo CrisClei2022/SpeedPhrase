@@ -166,28 +166,7 @@
       justify-content: center;
       flex-wrap: wrap;
     }
-
-    .mode-button {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-      background: #fff;
-      border: 2px solid #ddd;
-      border-radius: 12px;
-      padding: 30px 20px;
-      cursor: pointer;
-      transition: all 0.3s;
-      min-width: 200px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-
-    .mode-button:hover {
-      transform: translateY(-3px);
-      border-color: #007bff;
-      box-shadow: 0 4px 15px rgba(0,123,255,0.2);
-    }
-
+    
     .mode-icon {
       font-size: 2.5em;
     }
@@ -260,7 +239,7 @@
       justify-content: center;
     }
 
-    .video-card {
+    .video-card, .mode-button {
       background: #fff;
       padding: 15px;
       border: 1px solid #ccc;
@@ -272,7 +251,7 @@
       text-align: center;
     }
 
-    .video-card:hover {
+    .video-card:hover, .mode-button:hover {
       transform: scale(1.03);
       box-shadow: 0 4px 10px rgba(0,0,0,0.15);
     }
@@ -727,10 +706,8 @@ function selectGameMode(mode) {
     
     if (mode === 'multiplayer') {
         NavigationController.navigateTo('multiplayerLobby');
-        NavigationController.showMultiplayerLobby();
     } else {
         NavigationController.navigateTo('lessonSelection');
-        NavigationController.showLessonSelection();
     }
 }
 
@@ -924,9 +901,16 @@ const NavigationController = {
             case 'exercise':
                 this.showExerciseSection();
                 break;
+            // ▼▼▼ ADICIONE ESTE NOVO CASE ▼▼▼
+            case 'multiplayerLobby':
+                this.showMultiplayerLobby();
+                break;
+            // ▲▲▲ FIM DO NOVO CASE ▲▲▲
             default:
                 this.showGameModeSelection();
         }
+        // As linhas abaixo foram removidas daqui na refatoração anterior,
+        // mas vamos garantir que elas estejam aqui para robustez.
         this.currentSection = section;
         this.updateHeader();
         this.updateFooterVisibility();
@@ -958,12 +942,31 @@ const NavigationController = {
         }
     },
 
-    showMultiplayerLobby() {
-        hideAllSections();
-        document.getElementById('multiplayerLobbySection').style.display = 'block';
-        this.currentLobbyView = 'createGame';
-        this.toggleLobbyView();
-    },
+    async showMultiplayerLobby() {
+        // 1. Mostra a seção correta e esconde as outras
+        hideAllSections();
+        document.getElementById('multiplayerLobbySection').style.display = 'block';
+        
+        // 2. Busca e renderiza os dados
+        const gamesListContainer = document.getElementById('waitingGamesList');
+        gamesListContainer.innerHTML = '<p>Carregando partidas...</p>';
+
+        const openGames = await MultiplayerService.listOpenGames();
+
+        gamesListContainer.innerHTML = '';
+
+        if (openGames.length === 0) {
+            gamesListContainer.innerHTML = '<p>Nenhuma partida aberta no momento. Crie uma!</p>';
+        } else {
+            openGames.forEach(game => {
+                const gameCard = createGameCard(game, (gameId) => {
+                    console.log(`Tentando entrar no jogo com ID: ${gameId}`);
+                    alert(`IMPLEMENTAR: Entrar no jogo ${gameId}`);
+                });
+                gamesListContainer.appendChild(gameCard);
+            });
+        }
+    },
 
     goToCreateGame() {
         handleCreateGameClick();
@@ -1565,6 +1568,25 @@ function handleCreateGameClick() {
   }
 }
 
+//==========================================
+// Cria um card para uma partida aberta
+//==========================================
+function createGameCard(game, onClick) {
+    const card = document.createElement('div');
+    card.className = 'video-card'; // Reutilizamos o estilo dos cards de vídeo
+    
+    const lessonName = document.createElement('span');
+    lessonName.textContent = game.lessonName; // 'game' é o documento do Appwrite
+    card.appendChild(lessonName);
+
+    // Adiciona um listener de clique para quando o jogador quiser entrar
+    card.addEventListener('click', () => {
+        onClick(game.$id); // Passa o ID do jogo (documento) para a função de clique
+    });
+
+    return card;
+}
+
 //=========================
 // Bloco lessons cards
 //=========================
@@ -1748,22 +1770,59 @@ const MultiplayerService = {
     channel: null,
     isInitialized: false,
 
+    DATABASE_ID: '68b95e70000b26a8cf35',       // <-- COLE AQUI O ID DO SEU BANCO DE DADOS
+    GAMES_COLLECTION_ID: '68b95ebc001cab307bb4', // <-- COLE AQUI O ID DA SUA COLEÇÃO "games"
+
     async init() {
         this.client = new Appwrite.Client()
-            .setEndpoint('https://nyc.cloud.appwrite.io/v1')
+            .setEndpoint('https://nyc.cloud.appwrite.io/v1' )
             .setProject('689f3d3a00095fde3112');
 
         try {
-            this.user = await this.client.account.createAnonymousSession();
+            // ▼▼▼ ATUALIZE ESTE BLOCO ▼▼▼
+            const account = new Appwrite.Account(this.client);
+            // A inicialização do serviço de documentos agora é separada
+            this.documents = new Appwrite.Documents(this.client); 
             this.realtime = new Appwrite.Realtime(this.client);
+            
+            this.user = await account.createAnonymousSession();
             this.isInitialized = true;
+            console.log('[Appwrite] Serviço v18 inicializado com sucesso.');
+            // ▲▲▲ FIM DA ATUALIZAÇÃO ▲▲▲
         } catch (error) {
-            console.error('[Appwrite] Erro ao criar sessão anônima:', error);
+            console.error('[Appwrite] Erro ao inicializar:', error);
             this.isInitialized = false;
-            throw new Error("Falha ao conectar com o servidor. Por favor, tente novamente mais tarde.");
+            throw new Error("Falha ao conectar com o servidor.");
         }
     },
-    
+
+    async listOpenGames() {
+        if (!this.isInitialized) {
+            console.error("MultiplayerService não está pronto para listar jogos.");
+            return [];
+        }
+
+        console.log("[Appwrite] Buscando partidas abertas com SDK v18...");
+        try {
+            // ▼▼▼ ATUALIZE ESTA CHAMADA ▼▼▼
+            const response = await this.documents.list( // O método agora se chama 'list'
+                this.DATABASE_ID,
+                this.GAMES_COLLECTION_ID,
+                [
+                    Appwrite.Query.equal('status', 'waiting')
+                ]
+            );
+            // ▲▲▲ FIM DA ATUALIZAÇÃO ▲▲▲
+            
+            console.log("[Appwrite] Partidas encontradas:", response.documents);
+            return response.documents;
+        } catch (error) {
+            console.error("[Appwrite] Erro ao listar partidas:", error);
+            // Abra o console do navegador (F12) para ver detalhes deste erro.
+            return [];
+        }
+    },
+
     // **NOVO** Método para entrar em uma partida
     async joinMatch(lessonName) {
         // Usa o nome da lição para criar um canal único para a partida
