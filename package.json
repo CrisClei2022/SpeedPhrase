@@ -1,0 +1,9 @@
+{
+  "name": "backblaze_api_function",
+  "version": "1.0.0",
+  "description": "Appwrite Function to interact with Backblaze B2.",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  }
+}
