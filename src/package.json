@@ -1,0 +1,13 @@
+{
+  "name": "backblaze_api_function",
+  "version": "1.0.0",
+  "description": "Appwrite Function to interact with Backblaze B2.",
+  "main": "src/main.js",
+  "dependencies": {
+    "node-appwrite": "^11.0.0",
+    "axios": "^1.6.8"
+  },
+  "scripts": {
+    "start": "node src/main.js"
+  }
+}
