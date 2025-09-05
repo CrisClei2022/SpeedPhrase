@@ -1,13 +1,13 @@
 {
-  "name": "backblaze_api",
+  "name": "backblaze_api_function",
   "version": "1.0.0",
-  "description": "Appwrite Function to interact with Backblaze B2 for subtitle editing.",
+  "description": "Appwrite Function to interact with Backblaze B2.",
   "main": "src/main.js",
-  "scripts": {
-    "start": "node index.js"
-  },
   "dependencies": {
-    "appwrite": "^13.0.0",
-    "axios": "^1.6.0"
+    "node-appwrite": "^11.0.0",
+    "node-fetch": "^3.3.2"
+  },
+  "scripts": {
+    "start": "node src/main.js"
   }
 }
