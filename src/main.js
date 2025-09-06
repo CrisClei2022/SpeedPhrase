@@ -1,7 +1,10 @@
 // Ponto de entrada da função Appwrite
-export default async function(req, res) {
+export default async function(req) {
   if (!req.variables) {
-    return res.json({ success: false, error: 'Variáveis de ambiente não definidas.' }, 500);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ success: false, error: 'Variáveis de ambiente não definidas.' }),
+    };
   }
 
   const { 
@@ -20,38 +23,52 @@ export default async function(req, res) {
   const bucketId = BACKBLAZE_BUCKET_TRILHA || BACKBLAZE_BUCKET_AVULSAS;
 
   if (!keyId || !applicationKey) {
-    return res.json({ success: false, error: 'Variáveis de ambiente B2_APPLICATION_KEY_ID e B2_APPLICATION_KEY são obrigatórias.' }, 400);
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ success: false, error: 'Variáveis de ambiente B2_APPLICATION_KEY_ID e B2_APPLICATION_KEY são obrigatórias.' }),
+    };
   }
 
   try {
-    // -----------------------------------------------------------
-    // NOVO CÓDIGO AQUI
-    // Captura o erro da autenticação para debug
     let authData;
     try {
       authData = await b2AuthorizeAccount(keyId, applicationKey);
     } catch (authError) {
       console.error("Erro específico na autenticação do Backblaze:", authError.response ? authError.response.data : authError.message);
-      return res.json({ success: false, error: "Falha na autenticação com o Backblaze B2. Verifique suas chaves." }, 500);
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ success: false, error: "Falha na autenticação com o Backblaze B2. Verifique suas chaves." }),
+      };
     }
-    // -----------------------------------------------------------
 
     const { apiUrl, authorizationToken } = authData;
 
     if (command === 'list objects') {
       const objects = await b2ListObjects(apiUrl, authorizationToken, bucketId);
-      return res.json({ success: true, objects: objects });
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ success: true, objects: objects }),
+      };
     } else if (command === 'upload' && file && fileName && bucketId) {
       const uploadUrlData = await b2GetUploadUrl(apiUrl, authorizationToken, bucketId);
       const { uploadUrl, authorizationToken: uploadToken } = uploadUrlData;
       const fileData = Buffer.from(file, 'base64');
       const uploadResponse = await b2UploadFile(uploadUrl, uploadToken, fileName, fileData);
-      return res.json({ success: true, fileInfo: uploadResponse });
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ success: true, fileInfo: uploadResponse }),
+      };
     } else {
-      return res.json({ success: false, error: 'Comando inválido ou parâmetros faltando.' }, 400);
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ success: false, error: 'Comando inválido ou parâmetros faltando.' }),
+      };
     }
   } catch (error) {
-    return res.json({ success: false, error: error.message }, 500);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ success: false, error: error.message }),
+    };
   }
 };
 
