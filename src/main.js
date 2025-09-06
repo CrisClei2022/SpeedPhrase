@@ -59,7 +59,7 @@ async function b2ListBuckets(apiUrl, authToken, accountId) {
 
 // Ponto de entrada da função Appwrite
 export default async function(req, res) {
-  const {BACKBLAZE_BUCKET_AVULSAS, B2_APPLICATION_KEY,  BACKBLAZE_ENDPOINT, BACKBLAZE_BUCKET_TRILHA,B2_APPLICATION_KEY_ID} = req.variables;
+  const {BACKBLAZE_BUCKET_AVULSAS, B2_APPLICATION_KEY, BACKBLAZE_ENDPOINT, BACKBLAZE_BUCKET_TRILHA, B2_APPLICATION_KEY_ID} = req.variables;
   const { file, fileName, action } = req.variables;
   const keyId = B2_APPLICATION_KEY_ID;
   const applicationKey = B2_APPLICATION_KEY;
