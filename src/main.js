@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Client, Storage } from 'node-appwrite';
 
-// Funções para a API do Backblaze B2
+// Funções para a API Backblaze B2
 async function b2AuthorizeAccount(keyId, applicationKey) {
   const url = 'https://api.backblazeb2.com/b2api/v2/b2_authorize_account';
   const credentials = Buffer.from(`${keyId}:${applicationKey}`).toString('base64');
