@@ -1,7 +1,20 @@
 // Ponto de entrada da função Appwrite
 export default async function(req, res) {
-  const {BACKBLAZE_BUCKET_AVULSAS, B2_APPLICATION_KEY, BACKBLAZE_ENDPOINT, BACKBLAZE_BUCKET_TRILHA, B2_APPLICATION_KEY_ID} = req.variables;
-  const { file, fileName, action } = req.variables;
+  if (!req.variables) {
+    return res.json({ success: false, error: 'Variáveis de ambiente não definidas.' }, 500);
+  }
+
+  const { 
+    BACKBLAZE_BUCKET_AVULSAS, 
+    B2_APPLICATION_KEY, 
+    BACKBLAZE_ENDPOINT, 
+    BACKBLAZE_BUCKET_TRILHA, 
+    B2_APPLICATION_KEY_ID,
+    file,
+    fileName,
+    command
+  } = req.variables;
+
   const keyId = B2_APPLICATION_KEY_ID;
   const applicationKey = B2_APPLICATION_KEY;
   const bucketId = BACKBLAZE_BUCKET_TRILHA || BACKBLAZE_BUCKET_AVULSAS;
@@ -25,19 +38,82 @@ export default async function(req, res) {
 
     const { apiUrl, authorizationToken } = authData;
 
-    if (action === 'listBuckets') {
-      const buckets = await b2ListBuckets(apiUrl, authorizationToken, authData.accountId);
-      return res.json({ success: true, buckets: buckets });
-    } else if (action === 'upload' && file && fileName && bucketId) {
+    if (command === 'list objects') {
+      const objects = await b2ListObjects(apiUrl, authorizationToken, bucketId);
+      return res.json({ success: true, objects: objects });
+    } else if (command === 'upload' && file && fileName && bucketId) {
       const uploadUrlData = await b2GetUploadUrl(apiUrl, authorizationToken, bucketId);
       const { uploadUrl, authorizationToken: uploadToken } = uploadUrlData;
       const fileData = Buffer.from(file, 'base64');
       const uploadResponse = await b2UploadFile(uploadUrl, uploadToken, fileName, fileData);
       return res.json({ success: true, fileInfo: uploadResponse });
     } else {
-      return res.json({ success: false, error: 'Ação inválida ou parâmetros faltando.' }, 400);
+      return res.json({ success: false, error: 'Comando inválido ou parâmetros faltando.' }, 400);
     }
   } catch (error) {
     return res.json({ success: false, error: error.message }, 500);
   }
 };
+
+// Função para listar objetos
+async function b2ListObjects(apiUrl, authorizationToken, bucketId) {
+  const response = await fetch(`${apiUrl}/b2api/v2/b2_list_file_names`, {
+    method: 'POST',
+    headers: {
+      'Authorization': authorizationToken,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      bucketId: bucketId
+    })
+  });
+
+  const data = await response.json();
+  return data.files;
+}
+
+// Função para obter URL de upload
+async function b2GetUploadUrl(apiUrl, authorizationToken, bucketId) {
+  const response = await fetch(`${apiUrl}/b2api/v2/b2_get_upload_url`, {
+    method: 'POST',
+    headers: {
+      'Authorization': authorizationToken,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      bucketId: bucketId
+    })
+  });
+
+  const data = await response.json();
+  return data;
+}
+
+// Função para fazer upload de arquivo
+async function b2UploadFile(uploadUrl, uploadToken, fileName, fileData) {
+  const response = await fetch(uploadUrl, {
+    method: 'POST',
+    headers: {
+      'Authorization': uploadToken,
+      'Content-Type': 'application/octet-stream',
+      'X-Bz-File-Name': fileName
+    },
+    body: fileData
+  });
+
+  const data = await response.json();
+  return data;
+}
+
+// Função para autorizar conta
+async function b2AuthorizeAccount(keyId, applicationKey) {
+  const response = await fetch('https://api.backblazeb2.com/b2api/v2/b2_authorize_account', {
+    method: 'GET',
+    headers: {
+      'Authorization': 'Basic ' + Buffer.from(`${keyId}:${applicationKey}`).toString('base64')
+    }
+  });
+
+  const data = await response.json();
+  return data;
+}
