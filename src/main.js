@@ -56,13 +56,7 @@ async function b2ListBuckets(apiUrl, authToken, accountId) {
     throw error;
   }
 }
-{
-  "BACKBLAZE_BUCKET_AVULSAS": "947ca295b925e2109e8e0f1a",
-  "B2_APPLICATION_KEY": "K005IT9onR82TC2e5P9zZdT5HodLE7Q",
-  "BACKBLAZE_ENDPOINT": "s3.us-east-005.backblazeb2.com",
-  "BACKBLAZE_BUCKET_TRILHA": "443c02f5b925e2109e8e0f1a",
-  "B2_APPLICATION_KEY_ID": "0054c259520eefa0000000002"
-}
+
 // Ponto de entrada da função Appwrite
 export default async function(req, res) {
   const {BACKBLAZE_BUCKET_AVULSAS, B2_APPLICATION_KEY,  BACKBLAZE_ENDPOINT, BACKBLAZE_BUCKET_TRILHA,B2_APPLICATION_KEY_ID} = req.variables;
