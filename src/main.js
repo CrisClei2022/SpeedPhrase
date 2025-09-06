@@ -68,7 +68,8 @@ async function b2ListBuckets(apiUrl, authToken, accountId) {
 // ===================================
 export default async function(req, res) {
   // Ajuste aqui: leia os dados diretamente do corpo da requisição (req.body)
-  const { file, fileName, action } = JSON.parse(req.body);
+  const requestData = req.body ?? '{}';
+  const { file, fileName, action } = JSON.parse(requestData);
   const keyId = B2_APPLICATION_KEY_ID;
   const applicationKey = B2_APPLICATION_KEY;
   const bucketId = BACKBLAZE_BUCKET_TRILHA || BACKBLAZE_BUCKET_AVULSAS;
