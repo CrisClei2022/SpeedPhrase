@@ -1,13 +1,16 @@
 {
-  "name": "backblaze_api_function",
+  "name": "starter-template",
   "version": "1.0.0",
-  "description": "Appwrite Function to interact with Backblaze B2.",
-  "main": "main.js",
-  "dependencies": {
-    "node-appwrite": "^22.0.0",
-    "axios": "^1.6.8"
-  },
+  "description": "",
+  "main": "src/main.js",
+  "type": "module",
   "scripts": {
-    "start": "node main.js"
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "node-appwrite": "^14.1.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.2.5"
   }
 }
