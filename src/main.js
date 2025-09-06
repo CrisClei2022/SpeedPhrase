@@ -1,68 +1,60 @@
-import { Client, Functions } from 'node-appwrite';
-import axios from 'axios';  // Usaremos o axios para fazer as requisições HTTP à API do Backblaze
+import axios from 'axios';
 
-export default async ({ req, res, log, error }) => {
-  const client = new Client()
-    .setEndpoint(process.env.APPWRITE_FUNCTION_API_ENDPOINT)
-    .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID)
-    .setKey(req.headers['x-appwrite-key'] ?? '');
-  
-  // Variáveis de ambiente para Backblaze
-  const BACKBLAZE_BUCKETS = [
-    process.env.BACKBLAZE_BUCKET_TRILHA,
-    process.env.BACKBLAZE_BUCKET_AVULSAS
-  ];
-  
-  const BACKBLAZE_ENDPOINT = `https://${process.env.BACKBLAZE_ENDPOINT}`;
-  const B2_APPLICATION_KEY_ID = process.env.B2_APPLICATION_KEY_ID;
-  const B2_APPLICATION_KEY = process.env.B2_APPLICATION_KEY;
-  
-  // Função para autenticar na API do Backblaze
-  const authenticateBackblaze = async () => {
-    try {
-      const response = await axios.post('https://api.backblaze.com/b2api/v2/b2_authorize_account', null, {
-        auth: {
-          username: B2_APPLICATION_KEY_ID,
-          password: B2_APPLICATION_KEY,
-        },
-      });
-      return response.data;
-    } catch (err) {
-      throw new Error('Falha na autenticação com o Backblaze: ' + err.message);
-    }
-  };
+// Função para autenticar no Backblaze e obter o token de autorização e a URL da API.
+const authenticateBackblaze = async (keyId, appKey) => {
+  try {
+    const response = await axios.get('https://api.backblazeb2.com/b2api/v2/b2_authorize_account', {
+      auth: {
+        username: keyId,
+        password: appKey,
+      },
+    });
+    return response.data;
+  } catch (err) {
+    // Lança um erro claro se a autenticação falhar.
+    throw new Error('Falha na autenticação com o Backblaze: ' + (err.response?.data?.message || err.message));
+  }
+};
 
-  // Função para listar os buckets no Backblaze
-  const listBuckets = async () => {
-    const authData = await authenticateBackblaze();
-    const apiUrl = authData.apiUrl + '/b2api/v2/b2_list_buckets';
-    
-    try {
-      const response = await axios.post(apiUrl, {
-        accountId: authData.accountId
-      }, {
-        headers: {
-          Authorization: authData.authorizationToken
-        }
-      });
-      
-      return response.data.buckets;
-    } catch (err) {
-      throw new Error('Erro ao listar buckets do Backblaze: ' + err.message);
-    }
-  };
+// Função principal que será executada pelo Appwrite.
+export default async ({ res, log, error }) => {
+  // Validação das variáveis de ambiente.
+  const { B2_APPLICATION_KEY_ID, B2_APPLICATION_KEY } = process.env;
+  if (!B2_APPLICATION_KEY_ID || !B2_APPLICATION_KEY) {
+    error('As variáveis de ambiente B2_APPLICATION_KEY_ID e B2_APPLICATION_KEY são obrigatórias.');
+    return res.json({ success: false, message: 'Variáveis de ambiente do Backblaze não configuradas.' }, 500);
+  }
 
   try {
-    const buckets = await listBuckets();
+    // 1. Autenticar no Backblaze.
+    const authData = await authenticateBackblaze(B2_APPLICATION_KEY_ID, B2_APPLICATION_KEY);
+    log('Autenticação com Backblaze bem-sucedida.');
 
-    // Log de buckets encontrados
-    log(`Buckets encontrados: ${buckets.length}`);
+    const { apiUrl, authorizationToken, accountId } = authData;
 
-    // Respondendo com os dados dos buckets
-    return res.json({ buckets });
-    
+    // 2. Montar a requisição para listar os buckets.
+    const listBucketsUrl = `${apiUrl}/b2api/v2/b2_list_buckets`;
+    const listBucketsResponse = await axios.post(
+      listBucketsUrl,
+      { accountId: accountId }, // Body da requisição
+      {
+        headers: {
+          Authorization: authorizationToken // Header de autorização
+        }
+      }
+    );
+
+    log(`Encontrados ${listBucketsResponse.data.buckets.length} buckets.`);
+
+    // 3. Retornar a lista de buckets com sucesso.
+    return res.json({
+      success: true,
+      buckets: listBucketsResponse.data.buckets,
+    });
+
   } catch (err) {
-    error('Erro ao listar buckets: ' + err.message);
-    return res.json({ error: 'Erro ao listar buckets' });
+    // Captura qualquer erro no processo e o registra.
+    error('Erro ao processar a requisição para o Backblaze: ' + err.message);
+    return res.json({ success: false, message: 'Erro interno ao listar os buckets.' }, 500);
   }
 };
