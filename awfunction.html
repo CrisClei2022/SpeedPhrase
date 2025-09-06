@@ -43,33 +43,35 @@
 <script src="https://cdn.jsdelivr.net/npm/appwrite@19.0.0"></script>
 
 <script>
-    const resultadoElement = document.getElementById('resultado');
+  const resultadoElement = document.getElementById('resultado');
 
-    // Inicialização do cliente Appwrite
-    const client = new Appwrite.Client();
-    const functions = new Appwrite.Functions(client);
+  const client = new Appwrite.Client();
+  const functions = new Appwrite.Functions(client);
 
-    client
-        .setEndpoint('https://nyc.cloud.appwrite.io/v1') // Pode ser a URL do seu servidor se não for na nuvem
-        .setProject('689f3d3a00095fde3112'); // ⚠️ Substitua pelo seu Project ID
+  client
+    .setEndpoint('https://nyc.cloud.appwrite.io/v1')
+    .setProject('689f3d3a00095fde3112');
 
-    // Execução da função Appwrite
-    const promise = functions.createExecution(
-        '68bbf33a000d94f8259f', // ⚠️ Substitua pelo seu Function ID
-        'body',          // corpo opcional
-        false,           // síncrono (false para aguardar a resposta)
-        '/',             // caminho opcional
-        'GET',           // método HTTP
-        {}               // headers opcionais
-    );
+  const promise = functions.createExecution(
+    '68bbf33a000d94f8259f',
+    JSON.stringify({
+      command: 'list objects'
+    }),
+    false,
+    '/',
+    'POST',
+    {
+      'Content-Type': 'application/json'
+    }
+  );
 
-    promise.then(function (response) {
-        resultadoElement.textContent = JSON.stringify(response, null, 2);
-        document.querySelector('p').textContent = 'Execução concluída com sucesso:';
-    }, function (error) {
-        resultadoElement.textContent = JSON.stringify(error, null, 2);
-        document.querySelector('p').textContent = 'Ocorreu um erro na execução:';
-    });
+  promise.then(function (response) {
+    resultadoElement.textContent = JSON.stringify(response, null, 2);
+    document.querySelector('p').textContent = 'Execução concluída com sucesso:';
+  }, function (error) {
+    resultadoElement.textContent = JSON.stringify(error, null, 2);
+    document.querySelector('p').textContent = 'Ocorreu um erro na execução:';
+  });
 </script>
 
 </body>
