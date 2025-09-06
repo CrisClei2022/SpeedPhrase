@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Execução da Função Appwrite</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #007bff;
+        }
+        pre {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Resultado da Execução da Função Appwrite</h1>
+    <p>Aguardando a execução...</p>
+    <pre id="resultado"></pre>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/appwrite@19.0.0"></script>
+
+<script>
+    const resultadoElement = document.getElementById('resultado');
+
+    // Inicialização do cliente Appwrite
+    const client = new Appwrite.Client();
+    const functions = new Appwrite.Functions(client);
+
+    client
+        .setEndpoint('https://nyc.cloud.appwrite.io/v1') // Pode ser a URL do seu servidor se não for na nuvem
+        .setProject('689f3d3a00095fde3112'); // ⚠️ Substitua pelo seu Project ID
+
+    // Execução da função Appwrite
+    const promise = functions.createExecution(
+        '68bbf33a000d94f8259f', // ⚠️ Substitua pelo seu Function ID
+        'body',          // corpo opcional
+        false,           // síncrono (false para aguardar a resposta)
+        '/',             // caminho opcional
+        'GET',           // método HTTP
+        {}               // headers opcionais
+    );
+
+    promise.then(function (response) {
+        resultadoElement.textContent = JSON.stringify(response, null, 2);
+        document.querySelector('p').textContent = 'Execução concluída com sucesso:';
+    }, function (error) {
+        resultadoElement.textContent = JSON.stringify(error, null, 2);
+        document.querySelector('p').textContent = 'Ocorreu um erro na execução:';
+    });
+</script>
+
+</body>
+</html>
