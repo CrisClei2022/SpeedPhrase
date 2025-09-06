@@ -67,8 +67,8 @@ async function b2ListBuckets(apiUrl, authToken, accountId) {
 // Ponto de entrada da função Appwrite
 // ===================================
 export default async function(req, res) {
-  // Dados de entrada são lidos do corpo da requisição
-  const { file, fileName, action } = JSON.parse(req.variables['APPWRITE_FUNCTION_DATA'] || '{}');
+  // Ajuste aqui: leia os dados diretamente do corpo da requisição (req.body)
+  const { file, fileName, action } = JSON.parse(req.body);
   const keyId = B2_APPLICATION_KEY_ID;
   const applicationKey = B2_APPLICATION_KEY;
   const bucketId = BACKBLAZE_BUCKET_TRILHA || BACKBLAZE_BUCKET_AVULSAS;
