@@ -1,9 +1,8 @@
 // Ponto de entrada da função Appwrite
-export default async function(req) {
-  if (!req.variables) {
+  if (!variables || Object.keys(variables).length === 0) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ success: false, error: 'Variáveis de ambiente não definidas.' }),
+      body: JSON.stringify({ success: false, error: 'Variáveis de ambiente não definidas ou vazias.' }),
     };
   }
 
