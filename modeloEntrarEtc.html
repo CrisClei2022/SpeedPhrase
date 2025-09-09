@@ -421,17 +421,20 @@
 
     // Função para verificar o status de login
     async function checkAuthStatus() {
-        const header = document.querySelector('header');
+        // Esconder os botões de login/cadastro por padrão
+        btnLoginHeader.style.display = 'none';
+        btnSignupHeader.style.display = 'none';
+        logoutButton.style.display = 'none'; // Sempre começa escondido
 
         try {
             const user = await account.get();
             welcomeMessage.textContent = `Bem-vindo, ${user.name || user.email}!`;
-            logoutButton.style.display = 'block'; // Mostra o botão Sair
-            header.style.display = 'block'; // Mostra o header
+            logoutButton.style.display = 'block'; // Mostra o botão 'Sair'
             showSection('user');
         } catch (error) {
-            logoutButton.style.display = 'none'; // Esconde o botão Sair
-            header.style.display = 'block'; // Esconde o header
+            // Se a requisição falhar (usuário não logado), exibe os botões
+            btnLoginHeader.style.display = 'block';
+            btnSignupHeader.style.display = 'block';
             showSection('main');
         }
     }
