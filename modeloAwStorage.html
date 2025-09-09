@@ -398,6 +398,13 @@
     const linkToRecover = document.getElementById('link-to-recover');
     const linkToLoginFromRecover = document.getElementById('link-to-login-from-recover');
     const linkToSignupFromRecover = document.getElementById('link-to-signup-from-recover');
+    
+    // DATABASE
+    const databases = new Appwrite.Databases(client); 
+
+    // Configurações do database - substitua pelos seus IDs
+    const DATABASE_ID = '68bfc30500251b74b4fc';
+    const COLLECTION_ID = '[68bfc325002b09dd5ea5';
 
     // Função para mostrar uma seção específica
     function showSection(section) {
@@ -425,11 +432,14 @@
 
         try {
             const user = await account.get();
+            currentUser = user;
             welcomeMessage.textContent = `Bem-vindo, ${user.name || user.email}!`;
             logoutButton.style.display = 'block'; // Mostra o botão Sair
             header.style.display = 'block'; // Mostra o header
             showSection('user');
+        	checkSavedText(); // ADICIONAR ESTA LINHA
         } catch (error) {
+        	currentUser = null; // ADICIONAR ESTA LINHA
             logoutButton.style.display = 'none'; // Esconde o botão Sair
             header.style.display = 'block'; // Esconde o header
             showSection('main');
@@ -539,34 +549,88 @@
             controls.classList.remove('hidden');
         }
 
+        let currentUser = null;
+
         // Função para verificar se existe texto salvo
-        function checkSavedText() {
-            const savedText = localStorage.getItem('savedText');
-            if (savedText) {
-                // Exibir a mensagem perguntando se quer continuar ou recomeçar
-                showContinuePrompt();
+        async function checkSavedText() {
+            if (!currentUser) return;
+
+            try {
+                const response = await databases.listDocuments(DATABASE_ID, COLLECTION_ID, [
+                    Appwrite.Query.equal('user_id', currentUser.$id),
+                    Appwrite.Query.limit(1),
+                    Appwrite.Query.orderDesc('$createdAt')
+                ]);
+
+                if (response.documents.length > 0) {
+                    showContinuePrompt();
+                }
+            } catch (error) {
+                console.error('Erro ao verificar texto salvo:', error);
             }
         }
 
-        // Função para salvar o texto no localStorage
+        // Função para salvar o texto no Appwrite (com delay)
+        let saveTimeout;
         function saveText() {
-            const text = document.getElementById('editor').value;
-            localStorage.setItem('savedText', text);
+            if (!currentUser) return;
+
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(async () => {
+                const text = document.getElementById('editor').value;
+                if (text.trim() === '') return;
+
+                try {
+                    await databases.createDocument(DATABASE_ID, COLLECTION_ID, Appwrite.ID.unique(), {
+                        user_id: currentUser.$id,
+                        content: text,
+                        timestamp: new Date().toISOString()
+                    });
+                } catch (error) {
+                    console.error('Erro ao salvar texto:', error);
+                }
+            }, 2000); // Salva após 2 segundos de inatividade
         }
 
-        // Função para continuar a edição (não faz nada, apenas mantém o texto salvo)
-        function continueEditing() {
-            const savedText = localStorage.getItem('savedText');
-            document.getElementById('editor').value = savedText;
-            localStorage.setItem('savedText', savedText);  // Continua a edição do texto salvo
-            document.getElementById('controls').classList.add('hidden'); // Esconde a mensagem de controle
+        // Função para continuar a edição
+        async function continueEditing() {
+            if (!currentUser) return;
+
+            try {
+                const response = await databases.listDocuments(DATABASE_ID, COLLECTION_ID, [
+                    Appwrite.Query.equal('user_id', currentUser.$id),
+                    Appwrite.Query.limit(1),
+                    Appwrite.Query.orderDesc('$createdAt')
+                ]);
+
+                if (response.documents.length > 0) {
+                    document.getElementById('editor').value = response.documents[0].content;
+                }
+                document.getElementById('controls').classList.add('hidden');
+            } catch (error) {
+                console.error('Erro ao carregar texto:', error);
+            }
         }
 
-        // Função para reiniciar a edição (limpa o localStorage e o campo de texto)
-        function restartEditing() {
-            localStorage.removeItem('savedText');
-            document.getElementById('editor').value = '';  // Limpa o campo de texto
-            document.getElementById('controls').classList.add('hidden'); // Esconde a mensagem de controle
+        // Função para reiniciar a edição
+        async function restartEditing() {
+            document.getElementById('editor').value = '';
+            document.getElementById('controls').classList.add('hidden');
+
+            // Opcionalmente, deletar documentos anteriores
+            if (currentUser) {
+                try {
+                    const response = await databases.listDocuments(DATABASE_ID, COLLECTION_ID, [
+                        Appwrite.Query.equal('user_id', currentUser.$id)
+                    ]);
+
+                    for (const doc of response.documents) {
+                        await databases.deleteDocument(DATABASE_ID, COLLECTION_ID, doc.$id);
+                    }
+                } catch (error) {
+                    console.error('Erro ao limpar textos salvos:', error);
+                }
+            }
         }
 
         // Atualiza o localStorage enquanto o usuário digita
@@ -584,6 +648,5 @@
     // Chama a função para verificar o status de login ao carregar a página
     window.addEventListener('load', checkAuthStatus);
 </script>
-    </script>
 </body>
 </html>
