@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Appwrite Database</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.1/dist/iife/sdk.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .status.loading {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            border-left: 4px solid #1976d2;
+        }
+        
+        .status.success {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .status.error {
+            background-color: #ffeaa7;
+            color: #d63031;
+            border-left: 4px solid #e17055;
+        }
+        
+        .log-container {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            margin-bottom: 10px;
+            padding: 8px;
+            background: white;
+            border-radius: 3px;
+            border-left: 3px solid #ddd;
+        }
+        
+        .log-entry.info {
+            border-left-color: #2196f3;
+        }
+        
+        .log-entry.success {
+            border-left-color: #4caf50;
+        }
+        
+        .log-entry.error {
+            border-left-color: #f44336;
+        }
+        
+        .timestamp {
+            color: #666;
+            font-size: 0.8em;
+            margin-right: 10px;
+        }
+        
+        .buttons {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 10px;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #5a6fd8;
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste de Conexão Appwrite Database</h1>
+        
+        <div id="status" class="status loading">
+            Inicializando conexão com Appwrite...
+        </div>
+        
+        <div class="buttons">
+            <button id="testBtn" onclick="runTest()" disabled>Executar Teste</button>
+            <button onclick="clearLogs()">Limpar Logs</button>
+        </div>
+        
+        <div class="log-container">
+            <h3>📋 Logs de Execução:</h3>
+            <div id="logs"></div>
+        </div>
+    </div>
+
+    <script>
+        // Configuração do Appwrite
+        const client = new Appwrite.Client()
+            .setEndpoint('https://nyc.cloud.appwrite.io/v1')
+            .setProject('689f3d3a00095fde3112');
+
+        const account = new Appwrite.Account(client);
+        const databases = new Appwrite.Databases(client);
+
+        // IDs do seu banco de dados
+        const DATABASE_ID = '68bfc30500251b74b4fc';
+        const COLLECTION_ID = '68bfc325002b09dd5ea5';
+
+        let currentUser = null;
+
+        // Função para adicionar logs na página
+        function addLog(message, type = 'info') {
+            const logsContainer = document.getElementById('logs');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            logEntry.innerHTML = `
+                <span class="timestamp">[${timestamp}]</span>
+                <span>${message}</span>
+            `;
+            
+            logsContainer.appendChild(logEntry);
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+        }
+
+        // Função para atualizar o status
+        function updateStatus(message, type) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+
+        // Função para verificar autenticação
+        async function checkAuth() {
+            try {
+                addLog('Verificando autenticação...', 'info');
+                currentUser = await account.get();
+                addLog(`✅ Usuário autenticado: ${currentUser.name || currentUser.email}`, 'success');
+                updateStatus('✅ Usuário autenticado com sucesso!', 'success');
+                document.getElementById('testBtn').disabled = false;
+                return true;
+            } catch (error) {
+                addLog(`❌ Erro de autenticação: ${error.message}`, 'error');
+                
+                // Tentar fazer login automático para teste
+                addLog('Tentando criar sessão de teste...', 'info');
+                return await createTestSession();
+            }
+        }
+
+        // Função para criar uma sessão de teste
+        async function createTestSession() {
+            try {
+                // Substitua por credenciais de teste válidas
+                const email = 'teste@exemplo.com';
+                const password = '123456789';
+                
+                addLog(`Tentando login com: ${email}`, 'info');
+                await account.createEmailPasswordSession(email, password);
+                
+                currentUser = await account.get();
+                addLog(`✅ Login realizado com sucesso: ${currentUser.name || currentUser.email}`, 'success');
+                updateStatus('✅ Login de teste realizado com sucesso!', 'success');
+                document.getElementById('testBtn').disabled = false;
+                return true;
+            } catch (error) {
+                addLog(`❌ Erro no login de teste: ${error.message}`, 'error');
+                updateStatus('❌ Erro de autenticação. Faça login manualmente.', 'error');
+                return false;
+            }
+        }
+
+        // Função principal de teste
+        async function runTest() {
+            addLog('🚀 Iniciando teste de salvamento...', 'info');
+            
+            if (!currentUser) {
+                addLog('❌ Usuário não autenticado', 'error');
+                return;
+            }
+
+            try {
+                // Dados de teste
+                const testData = {
+                    user_id: currentUser.$id,
+                    content: `Texto de teste salvo em ${new Date().toLocaleString()}`,
+                    timestamp: new Date().toISOString(),
+                };
+
+                addLog(`📝 Tentando salvar dados para usuário: ${currentUser.$id}`, 'info');
+                addLog(`📄 Dados: ${JSON.stringify(testData, null, 2)}`, 'info');
+
+                // Tentar criar documento
+                const response = await databases.createDocument(
+                    DATABASE_ID, 
+                    COLLECTION_ID, 
+                    Appwrite.ID.unique(), 
+                    testData
+                );
+
+                addLog(`✅ Documento criado com sucesso!`, 'success');
+                addLog(`📋 ID do documento: ${response.$id}`, 'success');
+                addLog(`📋 Resposta completa: ${JSON.stringify(response, null, 2)}`, 'info');
+                
+                updateStatus('✅ Teste concluído com sucesso!', 'success');
+
+                // Tentar listar documentos
+                await listDocuments();
+
+            } catch (error) {
+                addLog(`❌ ERRO ao salvar: ${error.message}`, 'error');
+                addLog(`❌ Código do erro: ${error.code || 'N/A'}`, 'error');
+                addLog(`❌ Tipo do erro: ${error.type || 'N/A'}`, 'error');
+                
+                if (error.message.includes('not authorized')) {
+                    addLog('💡 Solução: Configure as permissões da coleção no Appwrite Console', 'error');
+                    addLog('💡 Adicione a role "users" com permissões: read, create, update, delete', 'error');
+                }
+                
+                updateStatus('❌ Erro no teste. Verifique os logs.', 'error');
+            }
+        }
+
+        // Função para listar documentos
+        async function listDocuments() {
+            try {
+                addLog('📋 Tentando listar documentos do usuário...', 'info');
+                
+                const response = await databases.listDocuments(DATABASE_ID, COLLECTION_ID, [
+                    Appwrite.Query.equal('user_id', currentUser.$id),
+                    Appwrite.Query.limit(5),
+                    Appwrite.Query.orderDesc('$createdAt')
+                ]);
+
+                addLog(`📊 Encontrados ${response.documents.length} documento(s)`, 'success');
+                
+                response.documents.forEach((doc, index) => {
+                    addLog(`📄 Documento ${index + 1}: ${doc.content}`, 'info');
+                });
+
+            } catch (error) {
+                addLog(`❌ Erro ao listar documentos: ${error.message}`, 'error');
+            }
+        }
+
+        // Função para limpar logs
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+            addLog('🧹 Logs limpos', 'info');
+        }
+
+        // Inicializar ao carregar a página
+        window.addEventListener('load', async () => {
+            addLog('🔄 Página carregada, iniciando verificações...', 'info');
+            addLog(`🔗 Endpoint: https://nyc.cloud.appwrite.io/v1`, 'info');
+            addLog(`🏗️ Project ID: 689f3d3a00095fde3112`, 'info');
+            addLog(`💾 Database ID: ${DATABASE_ID}`, 'info');
+            addLog(`📁 Collection ID: ${COLLECTION_ID}`, 'info');
+            
+            await checkAuth();
+        });
+    </script>
+</body>
+</html>
