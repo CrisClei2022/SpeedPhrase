@@ -25,13 +25,17 @@
             background: rgba(10, 10, 10, 0.8);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             padding: 15px 20px;
-		    align-items: center;
-            position: sticky;
+            align-items: center;
+            position: fixed;
             top: 0;
-            z-index: 1000;
+            left: 50%;
+            transform: translateX(-50%);
+    		z-index: 3000; /* Era 1000, agora é 3000 */
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            width: fit-content;
+            border-radius: 0 0 15px 15px;
         }
-
+        
         .header-content {
             display: flex;
             justify-content: space-between;
@@ -289,16 +293,11 @@
 </head>
 <body>
     <header>
-        <div class="header-content">
-            <div class="header-title">🎮 Explorar Videoaulas</div>
-            <div class="nav-buttons">
-                <button id="btnBuscar">🔍 Buscar</button>
-                <button id="btnAvulsas" class="active">📹 Avulsas</button>
-                <button id="btnTrilha">🛤️ Trilha</button>
-            </div>
+        <div class="header-content"  id="header-content">
             <div class="user-buttons">
                 <div id="btnLogin" class="btnLogin">Entrar</div>
                 <div id="btnSignup" class="btnSignup">Cadastrar</div>
+                <button id="logout-button" class="">Sair</button>
             </div>
         </div>
     </header>
@@ -350,8 +349,15 @@
     
     <section id="user-screen" class="login-screen-container hidden">
         <div class="login-card user-card">
-            <h2 id="welcome-message"></h2>
-            <button id="logout-button" class="login-button">Sair</button>
+            <h2 id="welcome-message"></h2>            
+            <h1>Editor de Texto</h1>
+            <div>
+                <textarea id="editor" placeholder="Digite seu texto aqui..."></textarea>
+            </div>
+            <div id="controls" class="hidden">
+                <button id="btn-continue">Continuar Edição</button>
+                <button id="btn-restart">Recomeçar</button>
+            </div>
         </div>
     </section>
 
@@ -415,11 +421,17 @@
 
     // Função para verificar o status de login
     async function checkAuthStatus() {
+        const header = document.querySelector('header');
+
         try {
             const user = await account.get();
             welcomeMessage.textContent = `Bem-vindo, ${user.name || user.email}!`;
+            logoutButton.style.display = 'block'; // Mostra o botão Sair
+            header.style.display = 'block'; // Mostra o header
             showSection('user');
         } catch (error) {
+            logoutButton.style.display = 'none'; // Esconde o botão Sair
+            header.style.display = 'block'; // Esconde o header
             showSection('main');
         }
     }
