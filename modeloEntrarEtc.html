@@ -295,6 +295,7 @@
     <header>
         <div class="header-content"  id="header-content">
             <div class="user-buttons">
+                <div id="user-email-display" style="font-size: 0.9em; color: rgba(255, 255, 255, 0.7);"></div>
                 <div id="btnLogin" class="btnLogin">Entrar</div>
                 <div id="btnSignup" class="btnSignup">Cadastrar</div>
                 <button id="logout-button" class="">Sair</button>
@@ -387,6 +388,7 @@
     const signupForm = document.getElementById('signup-form');
     const recoverForm = document.getElementById('recover-form');
     const logoutButton = document.getElementById('logout-button');
+	const userEmailDisplay = document.getElementById('user-email-display');
 
     const welcomeMessage = document.getElementById('welcome-message');
     const loginMessage = document.getElementById('login-message');
@@ -421,18 +423,22 @@
 
     // Função para verificar o status de login
     async function checkAuthStatus() {
-        // Esconder os botões de login/cadastro por padrão
+        // Esconde os elementos de usuário por padrão
         btnLoginHeader.style.display = 'none';
         btnSignupHeader.style.display = 'none';
-        logoutButton.style.display = 'none'; // Sempre começa escondido
+        logoutButton.style.display = 'none';
+        userEmailDisplay.style.display = 'none'; // <--- Oculta o email por padrão
 
         try {
             const user = await account.get();
+            // Se logado: mostra o nome/email e o botão de sair
             welcomeMessage.textContent = `Bem-vindo, ${user.name || user.email}!`;
-            logoutButton.style.display = 'block'; // Mostra o botão 'Sair'
+            userEmailDisplay.textContent = user.email; // <--- Define o email do usuário
+            logoutButton.style.display = 'block';
+            userEmailDisplay.style.display = 'block'; // <--- Mostra o email
             showSection('user');
         } catch (error) {
-            // Se a requisição falhar (usuário não logado), exibe os botões
+            // Se não logado: mostra os botões de entrar e cadastrar
             btnLoginHeader.style.display = 'block';
             btnSignupHeader.style.display = 'block';
             showSection('main');
