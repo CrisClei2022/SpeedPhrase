@@ -285,10 +285,6 @@
             text-align: center;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        #welcome-message {
-            font-size: 1.5em;
-            margin-bottom: 20px;
-        }
     </style>
 </head>
 <body>
@@ -400,7 +396,27 @@
     const linkToRecover = document.getElementById('link-to-recover');
     const linkToLoginFromRecover = document.getElementById('link-to-login-from-recover');
     const linkToSignupFromRecover = document.getElementById('link-to-signup-from-recover');
+	
+    /* Função para renderizar a interface de
+    ** acordo com o estado de autenticação */
+    function renderUIForAuthState(isLoggedIn, userEmail = '') {
+        // Esconde tudo primeiro para evitar conflitos
+        btnLoginHeader.style.display = 'none';
+        btnSignupHeader.style.display = 'none';
+        logoutButton.style.display = 'none';
+        userEmailDisplay.style.display = 'none';
 
+        if (isLoggedIn) {
+            // Se o usuário está logado, mostra o e-mail e o botão de sair
+            userEmailDisplay.textContent = userEmail;
+            userEmailDisplay.style.display = 'block';
+            logoutButton.style.display = 'block';
+        } else {
+            // Se o usuário está deslogado, mostra os botões de entrar e cadastrar
+            btnLoginHeader.style.display = 'block';
+            btnSignupHeader.style.display = 'block';
+        }
+    }
     // Função para mostrar uma seção específica
     function showSection(section) {
         // Esconde todas as seções primeiro
@@ -423,24 +439,16 @@
 
     // Função para verificar o status de login
     async function checkAuthStatus() {
-        // Esconde os elementos de usuário por padrão
-        btnLoginHeader.style.display = 'none';
-        btnSignupHeader.style.display = 'none';
-        logoutButton.style.display = 'none';
-        userEmailDisplay.style.display = 'none'; // <--- Oculta o email por padrão
-
         try {
             const user = await account.get();
-            // Se logado: mostra o nome/email e o botão de sair
-            welcomeMessage.textContent = `Bem-vindo, ${user.name || user.email}!`;
-            userEmailDisplay.textContent = user.email; // <--- Define o email do usuário
-            logoutButton.style.display = 'block';
-            userEmailDisplay.style.display = 'block'; // <--- Mostra o email
+            // Chama a função de renderização para o estado "logado"
+            renderUIForAuthState(true, user.email);
+            // Mostra a tela de usuário logado
             showSection('user');
         } catch (error) {
-            // Se não logado: mostra os botões de entrar e cadastrar
-            btnLoginHeader.style.display = 'block';
-            btnSignupHeader.style.display = 'block';
+            // Chama a função de renderização para o estado "deslogado"
+            renderUIForAuthState(false);
+            // Pode ser uma tela inicial ou nada
             showSection('main');
         }
     }
@@ -492,9 +500,10 @@
         const password = document.getElementById('password-login').value;
         loginMessage.textContent = '';
         try {
-            await account.createEmailPasswordSession(email, password);
-            checkAuthStatus();
-        } catch (error) {
+            await account.createEmailPasswordSession(email, password);
+            // Chama a função que reflete o novo estado na interface
+            checkAuthStatus();
+        } catch (error) {
             loginMessage.textContent = 'Erro no login: ' + error.message;
         }
     });
@@ -531,10 +540,11 @@
 
     // Evento de clique do botão de logout
     logoutButton.addEventListener('click', async () => {
-        try {
-            await account.deleteSession('current');
-            checkAuthStatus(); // Redireciona para a tela inicial
-        } catch (error) {
+        try {
+            await account.deleteSession('current');
+            // Chama a função que reflete o novo estado na interface
+            checkAuthStatus();
+        } catch (error) {
             alert('Falha ao sair: ' + error.message);
         }
     });
