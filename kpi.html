@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Produtividade</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<style>
+:root {
+    --bg-color: #0d1117;
+    --card-bg: #161b22;
+    --text-color: #c9d1d9;
+    --accent-color: #3b82f6;
+    --border-color: #30363d;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.container {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 10px 20px var(--shadow-color);
+    width: 90%;
+    max-width: 450px;
+    text-align: center;
+}
+
+h1 {
+    font-size: 1.8rem;
+    color: var(--accent-color);
+    margin-bottom: 30px;
+}
+
+.input-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-color);
+}
+
+input[type="time"],
+input[type="number"] {
+    width: 75%;
+    padding: 12px;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-color);
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+input[type="time"]:focus,
+input[type="number"]:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+button {
+    width: 100%;
+    padding: 14px;
+    background-color: var(--accent-color);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+}
+
+button:hover {
+    background-color: #2b6cb0;
+}
+
+.results-container {
+    margin-top: 30px;
+    border-top: 1px solid var(--border-color);
+    padding-top: 20px;
+    text-align: left;
+}
+
+.results-container p {
+    font-size: 1.1rem;
+    margin: 10px 0;
+}
+
+.results-container span {
+    font-weight: bold;
+    color: var(--accent-color);
+}
+</style>
+<body>
+    <main class="container">
+        <h1>Calculadora de Produtividade</h1>
+
+        <div class="input-group">
+            <label for="startTime">Hora de Início:</label>
+            <input type="time" id="startTime" value="09:00">
+        </div>
+
+        <div class="input-group">
+            <label for="endTime">Hora de Fim:</label>
+            <input type="time" id="endTime" value="18:00">
+        </div>
+
+        <div class="input-group">
+            <label for="lostTime">Tempo Perdido (minutos):</label>
+            <input type="number" id="lostTime" value="60" min="0">
+        </div>
+
+        <button id="calculateBtn">Calcular</button>
+
+        <div id="results" class="results-container">
+            <p>Horas Entregues: <span id="deliveredHours">-</span></p>
+            <p>Tempo Perdido: <span id="lostMinutes">-</span></p>
+            <p>Produtividade: <span id="productivity">-</span></p>
+        </div>
+    </main>
+
+    <script>
+// Função para buscar os elementos DOM
+function getElements() {
+    return {
+        startTimeInput: document.getElementById('startTime'),
+        endTimeInput: document.getElementById('endTime'),
+        lostTimeInput: document.getElementById('lostTime'),
+        calculateBtn: document.getElementById('calculateBtn'),
+        deliveredHoursSpan: document.getElementById('deliveredHours'),
+        lostMinutesSpan: document.getElementById('lostMinutes'),
+        productivitySpan: document.getElementById('productivity')
+    };
+}
+
+// Função para calcular a produtividade
+function calculateProductivity() {
+    const { 
+        startTimeInput, 
+        endTimeInput, 
+        lostTimeInput,
+        deliveredHoursSpan,
+        lostMinutesSpan,
+        productivitySpan
+    } = getElements();
+
+    const startTimeStr = startTimeInput.value;
+    const endTimeStr = endTimeInput.value;
+    const lostMinutes = parseFloat(lostTimeInput.value) || 0;
+
+    if (!startTimeStr || !endTimeStr) {
+        alert("Por favor, preencha a hora de início e fim.");
+        return;
+    }
+
+    const start = new Date(`2000-01-01T${startTimeStr}:00`);
+    const end = new Date(`2000-01-01T${endTimeStr}:00`);
+
+    // Calcula a diferença em milissegundos
+    const totalMilliseconds = end - start;
+    if (totalMilliseconds < 0) {
+        alert("A hora de fim deve ser posterior à hora de início.");
+        return;
+    }
+
+    // Converte para minutos e horas
+    const totalMinutes = totalMilliseconds / (1000 * 60);
+    const deliveredMinutes = totalMinutes - lostMinutes;
+    
+    // Calcula a porcentagem de produtividade
+    const productivity = (deliveredMinutes / totalMinutes) * 100;
+    
+    // Atualiza os elementos na página
+    deliveredHoursSpan.textContent = (deliveredMinutes / 60).toFixed(2) + 'h';
+    lostMinutesSpan.textContent = lostMinutes + 'min';
+    productivitySpan.textContent = `${productivity.toFixed(2)}%`;
+}
+
+// Função de inicialização
+function init() {
+    const { calculateBtn } = getElements();
+    calculateBtn.addEventListener('click', calculateProductivity);
+}
+
+// Inicia a aplicação quando o DOM estiver pronto
+document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
