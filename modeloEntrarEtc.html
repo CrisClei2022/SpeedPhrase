@@ -368,6 +368,7 @@
     const account = new Appwrite.Account(client);
 
     // Seletores de elementos HTML (TODOS JUNTOS AQUI)
+    const headerContent = document.getElementById('header-content');
     const loginScreen = document.getElementById('login-screen');
     const signupScreen = document.getElementById('signup-screen');
     const recoverScreen = document.getElementById('recover-screen');
@@ -384,7 +385,7 @@
     const signupForm = document.getElementById('signup-form');
     const recoverForm = document.getElementById('recover-form');
     const logoutButton = document.getElementById('logout-button');
-	const userEmailDisplay = document.getElementById('user-email-display');
+	  const userEmailDisplay = document.getElementById('user-email-display');
 
     const welcomeMessage = document.getElementById('welcome-message');
     const loginMessage = document.getElementById('login-message');
@@ -417,6 +418,7 @@
             btnSignupHeader.style.display = 'block';
         }
     }
+
     // Função para mostrar uma seção específica
     function showSection(section) {
         // Esconde todas as seções primeiro
@@ -425,16 +427,36 @@
         recoverScreen.classList.add('hidden');
         userScreen.classList.add('hidden');
     
-        // Apenas mostra a seção correta
+        // Controla a visibilidade do header
+        const header = document.querySelector('header');
+        
         if (section === 'login') {
             loginScreen.classList.remove('hidden');
+            header.style.display = 'none'; // Oculta o header
         } else if (section === 'signup') {
             signupScreen.classList.remove('hidden');
+            header.style.display = 'none'; // Oculta o header
         } else if (section === 'recover') {
             recoverScreen.classList.remove('hidden');
+            header.style.display = 'none'; // Oculta o header
         } else if (section === 'user') {
             userScreen.classList.remove('hidden');
+            header.style.display = 'block'; // Mostra o header na tela de usuário
+        } else {
+            // Se for a tela principal (sem modals), o header fica visível
+            header.style.display = 'block'; // Mostra o header
         }
+    }
+
+    // Função para fechar o menu auth e mostrar o header
+    function closeModal() {
+        loginScreen.classList.add('hidden');
+        signupScreen.classList.add('hidden');
+        recoverScreen.classList.add('hidden');
+        
+        // Mostra o header novamente
+        const header = document.querySelector('header');
+        header.style.display = 'block';
     }
 
     // Função para verificar o status de login
@@ -462,13 +484,15 @@
     });
 
     btnCloseLogin.addEventListener('click', () => {
-        loginScreen.classList.add('hidden');
+    closeModal();
     });
+    
     btnCloseSignup.addEventListener('click', () => {
-        signupScreen.classList.add('hidden');
+        closeModal();
     });
+    
     btnCloseRecover.addEventListener('click', () => {
-        recoverScreen.classList.add('hidden');
+        closeModal();
     });
 
     // Eventos para alternar entre as telas de login, cadastro e recuperação
@@ -552,6 +576,5 @@
     // Chama a função para verificar o status de login ao carregar a página
 	document.addEventListener('DOMContentLoaded', checkAuthStatus);
 </script>
-    </script>
 </body>
 </html>
