@@ -346,7 +346,7 @@
     
         <section id="user-screen" class="data-table-container hidden">
         <h1>Seus Dados</h1>
-        <div id="status">Carregando dados...</div>
+        <div id="status"></div>
         <table id="data-table">
             <thead>
                 <tr>
@@ -464,31 +464,45 @@
             userEmailDisplay.textContent = userEmail;
             userEmailDisplay.style.display = 'block';
             logoutButton.style.display = 'block';
+            userScreen.style.display = 'block';
         } else {
             // Se o usuário está deslogado, mostra os botões de entrar e cadastrar
             btnLoginHeader.style.display = 'block';
             btnSignupHeader.style.display = 'block';
+            userScreen.style.display = 'none';
+
         }
     }
-    // Função para mostrar uma seção específica
-    function showSection(section) {
-        // Esconde todas as seções primeiro
-        loginScreen.classList.add('hidden');
-        signupScreen.classList.add('hidden');
-        recoverScreen.classList.add('hidden');
-        userScreen.classList.add('hidden');
-    
-        // Apenas mostra a seção correta
-        if (section === 'login') {
-            loginScreen.classList.remove('hidden');
-        } else if (section === 'signup') {
-            signupScreen.classList.remove('hidden');
-        } else if (section === 'recover') {
-            recoverScreen.classList.remove('hidden');
-        } else if (section === 'user') {
-            userScreen.classList.remove('hidden');
-        }
-    }
+    
+    // Função para mostrar uma seção específica
+    function showSection(section) {
+        // Esconde todas as seções primeiro
+        loginScreen.classList.add('hidden');
+        signupScreen.classList.add('hidden');
+        recoverScreen.classList.add('hidden');
+        userScreen.classList.add('hidden');
+
+        // Controla a visibilidade do header
+        const header = document.querySelector('header');
+
+        if (section === 'login') {
+            loginScreen.classList.remove('hidden');
+            header.style.display = 'none'; // Oculta o header
+        } else if (section === 'signup') {
+            signupScreen.classList.remove('hidden');
+            header.style.display = 'none'; // Oculta o header
+        } else if (section === 'recover') {
+            recoverScreen.classList.remove('hidden');
+            header.style.display = 'none'; // Oculta o header
+        } else if (section === 'user') {
+            userScreen.classList.add('hidden');
+            header.style.display = 'block'; // Mostra o header na tela de usuário
+        } else {
+        	userScreen.classList.add('hidden');
+            // Se for a tela principal (sem modals), o header fica visível
+            header.style.display = 'block'; // Mostra o header
+        }
+    }
 
     // Função para verificar o status de login
     async function checkAuthStatus() {
@@ -594,15 +608,15 @@
     });
 
     // Evento de clique do botão de logout
-    logoutButton.addEventListener('click', async () => {
+    logoutButton.addEventListener('click', async () => {
         try {
             await account.deleteSession('current');
             // Chama a função que reflete o novo estado na interface
             checkAuthStatus();
         } catch (error) {
-            alert('Falha ao sair: ' + error.message);
-        }
-    });
+            alert('Falha ao sair: ' + error.message);
+        }
+    });
 
     // Chama a função para verificar o status de login ao carregar a página
 	document.addEventListener('DOMContentLoaded', checkAuthStatus);
