@@ -1,33 +1,955 @@
-<script src="https://cdn.jsdelivr.net/npm/appwrite@10.0.0/dist/browser/appwrite.min.js"></script>
-<script>
-    const { Client, Storage, ID } = Appwrite;
+<!-- 
+// --- Funções para adicionar dados de teste ---
 
-    const client = new Client();
+// Função para gerar dados de teste
+async function addTestData() {
+    const user = await account.get(); // Pega o usuário logado
+    const userId = user.$id;
+    const userEmail = user.email;
 
-    client
-        .setEndpoint('https://cloud.appwrite.io/v1') // Seu endpoint do Appwrite
-        .setProject('SEU_PROJECT_ID'); // O ID do seu projeto
+    // Dados de teste (você pode customizar estes valores)
+    const testData = {
+        user_id: userId, // Associa ao user logado
+        lessonName: "Teste Aleatório " + Math.floor(Math.random() * 100),
+        fraseIndex: Math.floor(Math.random() * 50),
+        acertos1: Math.floor(Math.random() * 10),
+        acertos2: Math.floor(Math.random() * 10),
+        timestamp: new Date().getTime()
+    };
 
-    const storage = new Storage(client);
+    try {
+        const response = await databases.createDocument(
+            DATABASE_ID,
+            COLLECTION_ID,
+            Appwrite.ID.unique(), // Cria um ID único para o novo documento
+            testData
+        );
+        console.log("Dados de teste criados:", response);
+        alert("Dados de teste adicionados com sucesso!");
 
-    // Exemplo: Obtendo a URL de visualização de um arquivo
-    async function getFileUrl() {
+        // Atualiza a tabela para mostrar o novo dado
+        fetchAndDisplayData(userId);
+
+    } catch (error) {
+        console.error("Erro ao adicionar dados de teste:", error);
+        alert(`Erro ao adicionar dados de teste: ${error.message}`);
+    }
+}
+
+// Event listener para o botão de adicionar dados de teste
+const addTestDataBtn = document.getElementById('add-test-data-btn');
+if (addTestDataBtn) {
+    addTestDataBtn.addEventListener('click', async () => {
         try {
-            const result = storage.getFileView(
-                'SEU_BUCKET_ID', // ID do seu bucket
-                'SEU_FILE_ID' // ID do seu arquivo
+            await account.get(); // Verifica se o usuário está logado
+            addTestData();
+        } catch (error) {
+            alert("Você precisa estar logado para adicionar dados de teste.");
+        }
+    });
+}
+
+// --- Ajuste na função fetchAndDisplayData ---
+// Para que a função fetchAndDisplayData funcione corretamente, certifique-se de que
+// a propriedade 'user_id' no seu Appwrite Collection esteja indexada.
+// Se não estiver, você pode precisar remover o filtro na query ou adicioná-lo.
+
+// Seu código atual para fetchAndDisplayData:
+async function fetchAndDisplayData(userId) {
+    const statusDiv = document.getElementById('status');
+    const tableBody = document.querySelector('#data-table tbody');
+    tableBody.innerHTML = ''; // Limpa a tabela antes de carregar novos dados
+
+    try {
+        // Usa a query para filtrar os documentos pelo user_id
+        const response = await databases.listDocuments(
+            DATABASE_ID,
+            COLLECTION_ID,
+            // Certifique-se de que 'user_id' é um campo que existe na sua coleção
+            // e que está indexado no Appwrite para este tipo de query.
+            [Appwrite.Query.equal('user_id', userId)]
+        );
+
+        if (response.documents.length === 0) {
+            statusDiv.textContent = 'Nenhum dado encontrado para este usuário.';
+            return;
+        }
+
+        statusDiv.textContent = `Total de documentos: ${response.total}`;
+
+        response.documents.forEach(doc => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${doc.$id}</td>
+                <td>${doc.lessonName}</td>
+                <td>${doc.fraseIndex + 1}</td>
+                <td>${doc.acertos1}</td>
+                <td>${doc.acertos2}</td>
+                <td>${new Date(doc.timestamp).toLocaleString()}</td>
+                <td><button class="delete-btn" data-doc-id="${doc.$id}">Excluir</button></td>
+                <td><button class="edit-btn" data-doc-id="${doc.$id}" data-lessonName="${doc.lessonName}" data-fraseIndex="${doc.fraseIndex + 1}" data-acertos1="${doc.acertos1}" data-acertos2="${doc.acertos2}" data-timestamp="${doc.timestamp}">Editar</button></td>
+            `;
+            tableBody.appendChild(row);
+        });
+
+    } catch (error) {
+        console.error("Erro ao buscar dados:", error);
+        statusDiv.textContent = `Erro ao carregar dados: ${error.message}`;
+    }
+}
+
+// --- Ajuste nos seus botões de editar e deletar ---
+// Certifique-se que estes listeners estão configurados corretamente.
+// Se você os adicionou após a criação da tabela, eles funcionarão.
+document.getElementById('data-table').addEventListener('click', async (e) => {
+    const user = await account.get(); // Garante que o usuário está logado para ações
+
+    if (e.target.classList.contains('delete-btn')) {
+        const docId = e.target.getAttribute('data-doc-id');
+        if (confirm('Tem certeza que deseja excluir este registro?')) {
+            try {
+                await databases.deleteDocument(DATABASE_ID, COLLECTION_ID, docId);
+                alert('Registro excluído com sucesso!');
+                fetchAndDisplayData(user.$id); // Recarrega a tabela
+            } catch (error) {
+                alert(`Erro ao excluir: ${error.message}`);
+            }
+        }
+    } else if (e.target.classList.contains('edit-btn')) {
+        const docId = e.target.getAttribute('data-doc-id');
+        const lessonName = e.target.getAttribute('data-lessonName');
+        const fraseIndex = e.target.getAttribute('data-fraseIndex');
+        const acertos1 = e.target.getAttribute('data-acertos1');
+        const acertos2 = e.target.getAttribute('data-acertos2');
+        const timestamp = e.target.getAttribute('data-timestamp');
+
+        // Preenche o formulário de edição (ajuste os IDs dos inputs no seu HTML)
+        document.getElementById('edit-doc-id').value = docId;
+        document.getElementById('edit-lessonName').value = lessonName;
+        document.getElementById('edit-fraseIndex').value = fraseIndex;
+        document.getElementById('edit-acertos1').value = acertos1;
+        document.getElementById('edit-acertos2').value = acertos2;
+        // Para o timestamp, você pode querer um input 'datetime-local' se quiser editá-lo
+        // ou apenas exibi-lo e deixar o salvamento automático como está.
+        // document.getElementById('edit-timestamp').value = new Date(parseInt(timestamp)).toISOString().slice(0, 16);
+
+        editScreen.classList.remove('hidden');
+        editMessage.textContent = '';
+    }
+});
+
+// --- Importante para o funcionamento do 'addTestData' ---
+// Certifique-se que seu formulário de edição (edit-form) no HTML
+// inclui campos correspondentes para todos os dados que você quer editar,
+// e que esses campos tenham IDs como 'edit-lessonName', 'edit-fraseIndex', etc.
+// Se você não pretende editar o timestamp, pode omitir essa parte.
+
+// Exemplo de como ficaria o edit-form no HTML (se precisar ajustar):
+/*
+<form id="edit-form">
+    <input type="hidden" id="edit-doc-id">
+    <input type="text" id="edit-lessonName" placeholder="Nome da Lição" required>
+    <input type="number" id="edit-fraseIndex" placeholder="Número da Frase" required>
+    <input type="number" id="edit-acertos1" placeholder="Acertos Jogador 1" required>
+    <input type="number" id="edit-acertos2" placeholder="Acertos Jogador 2" required>
+    <p id="edit-message"></p>
+    <button type="submit" class="login-button">Salvar Alterações</button>
+</form>
+*/
+
+// --- E mais um ajuste na função updateDocument ---
+// Para que a edição funcione corretamente com os novos campos,
+// atualize a função `updateDocument` para enviar todos os campos que você pretende editar.
+async function updateDocument(docId, updatedData) { // Recebe um objeto com os dados atualizados
+    try {
+        const response = await databases.updateDocument(
+            DATABASE_ID,
+            COLLECTION_ID,
+            docId,
+            updatedData // Passa o objeto com os dados a serem atualizados
+        );
+        editMessage.textContent = 'Dados atualizados com sucesso!';
+        editMessage.style.color = '#4ecdc4';
+        console.log('Documento atualizado:', response);
+
+        // Atualiza a tabela com os novos dados
+        const user = await account.get();
+        fetchAndDisplayData(user.$id);
+
+        // Esconde o modal após a atualização
+        setTimeout(() => {
+            editScreen.classList.add('hidden');
+        }, 1500);
+
+    } catch (error) {
+        console.error("Erro ao atualizar o documento:", error);
+        editMessage.textContent = `Erro ao salvar: ${error.message}`;
+        editMessage.style.color = '#ff6b6b';
+    }
+}
+
+// E ajuste no event listener do edit-btn para passar os dados corretos para a função updateDocument:
+document.getElementById('data-table').addEventListener('click', async (e) => {
+    const user = await account.get();
+
+    if (e.target.classList.contains('delete-btn')) {
+        // ... (código de exclusão permanece o mesmo)
+    } else if (e.target.classList.contains('edit-btn')) {
+        const docId = e.target.getAttribute('data-doc-id');
+        const lessonName = e.target.getAttribute('data-lessonName');
+        const fraseIndex = e.target.getAttribute('data-fraseIndex');
+        const acertos1 = e.target.getAttribute('data-acertos1');
+        const acertos2 = e.target.getAttribute('data-acertos2');
+        const timestamp = e.target.getAttribute('data-timestamp'); // Use se precisar editar o timestamp
+
+        document.getElementById('edit-doc-id').value = docId;
+        document.getElementById('edit-lessonName').value = lessonName;
+        document.getElementById('edit-fraseIndex').value = fraseIndex;
+        document.getElementById('edit-acertos1').value = acertos1;
+        document.getElementById('edit-acertos2').value = acertos2;
+
+        editScreen.classList.remove('hidden');
+        editMessage.textContent = '';
+    }
+});
+
+// E por fim, no submit do editForm:
+editForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const docId = document.getElementById('edit-doc-id').value;
+    const lessonName = document.getElementById('edit-lessonName').value;
+    const fraseIndex = parseInt(document.getElementById('edit-fraseIndex').value); // Converte para número
+    const acertos1 = parseInt(document.getElementById('edit-acertos1').value); // Converte para número
+    const acertos2 = parseInt(document.getElementById('edit-acertos2').value); // Converte para número
+    // const timestamp = document.getElementById('edit-timestamp').value ? new Date(document.getElementById('edit-timestamp').value).getTime() : new Date().getTime(); // Se for editar timestamp
+
+    const updatedData = {
+        lessonName: lessonName,
+        fraseIndex: fraseIndex - 1, // Ajusta de volta para o índice 0-based
+        acertos1: acertos1,
+        acertos2: acertos2,
+        // timestamp: timestamp // Se estiver editando o timestamp
+    };
+
+    // Chama a função para atualizar no Appwrite
+    await updateDocument(docId, updatedData);
+});
+-->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login e Cadastro</title>
+    <style>
+        /* CSS remains the same as your original code */
+        /* --- General Body Styles --- */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0a0a0a;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        header {
+            backdrop-filter: blur(20px);
+            background: rgba(10, 10, 10, 0.8);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 20px;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-0%);
+    		z-index: 3000; /* Era 1000, agora é 3000 */
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            width: fit-content;
+            border-radius: 0 0 15px 15px;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: right;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header-title {
+            font-weight: 700;
+            font-size: 1.4em;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: titleGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            from { filter: drop-shadow(0 0 5px rgba(255, 107, 107, 0.3)); }
+            to { filter: drop-shadow(0 0 20px rgba(69, 183, 209, 0.5)); }
+        }
+
+        .nav-buttons {
+            display: flex;
+		    align-items: center;  
+            gap: 10px;
+        }
+
+        .nav-buttons button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-buttons button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .nav-buttons button:hover::before {
+            left: 100%;
+        }
+
+        .nav-buttons button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(69, 183, 209, 0.3);
+        }
+
+        .nav-buttons button.active {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border-color: transparent;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+        
+        /* Estilos para div de Entrar e Cadastrar */
+        .user-buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+        }
+
+        .user-buttons div {
+            font-size: 0.9em;
+            font-weight: 500;
+            color: #ffffff;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .user-buttons div:hover {
+            color: #4ecdc4;
+        }
+
+        .user-buttons .btnSignup {
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 600;
+        }
+
+        .user-buttons .btnSignup:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.2);
+        }
+
+        /* --- Login Screen Container Styles --- */
+        .login-screen-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            opacity: 1;
+            transition: opacity 0.5s ease;
+            z-index: 2000;
+        }
+
+        .login-screen-container.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* --- Login Card Styles --- */
+        .login-card {
+            background: #1a1a2e;
+            border-radius: 15px;
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: scale(1);
+            animation: loginCardAppear 0.3s ease-out;
+        }
+
+        @keyframes loginCardAppear {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .close-button:hover {
+            transform: rotate(90deg);
+        }
+
+        .login-card h2 {
+            font-size: 2em;
+            margin-bottom: 25px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .login-card input {
+            width: 90%;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .login-card input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .login-card input:focus {
+            outline: none;
+            border-color: #4ecdc4;
+            box-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
+        }
+
+        .login-button {
+            width: 50%;
+            padding: 15px;
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            border: none;
+            border-radius: 8px;
+            color: #0a0a0a;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(69, 183, 209, 0.4);
+        }
+
+        .login-card p {
+            font-size: 0.9em;
+            margin-top: 15px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .login-card a {
+            color: #4ecdc4;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .login-card a:hover {
+            color: #ff6b6b;
+            text-decoration: underline;
+        }
+        
+        /* New CSS for user section */
+        .user-section {
+            display: none;
+            text-align: center;
+        }
+        .user-card {
+            background: #1a1a2e;
+            border-radius: 15px;
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content"  id="header-content">
+            <div class="user-buttons">
+                <div id="user-email-display" style="font-size: 0.9em; color: rgba(255, 255, 255, 0.7);"></div>
+                <div id="btnLogin" class="btnLogin">Entrar</div>
+                <div id="btnSignup" class="btnSignup">Cadastrar</div>
+                <button id="logout-button" class="">Sair</button>
+            </div>
+        </div>
+    </header>
+
+    <section id="login-screen" class="login-screen-container hidden">
+        <div class="login-card">
+            <button class="close-button" id="btnCloseLogin">✕</button>
+            <h2>Entrar</h2>
+            <form id="login-form">
+                <input type="email" id="email-login" placeholder="E-mail" required>
+                <input type="password" id="password-login" placeholder="Senha" required>
+                <p id="login-message"></p>
+                <button type="submit" class="login-button">Entrar</button>
+            </form>
+            <p>Esqueceu a senha? <a href="#" id="link-to-recover">Recuperar</a></p>
+            <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.1); margin: 20px 0;">
+            <p>Não tem uma conta? <a href="#" id="link-to-signup">Cadastre-se</a></p>
+        </div>
+    </section>
+
+    <section id="signup-screen" class="login-screen-container hidden">
+        <div class="login-card">
+            <button class="close-button" id="btnCloseSignup">✕</button>
+            <h2>Cadastre-se</h2>
+            <form id="signup-form">
+                <input type="text" id="nome-signup" placeholder="Nome" required>
+                <input type="email" id="email-signup" placeholder="E-mail" required>
+                <input type="password" id="senha-signup" placeholder="Senha" required>
+                <p id="signup-message"></p>
+                <button type="submit" class="login-button">Cadastrar</button>
+            </form>
+            <p>Já tem uma conta? <a href="#" id="link-to-login">Entrar</a></p>
+        </div>
+    </section>
+
+    <section id="recover-screen" class="login-screen-container hidden">
+        <div class="login-card">
+            <button class="close-button" id="btnCloseRecover">✕</button>
+            <h2>Recuperar Senha</h2>
+            <form id="recover-form">
+                <input type="email" id="email-recover" placeholder="E-mail" required>
+                <p id="recover-message"></p>
+                <button type="submit" class="login-button">Enviar</button>
+            </form>
+            <p>Lembrou da sua senha? <a href="#" id="link-to-login-from-recover">Entrar</a></p>
+            <p>Não tem uma conta? <a href="#" id="link-to-signup-from-recover">Cadastre-se</a></p>
+        </div>
+    </section>
+    
+    <section id="user-screen" class="data-table-container hidden">
+        <h1>Seus Dados</h1>
+        <div id="status"></div>
+        <table id="data-table">
+            <thead>
+                  <tr>
+                  <th>ID do Documento</th>
+                  <th>Lição</th>
+                  <th>Frase</th>
+                  <th>Acertos 1</th>
+                  <th>Acertos 2</th>
+                  <th>Atualizado em</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </section>
+    
+    <section id="edit-screen" class="login-screen-container hidden">
+        <div class="login-card">
+            <button class="close-button" id="btnCloseEdit">✕</button>
+            <h2>Editar Dados</h2>
+            <form id="edit-form">
+                <input type="hidden" id="edit-doc-id">
+                <input type="text" id="edit-content" placeholder="Novo Conteúdo" required>
+                <p id="edit-message"></p>
+                <button type="submit" class="login-button">Salvar Alterações</button>
+            </form>
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@18.2.0"></script>
+<script>
+    // Configuração do Appwrite
+    const client = new Appwrite.Client()
+        .setEndpoint('https://nyc.cloud.appwrite.io/v1')
+        .setProject('689f3d3a00095fde3112');
+
+    const account = new Appwrite.Account(client);
+    const databases = new Appwrite.Databases(client);
+
+    // Seletores de elementos HTML (TODOS JUNTOS AQUI)
+    const loginScreen = document.getElementById('login-screen');
+    const signupScreen = document.getElementById('signup-screen');
+    const recoverScreen = document.getElementById('recover-screen');
+    const userScreen = document.getElementById('user-screen');
+
+    const btnLoginHeader = document.getElementById('btnLogin');
+    const btnSignupHeader = document.getElementById('btnSignup');
+    
+    const btnCloseLogin = document.getElementById('btnCloseLogin');
+    const btnCloseSignup = document.getElementById('btnCloseSignup');
+    const btnCloseRecover = document.getElementById('btnCloseRecover');
+
+    const loginForm = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-form');
+    const recoverForm = document.getElementById('recover-form');
+    const logoutButton = document.getElementById('logout-button');
+	const userEmailDisplay = document.getElementById('user-email-display');
+
+    const welcomeMessage = document.getElementById('welcome-message');
+    const loginMessage = document.getElementById('login-message');
+    const signupMessage = document.getElementById('signup-message');
+    const recoverMessage = document.getElementById('recover-message');
+
+    const linkToSignup = document.getElementById('link-to-signup');
+    const linkToLogin = document.getElementById('link-to-login');
+    const linkToRecover = document.getElementById('link-to-recover');
+    const linkToLoginFromRecover = document.getElementById('link-to-login-from-recover');
+    const linkToSignupFromRecover = document.getElementById('link-to-signup-from-recover');
+    
+    // Seletores para edit
+    const editScreen = document.getElementById('edit-screen');
+    const btnCloseEdit = document.getElementById('btnCloseEdit');
+    const editForm = document.getElementById('edit-form');
+    const editMessage = document.getElementById('edit-message');
+	
+    // Define as constantes do seu projeto
+    const DATABASE_ID = '68bfc30500251b74b4fc';
+    const COLLECTION_ID = '68bfc325002b09dd5ea5';
+
+    // Função para buscar e exibir os dados, agora filtrando pelo ID do usuário
+    async function fetchAndDisplayData(userId) {
+        const statusDiv = document.getElementById('status');
+        const tableBody = document.querySelector('#data-table tbody');
+        tableBody.innerHTML = ''; // Limpa a tabela antes de carregar novos dados
+
+        // Adiciona um indicador de carregamento
+        statusDiv.textContent = 'Carregando dados...';
+        statusDiv.style.color = '#f0f0f0'; // Cor padrão
+
+        try {
+            // Usa a query para filtrar os documentos pelo user_id
+            const response = await databases.listDocuments(
+                DATABASE_ID,
+                COLLECTION_ID,
+                [Appwrite.Query.equal('user_id', userId)] // Filtra pelo ID do usuário logado
             );
-            console.log(result.href); // URL da imagem ou arquivo
-            
-            // Exemplo de como exibir uma imagem
-            const imgElement = document.createElement('img');
-            imgElement.src = result.href;
-            document.body.appendChild(imgElement);
+
+            // Limpa a mensagem de "carregando"
+            statusDiv.textContent = '';
+
+            if (response.total === 0) { // Usa response.total para verificar se há documentos
+                statusDiv.textContent = 'Nenhum dado de progresso encontrado para este usuário.';
+                statusDiv.style.color = 'rgba(255, 255, 255, 0.7)';
+                return;
+            }
+
+            statusDiv.textContent = `Total de registros: ${response.total}`;
+            statusDiv.style.color = '#f0f0f0'; // Cor padrão
+
+            response.documents.forEach(doc => {
+                const row = document.createElement('tr');
+                // Note que o 'content' foi removido dos campos exibidos, pois agora temos lessonName, fraseIndex, etc.
+                row.innerHTML = `
+                    <td>${doc.$id}</td>
+                    <td>${doc.lessonName}</td>
+                    <td>${doc.fraseIndex + 1}</td>
+                    <td>${doc.acertos1}</td>
+                    <td>${doc.acertos2}</td>
+                    <td>${new Date(doc.timestamp).toLocaleString()}</td>
+                    <td><button class="delete-btn" data-doc-id="${doc.$id}">Excluir</button></td>
+                `;
+                tableBody.appendChild(row);
+            });
 
         } catch (error) {
-            console.error('Erro ao acessar o arquivo:', error);
+            console.error("Erro ao buscar dados:", error);
+            statusDiv.textContent = `Erro ao carregar dados: ${error.message}`;
+            statusDiv.style.color = '#ff6b6b'; // Cor vermelha para erros
         }
     }
 
-    getFileUrl();
+
+    /* Função para renderizar a interface de
+    ** acordo com o estado de autenticação */
+    function renderUIForAuthState(isLoggedIn, userEmail = '') {
+        // Esconde tudo primeiro para evitar conflitos
+        btnLoginHeader.style.display = 'none';
+        btnSignupHeader.style.display = 'none';
+        logoutButton.style.display = 'none';
+        userEmailDisplay.style.display = 'none';
+
+        if (isLoggedIn) {
+            // Se o usuário está logado, mostra o e-mail e o botão de sair
+            userEmailDisplay.textContent = userEmail;
+            userEmailDisplay.style.display = 'block';
+            logoutButton.style.display = 'block';
+            userScreen.style.display = 'block';
+        } else {
+            // Se o usuário está deslogado, mostra os botões de entrar e cadastrar
+            btnLoginHeader.style.display = 'block';
+            btnSignupHeader.style.display = 'block';
+            userScreen.style.display = 'none';
+
+        }
+    }
+    
+    // Função para mostrar uma seção específica
+    function showSection(section) {
+        // Esconde todas as seções primeiro
+        loginScreen.classList.add('hidden');
+        signupScreen.classList.add('hidden');
+        recoverScreen.classList.add('hidden');
+        editScreen.classList.add('hidden'); // Adicionado
+        userScreen.classList.add('hidden');
+
+        // Controla a visibilidade do header
+        const header = document.querySelector('header');
+
+        if (section === 'login') {
+            loginScreen.classList.remove('hidden');
+            header.style.display = 'none'; // Oculta o header
+        } else if (section === 'signup') {
+            signupScreen.classList.remove('hidden');
+            header.style.display = 'none'; // Oculta o header
+        } else if (section === 'recover') {
+            recoverScreen.classList.remove('hidden');
+            header.style.display = 'none'; // Oculta o header
+        } else if (section === 'user') {
+            userScreen.classList.remove('hidden'); // Alterado para 'remove'
+            header.style.display = 'block'; // Mostra o header na tela de usuário
+        } else {
+            userScreen.classList.add('hidden');
+            // Se for a tela principal (sem modals), o header fica visível
+            header.style.display = 'block'; // Mostra o header
+        }
+    }
+
+    // Função para verificar o status de login
+    async function checkAuthStatus() {
+        try {
+            const user = await account.get();
+            // Chama a função de renderização para o estado "logado"
+            renderUIForAuthState(true, user.email);
+            // Mostra a tela de usuário logado
+            showSection('user');
+            // 🎉 Chama a função de busca de dados APENAS se o usuário estiver logado
+            fetchAndDisplayData(user.$id);
+        } catch (error) {
+            // Chama a função de renderização para o estado "deslogado"
+            renderUIForAuthState(false);
+            // Pode ser uma tela inicial ou nada
+            showSection('main');
+        }
+    }
+    
+    // Eventos para abrir as modais a partir do cabeçalho
+    btnLoginHeader.addEventListener('click', () => {
+        showSection('login');
+    });
+    btnSignupHeader.addEventListener('click', () => {
+        showSection('signup');
+    });
+
+    btnCloseLogin.addEventListener('click', () => {
+        loginScreen.classList.add('hidden');
+    });
+    btnCloseSignup.addEventListener('click', () => {
+        signupScreen.classList.add('hidden');
+    });
+    btnCloseRecover.addEventListener('click', () => {
+        recoverScreen.classList.add('hidden');
+    });
+
+    // Eventos para alternar entre as telas de login, cadastro e recuperação
+    linkToSignup.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('signup');
+    });
+    linkToLogin.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('login');
+    });
+    linkToRecover.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('recover');
+    });
+    linkToLoginFromRecover.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('login');
+    });
+    linkToSignupFromRecover.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('signup');
+    });
+
+    // Evento de submissão do formulário de login
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email-login').value;
+        const password = document.getElementById('password-login').value;
+        loginMessage.textContent = '';
+        try {
+            await account.createEmailPasswordSession(email, password);
+            const user = await account.get(); // Obtém as informações do usuário logado
+    renderUIForAuthState(true, user.email);
+    showSection('user');
+    fetchAndDisplayData(user.$id); // Passa o ID do usuário para a função de busca
+            checkAuthStatus();
+        } catch (error) {
+            loginMessage.textContent = 'Erro no login: ' + error.message;
+        }
+    });
+
+    // Evento de submissão do formulário de cadastro
+    signupForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const nome = document.getElementById('nome-signup').value;
+        const email = document.getElementById('email-signup').value;
+        const senha = document.getElementById('senha-signup').value;
+        signupMessage.textContent = '';
+        try {
+            await account.create(Appwrite.ID.unique(), email, senha, nome);
+            signupMessage.textContent = 'Usuário cadastrado com sucesso! Você pode fazer login agora.';
+            setTimeout(() => showSection('login'), 2000);
+        } catch (error) {
+            signupMessage.textContent = 'Erro ao cadastrar: ' + error.message;
+        }
+    });
+
+    // Evento de submissão do formulário de recuperação
+    recoverForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email-recover').value;
+        recoverMessage.textContent = '';
+        try {
+            const resetUrl = window.location.href.split('#')[0] + '#reset-password';
+            await account.createRecovery(email, resetUrl);
+            recoverMessage.textContent = 'Se o e-mail existir, um link de recuperação foi enviado.';
+        } catch (error) {
+            recoverMessage.textContent = 'Erro ao enviar o link: ' + error.message;
+        }
+    });
+
+    // Evento de clique do botão de logout
+    logoutButton.addEventListener('click', async () => {
+        try {
+            await account.deleteSession('current');
+            // Chama a função que reflete o novo estado na interface
+            checkAuthStatus();
+        } catch (error) {
+            alert('Falha ao sair: ' + error.message);
+        }
+    });
+    
+    // Evento para fechar o modal de edição
+    btnCloseEdit.addEventListener('click', () => {
+        editScreen.classList.add('hidden');
+    });
+
+    // Evento para abrir o modal de edição ao clicar no botão da tabela
+    document.getElementById('data-table').addEventListener('click', (e) => {
+        if (e.target.classList.contains('edit-btn')) {
+            const docId = e.target.getAttribute('data-doc-id');
+            const content = e.target.getAttribute('data-content');
+
+            // Preenche os campos do modal com os dados da linha
+            document.getElementById('edit-doc-id').value = docId;
+            document.getElementById('edit-content').value = content;
+
+            // Exibe o modal
+            editScreen.classList.remove('hidden');
+            editMessage.textContent = ''; // Limpa mensagens de erro anteriores
+        }
+    });
+
+    // Função para enviar os dados editados para o Appwrite
+    async function updateDocument(docId, newContent) {
+        try {
+            const response = await databases.updateDocument(
+                DATABASE_ID,
+                COLLECTION_ID,
+                docId,
+                { 'content': newContent } // O objeto com os dados a serem atualizados
+            );
+            editMessage.textContent = 'Dados atualizados com sucesso!';
+            editMessage.style.color = '#4ecdc4';
+            console.log('Documento atualizado:', response);
+
+            // Atualiza a tabela com os novos dados
+            const user = await account.get();
+            fetchAndDisplayData(user.$id);
+
+            // Esconde o modal após a atualização
+            setTimeout(() => {
+                editScreen.classList.add('hidden');
+            }, 1500);
+
+        } catch (error) {
+            console.error("Erro ao atualizar o documento:", error);
+            editMessage.textContent = `Erro ao salvar: ${error.message}`;
+            editMessage.style.color = '#ff6b6b';
+        }
+    }
+
+    // Evento de submissão do formulário de edição
+    editForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const docId = document.getElementById('edit-doc-id').value;
+        const newContent = document.getElementById('edit-content').value;
+
+        // Chama a função para atualizar no Appwrite
+        updateDocument(docId, newContent);
+    });
+
+    // Chama a função para verificar o status de login ao carregar a página
+	document.addEventListener('DOMContentLoaded', checkAuthStatus);
 </script>
+</body>
+</html>
