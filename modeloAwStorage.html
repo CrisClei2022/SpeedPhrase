@@ -285,368 +285,327 @@
             text-align: center;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        #welcome-message {
-            font-size: 1.5em;
-            margin-bottom: 20px;
-        }
     </style>
 </head>
 <body>
-    <header>
-        <div class="header-content"  id="header-content">
-            <div class="user-buttons">
-                <div id="btnLogin" class="btnLogin">Entrar</div>
-                <div id="btnSignup" class="btnSignup">Cadastrar</div>
-                <button id="logout-button" class="">Sair</button>
-            </div>
-        </div>
-    </header>
+    <header>
+        <div class="header-content"  id="header-content">
+            <div class="user-buttons">
+                <div id="user-email-display" style="font-size: 0.9em; color: rgba(255, 255, 255, 0.7);"></div>
+                <div id="btnLogin" class="btnLogin">Entrar</div>
+                <div id="btnSignup" class="btnSignup">Cadastrar</div>
+                <button id="logout-button" class="">Sair</button>
+            </div>
+        </div>
+    </header>
 
-    <section id="login-screen" class="login-screen-container hidden">
-        <div class="login-card">
-            <button class="close-button" id="btnCloseLogin">✕</button>
-            <h2>Entrar</h2>
-            <form id="login-form">
-                <input type="email" id="email-login" placeholder="E-mail" required>
-                <input type="password" id="password-login" placeholder="Senha" required>
-                <p id="login-message"></p>
-                <button type="submit" class="login-button">Entrar</button>
-            </form>
-            <p>Esqueceu a senha? <a href="#" id="link-to-recover">Recuperar</a></p>
-            <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.1); margin: 20px 0;">
-            <p>Não tem uma conta? <a href="#" id="link-to-signup">Cadastre-se</a></p>
-        </div>
-    </section>
+    <section id="login-screen" class="login-screen-container hidden">
+        <div class="login-card">
+            <button class="close-button" id="btnCloseLogin">✕</button>
+            <h2>Entrar</h2>
+            <form id="login-form">
+                <input type="email" id="email-login" placeholder="E-mail" required>
+                <input type="password" id="password-login" placeholder="Senha" required>
+                <p id="login-message"></p>
+                <button type="submit" class="login-button">Entrar</button>
+            </form>
+            <p>Esqueceu a senha? <a href="#" id="link-to-recover">Recuperar</a></p>
+            <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.1); margin: 20px 0;">
+            <p>Não tem uma conta? <a href="#" id="link-to-signup">Cadastre-se</a></p>
+        </div>
+    </section>
 
-    <section id="signup-screen" class="login-screen-container hidden">
-        <div class="login-card">
-            <button class="close-button" id="btnCloseSignup">✕</button>
-            <h2>Cadastre-se</h2>
-            <form id="signup-form">
-                <input type="text" id="nome-signup" placeholder="Nome" required>
-                <input type="email" id="email-signup" placeholder="E-mail" required>
-                <input type="password" id="senha-signup" placeholder="Senha" required>
-                <p id="signup-message"></p>
-                <button type="submit" class="login-button">Cadastrar</button>
-            </form>
-            <p>Já tem uma conta? <a href="#" id="link-to-login">Entrar</a></p>
-        </div>
-    </section>
+    <section id="signup-screen" class="login-screen-container hidden">
+        <div class="login-card">
+            <button class="close-button" id="btnCloseSignup">✕</button>
+            <h2>Cadastre-se</h2>
+            <form id="signup-form">
+                <input type="text" id="nome-signup" placeholder="Nome" required>
+                <input type="email" id="email-signup" placeholder="E-mail" required>
+                <input type="password" id="senha-signup" placeholder="Senha" required>
+                <p id="signup-message"></p>
+                <button type="submit" class="login-button">Cadastrar</button>
+            </form>
+            <p>Já tem uma conta? <a href="#" id="link-to-login">Entrar</a></p>
+        </div>
+    </section>
 
-    <section id="recover-screen" class="login-screen-container hidden">
-        <div class="login-card">
-            <button class="close-button" id="btnCloseRecover">✕</button>
-            <h2>Recuperar Senha</h2>
-            <form id="recover-form">
-                <input type="email" id="email-recover" placeholder="E-mail" required>
-                <p id="recover-message"></p>
-                <button type="submit" class="login-button">Enviar</button>
-            </form>
-            <p>Lembrou da sua senha? <a href="#" id="link-to-login-from-recover">Entrar</a></p>
-            <p>Não tem uma conta? <a href="#" id="link-to-signup-from-recover">Cadastre-se</a></p>
-        </div>
-    </section>
-    
-    <section id="user-screen" class="login-screen-container hidden">
-        <div class="login-card user-card">
-            <h2 id="welcome-message"></h2>            
-            <h1>Editor de Texto</h1>
-            <div>
-                <textarea id="editor" placeholder="Digite seu texto aqui..."></textarea>
-            </div>
-            <div id="controls" class="hidden">
-                <button id="btn-continue">Continuar Edição</button>
-                <button id="btn-restart">Recomeçar</button>
-            </div>
-        </div>
-    </section>
+    <section id="recover-screen" class="login-screen-container hidden">
+        <div class="login-card">
+            <button class="close-button" id="btnCloseRecover">✕</button>
+            <h2>Recuperar Senha</h2>
+            <form id="recover-form">
+                <input type="email" id="email-recover" placeholder="E-mail" required>
+                <p id="recover-message"></p>
+                <button type="submit" class="login-button">Enviar</button>
+            </form>
+            <p>Lembrou da sua senha? <a href="#" id="link-to-login-from-recover">Entrar</a></p>
+            <p>Não tem uma conta? <a href="#" id="link-to-signup-from-recover">Cadastre-se</a></p>
+        </div>
+    </section>
+    
+        <section id="user-screen" class="data-table-container hidden">
+        <h1>Seus Dados</h1>
+        <div id="status">Carregando dados...</div>
+        <table id="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User ID</th>
+                    <th>Lesson Name</th>
+                    <th>Progress Index</th>
+                    <th>Acertos Player 1</th>
+                    <th>Acertos Player 2</th>
+                    <th>Última Atualização</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </section>
 
-    <script src="https://cdn.jsdelivr.net/npm/appwrite@18.2.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@18.2.0"></script>
 <script>
-    // Configuração do Appwrite
-    const client = new Appwrite.Client()
-        .setEndpoint('https://nyc.cloud.appwrite.io/v1')
-        .setProject('689f3d3a00095fde3112');
+    // Configuração do Appwrite
+    const client = new Appwrite.Client()
+        .setEndpoint('https://nyc.cloud.appwrite.io/v1')
+        .setProject('689f3d3a00095fde3112');
 
-    const account = new Appwrite.Account(client);
+    const account = new Appwrite.Account(client);
+    const databases = new Appwrite.Databases(client);
 
-    // Seletores de elementos HTML (TODOS JUNTOS AQUI)
-    const loginScreen = document.getElementById('login-screen');
-    const signupScreen = document.getElementById('signup-screen');
-    const recoverScreen = document.getElementById('recover-screen');
-    const userScreen = document.getElementById('user-screen');
+    // Seletores de elementos HTML (TODOS JUNTOS AQUI)
+    const loginScreen = document.getElementById('login-screen');
+    const signupScreen = document.getElementById('signup-screen');
+    const recoverScreen = document.getElementById('recover-screen');
+    const userScreen = document.getElementById('user-screen');
 
-    const btnLoginHeader = document.getElementById('btnLogin');
-    const btnSignupHeader = document.getElementById('btnSignup');
-    
-    const btnCloseLogin = document.getElementById('btnCloseLogin');
-    const btnCloseSignup = document.getElementById('btnCloseSignup');
-    const btnCloseRecover = document.getElementById('btnCloseRecover');
+    const btnLoginHeader = document.getElementById('btnLogin');
+    const btnSignupHeader = document.getElementById('btnSignup');
+    
+    const btnCloseLogin = document.getElementById('btnCloseLogin');
+    const btnCloseSignup = document.getElementById('btnCloseSignup');
+    const btnCloseRecover = document.getElementById('btnCloseRecover');
 
-    const loginForm = document.getElementById('login-form');
-    const signupForm = document.getElementById('signup-form');
-    const recoverForm = document.getElementById('recover-form');
-    const logoutButton = document.getElementById('logout-button');
+    const loginForm = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-form');
+    const recoverForm = document.getElementById('recover-form');
+    const logoutButton = document.getElementById('logout-button');
+	const userEmailDisplay = document.getElementById('user-email-display');
 
-    const welcomeMessage = document.getElementById('welcome-message');
-    const loginMessage = document.getElementById('login-message');
-    const signupMessage = document.getElementById('signup-message');
-    const recoverMessage = document.getElementById('recover-message');
+    const welcomeMessage = document.getElementById('welcome-message');
+    const loginMessage = document.getElementById('login-message');
+    const signupMessage = document.getElementById('signup-message');
+    const recoverMessage = document.getElementById('recover-message');
 
-    const linkToSignup = document.getElementById('link-to-signup');
-    const linkToLogin = document.getElementById('link-to-login');
-    const linkToRecover = document.getElementById('link-to-recover');
-    const linkToLoginFromRecover = document.getElementById('link-to-login-from-recover');
-    const linkToSignupFromRecover = document.getElementById('link-to-signup-from-recover');
-    
-    // DATABASE
-    const databases = new Appwrite.Databases(client); 
-
-    // Configurações do database - substitua pelos seus IDs
+    const linkToSignup = document.getElementById('link-to-signup');
+    const linkToLogin = document.getElementById('link-to-login');
+    const linkToRecover = document.getElementById('link-to-recover');
+    const linkToLoginFromRecover = document.getElementById('link-to-login-from-recover');
+    const linkToSignupFromRecover = document.getElementById('link-to-signup-from-recover');
+	
+    // Define as constantes do seu projeto
     const DATABASE_ID = '68bfc30500251b74b4fc';
-    const COLLECTION_ID = '[68bfc325002b09dd5ea5';
+    const COLLECTION_ID = '68bfc325002b09dd5ea5';
 
-    // Função para mostrar uma seção específica
-    function showSection(section) {
-        // Esconde todas as seções primeiro
-        loginScreen.classList.add('hidden');
-        signupScreen.classList.add('hidden');
-        recoverScreen.classList.add('hidden');
-        userScreen.classList.add('hidden');
-    
-        // Apenas mostra a seção correta
-        if (section === 'login') {
-            loginScreen.classList.remove('hidden');
-        } else if (section === 'signup') {
-            signupScreen.classList.remove('hidden');
-        } else if (section === 'recover') {
-            recoverScreen.classList.remove('hidden');
-        } else if (section === 'user') {
-            userScreen.classList.remove('hidden');
+    // Função para buscar e exibir os dados, agora filtrando pelo ID do usuário
+    async function fetchAndDisplayData(userId) {
+        const statusDiv = document.getElementById('status');
+        const tableBody = document.querySelector('#data-table tbody');
+        tableBody.innerHTML = ''; // Limpa a tabela antes de carregar novos dados
+        
+        try {
+            // Usa a query para filtrar os documentos pelo user_id
+            const response = await databases.listDocuments(
+                DATABASE_ID, 
+                COLLECTION_ID,
+                [Appwrite.Query.equal('user_id', userId)]
+            );
+            
+            if (response.documents.length === 0) {
+                statusDiv.textContent = 'Nenhum dado encontrado para este usuário.';
+                return;
+            }
+
+            statusDiv.textContent = `Total de documentos: ${response.total}`;
+            
+            response.documents.forEach(doc => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${doc.$id}</td>
+                    <td>${doc.user_id}</td>
+                    <td>${doc.lesson_name}</td>
+                    <td>${doc.progress_index}</td>
+                    <td>${doc.acertos_player1}</td>
+                    <td>${doc.acertos_player2}</td>
+                    <td>${new Date(doc.last_updated).toLocaleString()}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+        } catch (error) {
+            console.error("Erro ao buscar dados:", error);
+            statusDiv.textContent = `Erro ao carregar dados: ${error.message}`;
         }
     }
 
-    // Função para verificar o status de login
-    async function checkAuthStatus() {
-        const header = document.querySelector('header');
 
-        try {
-            const user = await account.get();
-            currentUser = user;
-            welcomeMessage.textContent = `Bem-vindo, ${user.name || user.email}!`;
-            logoutButton.style.display = 'block'; // Mostra o botão Sair
-            header.style.display = 'block'; // Mostra o header
-            showSection('user');
-        	checkSavedText(); // ADICIONAR ESTA LINHA
-        } catch (error) {
-        	currentUser = null; // ADICIONAR ESTA LINHA
-            logoutButton.style.display = 'none'; // Esconde o botão Sair
-            header.style.display = 'block'; // Esconde o header
-            showSection('main');
-        }
-    }
-    
-    // Eventos para abrir as modais a partir do cabeçalho
-    btnLoginHeader.addEventListener('click', () => {
-        showSection('login');
-    });
-    btnSignupHeader.addEventListener('click', () => {
-        showSection('signup');
-    });
+    /* Função para renderizar a interface de
+    ** acordo com o estado de autenticação */
+    function renderUIForAuthState(isLoggedIn, userEmail = '') {
+        // Esconde tudo primeiro para evitar conflitos
+        btnLoginHeader.style.display = 'none';
+        btnSignupHeader.style.display = 'none';
+        logoutButton.style.display = 'none';
+        userEmailDisplay.style.display = 'none';
 
-    btnCloseLogin.addEventListener('click', () => {
-        loginScreen.classList.add('hidden');
-    });
-    btnCloseSignup.addEventListener('click', () => {
-        signupScreen.classList.add('hidden');
-    });
-    btnCloseRecover.addEventListener('click', () => {
-        recoverScreen.classList.add('hidden');
-    });
+        if (isLoggedIn) {
+            // Se o usuário está logado, mostra o e-mail e o botão de sair
+            userEmailDisplay.textContent = userEmail;
+            userEmailDisplay.style.display = 'block';
+            logoutButton.style.display = 'block';
+        } else {
+            // Se o usuário está deslogado, mostra os botões de entrar e cadastrar
+            btnLoginHeader.style.display = 'block';
+            btnSignupHeader.style.display = 'block';
+        }
+    }
+    // Função para mostrar uma seção específica
+    function showSection(section) {
+        // Esconde todas as seções primeiro
+        loginScreen.classList.add('hidden');
+        signupScreen.classList.add('hidden');
+        recoverScreen.classList.add('hidden');
+        userScreen.classList.add('hidden');
+    
+        // Apenas mostra a seção correta
+        if (section === 'login') {
+            loginScreen.classList.remove('hidden');
+        } else if (section === 'signup') {
+            signupScreen.classList.remove('hidden');
+        } else if (section === 'recover') {
+            recoverScreen.classList.remove('hidden');
+        } else if (section === 'user') {
+            userScreen.classList.remove('hidden');
+        }
+    }
 
-    // Eventos para alternar entre as telas de login, cadastro e recuperação
-    linkToSignup.addEventListener('click', (e) => {
-        e.preventDefault();
-        showSection('signup');
-    });
-    linkToLogin.addEventListener('click', (e) => {
-        e.preventDefault();
-        showSection('login');
-    });
-    linkToRecover.addEventListener('click', (e) => {
-        e.preventDefault();
-        showSection('recover');
-    });
-    linkToLoginFromRecover.addEventListener('click', (e) => {
-        e.preventDefault();
-        showSection('login');
-    });
-    linkToSignupFromRecover.addEventListener('click', (e) => {
-        e.preventDefault();
-        showSection('signup');
-    });
+    // Função para verificar o status de login
+    async function checkAuthStatus() {
+        try {
+            const user = await account.get();
+            // Chama a função de renderização para o estado "logado"
+            renderUIForAuthState(true, user.email);
+            // Mostra a tela de usuário logado
+            showSection('user');
+            // 🎉 Chama a função de busca de dados APENAS se o usuário estiver logado
+            fetchAndDisplayData(user.$id);
+        } catch (error) {
+            // Chama a função de renderização para o estado "deslogado"
+            renderUIForAuthState(false);
+            // Pode ser uma tela inicial ou nada
+            showSection('main');
+        }
+    }
+    
+    // Eventos para abrir as modais a partir do cabeçalho
+    btnLoginHeader.addEventListener('click', () => {
+        showSection('login');
+    });
+    btnSignupHeader.addEventListener('click', () => {
+        showSection('signup');
+    });
 
-    // Evento de submissão do formulário de login
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('email-login').value;
-        const password = document.getElementById('password-login').value;
-        loginMessage.textContent = '';
-        try {
-            await account.createEmailPasswordSession(email, password);
-            checkAuthStatus();
-        } catch (error) {
-            loginMessage.textContent = 'Erro no login: ' + error.message;
-        }
-    });
+    btnCloseLogin.addEventListener('click', () => {
+        loginScreen.classList.add('hidden');
+    });
+    btnCloseSignup.addEventListener('click', () => {
+        signupScreen.classList.add('hidden');
+    });
+    btnCloseRecover.addEventListener('click', () => {
+        recoverScreen.classList.add('hidden');
+    });
 
-    // Evento de submissão do formulário de cadastro
-    signupForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const nome = document.getElementById('nome-signup').value;
-        const email = document.getElementById('email-signup').value;
-        const senha = document.getElementById('senha-signup').value;
-        signupMessage.textContent = '';
-        try {
-            await account.create(Appwrite.ID.unique(), email, senha, nome);
-            signupMessage.textContent = 'Usuário cadastrado com sucesso! Você pode fazer login agora.';
-            setTimeout(() => showSection('login'), 2000);
-        } catch (error) {
-            signupMessage.textContent = 'Erro ao cadastrar: ' + error.message;
-        }
-    });
+    // Eventos para alternar entre as telas de login, cadastro e recuperação
+    linkToSignup.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('signup');
+    });
+    linkToLogin.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('login');
+    });
+    linkToRecover.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('recover');
+    });
+    linkToLoginFromRecover.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('login');
+    });
+    linkToSignupFromRecover.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('signup');
+    });
 
-    // Evento de submissão do formulário de recuperação
-    recoverForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('email-recover').value;
-        recoverMessage.textContent = '';
-        try {
-            const resetUrl = window.location.href.split('#')[0] + '#reset-password';
-            await account.createRecovery(email, resetUrl);
-            recoverMessage.textContent = 'Se o e-mail existir, um link de recuperação foi enviado.';
-        } catch (error) {
-            recoverMessage.textContent = 'Erro ao enviar o link: ' + error.message;
-        }
-    });
+    // Evento de submissão do formulário de login
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email-login').value;
+        const password = document.getElementById('password-login').value;
+        loginMessage.textContent = '';
+        try {
+            await account.createEmailPasswordSession(email, password);
+            // Chama a função que reflete o novo estado na interface
+            checkAuthStatus();
+        } catch (error) {
+            loginMessage.textContent = 'Erro no login: ' + error.message;
+        }
+    });
 
-    // Evento de clique do botão de logout
-    logoutButton.addEventListener('click', async () => {
-        try {
-            await account.deleteSession('current');
-            checkAuthStatus(); // Redireciona para a tela inicial
-        } catch (error) {
-            alert('Falha ao sair: ' + error.message);
-        }
-    });
-    
-   
-    	// =========================================================================
-        // Função para mostrar a mensagem personalizada sobre continuar ou recomeçar
-    	// =========================================================================
-        function showContinuePrompt() {
-            const controls = document.getElementById('controls');
-            controls.classList.remove('hidden');
-        }
+    // Evento de submissão do formulário de cadastro
+    signupForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const nome = document.getElementById('nome-signup').value;
+        const email = document.getElementById('email-signup').value;
+        const senha = document.getElementById('senha-signup').value;
+        signupMessage.textContent = '';
+        try {
+            await account.create(Appwrite.ID.unique(), email, senha, nome);
+            signupMessage.textContent = 'Usuário cadastrado com sucesso! Você pode fazer login agora.';
+            setTimeout(() => showSection('login'), 2000);
+        } catch (error) {
+            signupMessage.textContent = 'Erro ao cadastrar: ' + error.message;
+        }
+    });
 
-        let currentUser = null;
+    // Evento de submissão do formulário de recuperação
+    recoverForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email-recover').value;
+        recoverMessage.textContent = '';
+        try {
+            const resetUrl = window.location.href.split('#')[0] + '#reset-password';
+            await account.createRecovery(email, resetUrl);
+            recoverMessage.textContent = 'Se o e-mail existir, um link de recuperação foi enviado.';
+        } catch (error) {
+            recoverMessage.textContent = 'Erro ao enviar o link: ' + error.message;
+        }
+    });
 
-        // Função para verificar se existe texto salvo
-        async function checkSavedText() {
-            if (!currentUser) return;
+    // Evento de clique do botão de logout
+    logoutButton.addEventListener('click', async () => {
+        try {
+            await account.deleteSession('current');
+            // Chama a função que reflete o novo estado na interface
+            checkAuthStatus();
+        } catch (error) {
+            alert('Falha ao sair: ' + error.message);
+        }
+    });
 
-            try {
-                const response = await databases.listDocuments(DATABASE_ID, COLLECTION_ID, [
-                    Appwrite.Query.equal('user_id', currentUser.$id),
-                    Appwrite.Query.limit(1),
-                    Appwrite.Query.orderDesc('$createdAt')
-                ]);
-
-                if (response.documents.length > 0) {
-                    showContinuePrompt();
-                }
-            } catch (error) {
-                console.error('Erro ao verificar texto salvo:', error);
-            }
-        }
-
-        // Função para salvar o texto no Appwrite (com delay)
-        let saveTimeout;
-        function saveText() {
-            if (!currentUser) return;
-
-            clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(async () => {
-                const text = document.getElementById('editor').value;
-                if (text.trim() === '') return;
-
-                try {
-                    await databases.createDocument(DATABASE_ID, COLLECTION_ID, Appwrite.ID.unique(), {
-                        user_id: currentUser.$id,
-                        content: text,
-                        timestamp: new Date().toISOString()
-                    });
-                } catch (error) {
-                    console.error('Erro ao salvar texto:', error);
-                }
-            }, 2000); // Salva após 2 segundos de inatividade
-        }
-
-        // Função para continuar a edição
-        async function continueEditing() {
-            if (!currentUser) return;
-
-            try {
-                const response = await databases.listDocuments(DATABASE_ID, COLLECTION_ID, [
-                    Appwrite.Query.equal('user_id', currentUser.$id),
-                    Appwrite.Query.limit(1),
-                    Appwrite.Query.orderDesc('$createdAt')
-                ]);
-
-                if (response.documents.length > 0) {
-                    document.getElementById('editor').value = response.documents[0].content;
-                }
-                document.getElementById('controls').classList.add('hidden');
-            } catch (error) {
-                console.error('Erro ao carregar texto:', error);
-            }
-        }
-
-        // Função para reiniciar a edição
-        async function restartEditing() {
-            document.getElementById('editor').value = '';
-            document.getElementById('controls').classList.add('hidden');
-
-            // Opcionalmente, deletar documentos anteriores
-            if (currentUser) {
-                try {
-                    const response = await databases.listDocuments(DATABASE_ID, COLLECTION_ID, [
-                        Appwrite.Query.equal('user_id', currentUser.$id)
-                    ]);
-
-                    for (const doc of response.documents) {
-                        await databases.deleteDocument(DATABASE_ID, COLLECTION_ID, doc.$id);
-                    }
-                } catch (error) {
-                    console.error('Erro ao limpar textos salvos:', error);
-                }
-            }
-        }
-
-        // Atualiza o localStorage enquanto o usuário digita
-        document.getElementById('editor').addEventListener('input', saveText);
-
-        // Ações dos botões de controle
-        document.getElementById('btn-continue').addEventListener('click', continueEditing);
-        document.getElementById('btn-restart').addEventListener('click', restartEditing);
-
-        // Verifica se existe texto salvo ao carregar a página
-        window.onload = () => {
-            checkSavedText();
-        };
-
-    // Chama a função para verificar o status de login ao carregar a página
-    window.addEventListener('load', checkAuthStatus);
+    // Chama a função para verificar o status de login ao carregar a página
+	document.addEventListener('DOMContentLoaded', checkAuthStatus);
 </script>
 </body>
 </html>
