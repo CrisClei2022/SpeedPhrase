@@ -344,10 +344,9 @@
         </div>
     </section>
     
-        <section id="user-screen" class="data-table-container hidden">
+    <section id="user-screen" class="data-table-container hidden">
         <h1>Seus Dados</h1>
         <div id="status"></div>
-        <button id="edit-button" class="">Editar</button>
         <table id="data-table">
             <thead>
                 <tr>
@@ -360,6 +359,19 @@
                 </tbody>
         </table>
     </section>
+    
+    <section id="edit-screen" class="login-screen-container hidden">
+        <div class="login-card">
+            <button class="close-button" id="btnCloseEdit">✕</button>
+            <h2>Editar Dados</h2>
+            <form id="edit-form">
+                <input type="hidden" id="edit-doc-id">
+                <input type="text" id="edit-content" placeholder="Novo Conteúdo" required>
+                <p id="edit-message"></p>
+                <button type="submit" class="login-button">Salvar Alterações</button>
+            </form>
+        </div>
+    </section>
 
     <script src="https://cdn.jsdelivr.net/npm/appwrite@18.2.0"></script>
 <script>
@@ -400,6 +412,12 @@
     const linkToRecover = document.getElementById('link-to-recover');
     const linkToLoginFromRecover = document.getElementById('link-to-login-from-recover');
     const linkToSignupFromRecover = document.getElementById('link-to-signup-from-recover');
+    
+    // Seletores para edit
+    const editScreen = document.getElementById('edit-screen');
+    const btnCloseEdit = document.getElementById('btnCloseEdit');
+    const editForm = document.getElementById('edit-form');
+    const editMessage = document.getElementById('edit-message');
 	
     // Define as constantes do seu projeto
     const DATABASE_ID = '68bfc30500251b74b4fc';
@@ -432,7 +450,7 @@
                     <td>${doc.$id}</td>
                     <td>${doc.user_id}</td>
                     <td>${doc.content}</td>
-                    
+                    <td><button class="edit-btn" data-doc-id="${doc.$id}" data-content="${doc.content}">Editar</button></td>
                 `;
                 tableBody.appendChild(row);
             });
@@ -474,6 +492,7 @@
         loginScreen.classList.add('hidden');
         signupScreen.classList.add('hidden');
         recoverScreen.classList.add('hidden');
+        editScreen.classList.add('hidden'); // Adicionado
         userScreen.classList.add('hidden');
 
         // Controla a visibilidade do header
@@ -489,10 +508,10 @@
             recoverScreen.classList.remove('hidden');
             header.style.display = 'none'; // Oculta o header
         } else if (section === 'user') {
-            userScreen.classList.add('hidden');
+            userScreen.classList.remove('hidden'); // Alterado para 'remove'
             header.style.display = 'block'; // Mostra o header na tela de usuário
         } else {
-        	userScreen.classList.add('hidden');
+            userScreen.classList.add('hidden');
             // Se for a tela principal (sem modals), o header fica visível
             header.style.display = 'block'; // Mostra o header
         }
@@ -610,6 +629,66 @@
         } catch (error) {
             alert('Falha ao sair: ' + error.message);
         }
+    });
+    
+    // Evento para fechar o modal de edição
+    btnCloseEdit.addEventListener('click', () => {
+        editScreen.classList.add('hidden');
+    });
+
+    // Evento para abrir o modal de edição ao clicar no botão da tabela
+    document.getElementById('data-table').addEventListener('click', (e) => {
+        if (e.target.classList.contains('edit-btn')) {
+            const docId = e.target.getAttribute('data-doc-id');
+            const content = e.target.getAttribute('data-content');
+
+            // Preenche os campos do modal com os dados da linha
+            document.getElementById('edit-doc-id').value = docId;
+            document.getElementById('edit-content').value = content;
+
+            // Exibe o modal
+            editScreen.classList.remove('hidden');
+            editMessage.textContent = ''; // Limpa mensagens de erro anteriores
+        }
+    });
+
+    // Função para enviar os dados editados para o Appwrite
+    async function updateDocument(docId, newContent) {
+        try {
+            const response = await databases.updateDocument(
+                DATABASE_ID,
+                COLLECTION_ID,
+                docId,
+                { 'content': newContent } // O objeto com os dados a serem atualizados
+            );
+            editMessage.textContent = 'Dados atualizados com sucesso!';
+            editMessage.style.color = '#4ecdc4';
+            console.log('Documento atualizado:', response);
+
+            // Atualiza a tabela com os novos dados
+            const user = await account.get();
+            fetchAndDisplayData(user.$id);
+
+            // Esconde o modal após a atualização
+            setTimeout(() => {
+                editScreen.classList.add('hidden');
+            }, 1500);
+
+        } catch (error) {
+            console.error("Erro ao atualizar o documento:", error);
+            editMessage.textContent = `Erro ao salvar: ${error.message}`;
+            editMessage.style.color = '#ff6b6b';
+        }
+    }
+
+    // Evento de submissão do formulário de edição
+    editForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const docId = document.getElementById('edit-doc-id').value;
+        const newContent = document.getElementById('edit-content').value;
+
+        // Chama a função para atualizar no Appwrite
+        updateDocument(docId, newContent);
     });
 
     // Chama a função para verificar o status de login ao carregar a página
