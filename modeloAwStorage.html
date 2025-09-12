@@ -29,7 +29,7 @@
             position: fixed;
             top: 0;
             left: 50%;
-            transform: translateX(-50%);
+            transform: translateX(-0%);
     		z-index: 3000; /* Era 1000, agora é 3000 */
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
             width: fit-content;
@@ -39,7 +39,7 @@
         .header-content {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: right;
             max-width: 1200px;
             margin: 0 auto;
         }
@@ -347,16 +347,13 @@
         <section id="user-screen" class="data-table-container hidden">
         <h1>Seus Dados</h1>
         <div id="status"></div>
+        <button id="edit-button" class="">Editar</button>
         <table id="data-table">
             <thead>
                 <tr>
                     <th>ID</th>
                     <th>User ID</th>
-                    <th>Lesson Name</th>
-                    <th>Progress Index</th>
-                    <th>Acertos Player 1</th>
-                    <th>Acertos Player 2</th>
-                    <th>Última Atualização</th>
+                    <th>Content</th>
                 </tr>
             </thead>
             <tbody>
@@ -434,11 +431,8 @@
                 row.innerHTML = `
                     <td>${doc.$id}</td>
                     <td>${doc.user_id}</td>
-                    <td>${doc.lesson_name}</td>
-                    <td>${doc.progress_index}</td>
-                    <td>${doc.acertos_player1}</td>
-                    <td>${doc.acertos_player2}</td>
-                    <td>${new Date(doc.last_updated).toLocaleString()}</td>
+                    <td>${doc.content}</td>
+                    
                 `;
                 tableBody.appendChild(row);
             });
